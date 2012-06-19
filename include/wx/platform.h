@@ -702,6 +702,17 @@
 #endif
 
 /*
+    wxUSE_PANGO is not a user-settable option as it must be always used with
+    wxGTK and wxX11 and it doesn't make sense to use it with other ports, so
+    just set it ourselves here.
+ */
+#if defined(__WXGTK20__) || (defined(__WXX11__) && wxUSE_UNICODE)
+#   define wxUSE_PANGO 1
+#else
+#   define wxUSE_PANGO 0
+#endif
+
+/*
    check the consistency of the settings in setup.h: note that this must be
    done after setting wxUSE_UNICODE correctly as it is used in wx/chkconf.h
    and after defining the compiler macros which are used in it too

@@ -3362,12 +3362,6 @@ typedef GtkWidget *WXWidget;
 
 #endif /*  __WXGTK__ */
 
-#if defined(__WXGTK20__) || (defined(__WXX11__) && wxUSE_UNICODE)
-#define wxUSE_PANGO 1
-#else
-#define wxUSE_PANGO 0
-#endif
-
 #if wxUSE_PANGO
 /* Stand-ins for Pango types */
 typedef struct _PangoContext         PangoContext;
