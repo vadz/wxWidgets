@@ -20,13 +20,13 @@
 // ----------------------------------------------------------------------------
 
 #include "wx/memory.h"
+#include "wx/string.h"
 
 // ----------------------------------------------------------------------------
 // forward declarations
 // ----------------------------------------------------------------------------
 
 class WXDLLIMPEXP_FWD_BASE wxObject;
-class WXDLLIMPEXP_FWD_BASE wxString;
 class WXDLLIMPEXP_FWD_BASE wxClassInfo;
 class WXDLLIMPEXP_FWD_BASE wxHashTable;
 class WXDLLIMPEXP_FWD_BASE wxObject;

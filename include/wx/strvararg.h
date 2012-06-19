@@ -32,9 +32,6 @@
     #endif
 #endif
 
-class WXDLLIMPEXP_FWD_BASE wxCStrData;
-class WXDLLIMPEXP_FWD_BASE wxString;
-
 // ----------------------------------------------------------------------------
 // WX_DEFINE_VARARG_FUNC* macros
 // ----------------------------------------------------------------------------

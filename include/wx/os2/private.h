@@ -83,7 +83,6 @@
 
 class WXDLLIMPEXP_FWD_CORE wxFont;
 class WXDLLIMPEXP_FWD_CORE wxWindow;
-class WXDLLIMPEXP_FWD_BASE wxString;
 class WXDLLIMPEXP_FWD_CORE wxBitmap;
 
 // ---------------------------------------------------------------------------

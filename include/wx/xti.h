@@ -39,7 +39,6 @@
 class WXDLLIMPEXP_FWD_BASE wxAny;
 class WXDLLIMPEXP_FWD_BASE wxAnyList;
 class WXDLLIMPEXP_FWD_BASE wxObject;
-class WXDLLIMPEXP_FWD_BASE wxString;
 class WXDLLIMPEXP_FWD_BASE wxClassInfo;
 class WXDLLIMPEXP_FWD_BASE wxHashTable;
 class WXDLLIMPEXP_FWD_BASE wxObject;

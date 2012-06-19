@@ -26,7 +26,6 @@ class WXDLLIMPEXP_FWD_BASE wxMessageOutput;
 class WXDLLIMPEXP_FWD_BASE wxObject;
 class WXDLLIMPEXP_FWD_CORE wxRendererNative;
 class WXDLLIMPEXP_FWD_BASE wxStandardPaths;
-class WXDLLIMPEXP_FWD_BASE wxString;
 class WXDLLIMPEXP_FWD_BASE wxTimer;
 class WXDLLIMPEXP_FWD_BASE wxTimerImpl;
 

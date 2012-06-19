@@ -36,7 +36,6 @@ class WXDLLIMPEXP_FWD_CORE wxIcon;
 class WXDLLIMPEXP_FWD_CORE wxPalette;
 class WXDLLIMPEXP_FWD_CORE wxPen;
 class WXDLLIMPEXP_FWD_CORE wxRegion;
-class WXDLLIMPEXP_FWD_BASE wxString;
 class WXDLLIMPEXP_FWD_CORE wxIconBundle;
 class WXDLLIMPEXP_FWD_CORE wxPoint;
 
