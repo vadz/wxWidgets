@@ -46,6 +46,7 @@
 #endif // __WINDOWS__
 
 #if wxUSE_STD_IOSTREAM
+    #include <iostream>
     #include <sstream>
 #endif
 
@@ -78,6 +79,11 @@ UntypedBufferData *GetUntypedNullData()
 }
 
 } // namespace wxPrivate
+
+#ifdef wxHAS_COMPILER_ADL
+namespace wxInternal
+{
+#endif // wxHAS_COMPILER_ADL
 
 // ---------------------------------------------------------------------------
 // static class variables definition
@@ -184,67 +190,6 @@ static wxStrCacheStatsDumper s_showCacheStats;
 #endif // wxPROFILE_STRING_CACHE
 
 #endif // wxUSE_STRING_POS_CACHE
-
-// ----------------------------------------------------------------------------
-// global functions
-// ----------------------------------------------------------------------------
-
-#if wxUSE_STD_IOSTREAM
-
-#include <iostream>
-
-wxSTD ostream& operator<<(wxSTD ostream& os, const wxCStrData& str)
-{
-#if wxUSE_UNICODE && !wxUSE_UNICODE_UTF8
-    const wxScopedCharBuffer buf(str.AsCharBuf());
-    if ( !buf )
-        os.clear(wxSTD ios_base::failbit);
-    else
-        os << buf.data();
-
-    return os;
-#else
-    return os << str.AsInternal();
-#endif
-}
-
-wxSTD ostream& operator<<(wxSTD ostream& os, const wxString& str)
-{
-    return os << str.c_str();
-}
-
-wxSTD ostream& operator<<(wxSTD ostream& os, const wxScopedCharBuffer& str)
-{
-    return os << str.data();
-}
-
-#ifndef __BORLANDC__
-wxSTD ostream& operator<<(wxSTD ostream& os, const wxScopedWCharBuffer& str)
-{
-    return os << str.data();
-}
-#endif
-
-#if wxUSE_UNICODE && defined(HAVE_WOSTREAM)
-
-wxSTD wostream& operator<<(wxSTD wostream& wos, const wxString& str)
-{
-    return wos << str.wc_str();
-}
-
-wxSTD wostream& operator<<(wxSTD wostream& wos, const wxCStrData& str)
-{
-    return wos << str.AsWChar();
-}
-
-wxSTD wostream& operator<<(wxSTD wostream& wos, const wxScopedWCharBuffer& str)
-{
-    return wos << str.data();
-}
-
-#endif  // wxUSE_UNICODE && defined(HAVE_WOSTREAM)
-
-#endif // wxUSE_STD_IOSTREAM
 
 // ===========================================================================
 // wxString class core
@@ -802,8 +747,8 @@ static inline int wxDoCmp(const wxStringCharType* s1, size_t l1,
 
 int wxString::compare(const wxString& str) const
 {
-    return ::wxDoCmp(m_impl.data(), m_impl.length(),
-                     str.m_impl.data(), str.m_impl.length());
+    return wxDoCmp(m_impl.data(), m_impl.length(),
+                   str.m_impl.data(), str.m_impl.length());
 }
 
 int wxString::compare(size_t nStart, size_t nLen,
@@ -816,8 +761,8 @@ int wxString::compare(size_t nStart, size_t nLen,
     size_t pos, len;
     PosLenToImpl(nStart, nLen, &pos, &len);
 
-    return ::wxDoCmp(m_impl.data() + pos,  len,
-                     str.m_impl.data(), str.m_impl.length());
+    return wxDoCmp(m_impl.data() + pos,  len,
+                   str.m_impl.data(), str.m_impl.length());
 }
 
 int wxString::compare(size_t nStart, size_t nLen,
@@ -836,8 +781,8 @@ int wxString::compare(size_t nStart, size_t nLen,
     size_t pos2, len2;
     str.PosLenToImpl(nStart2, nLen2, &pos2, &len2);
 
-    return ::wxDoCmp(m_impl.data() + pos, len,
-                     str.m_impl.data() + pos2, len2);
+    return wxDoCmp(m_impl.data() + pos, len,
+                   str.m_impl.data() + pos2, len2);
 }
 
 int wxString::compare(const char* sz) const
@@ -845,7 +790,7 @@ int wxString::compare(const char* sz) const
     SubstrBufFromMB str(ImplStr(sz, npos));
     if ( str.len == npos )
         str.len = wxStringStrlen(str.data);
-    return ::wxDoCmp(m_impl.data(), m_impl.length(), str.data, str.len);
+    return wxDoCmp(m_impl.data(), m_impl.length(), str.data, str.len);
 }
 
 int wxString::compare(const wchar_t* sz) const
@@ -853,7 +798,7 @@ int wxString::compare(const wchar_t* sz) const
     SubstrBufFromWC str(ImplStr(sz, npos));
     if ( str.len == npos )
         str.len = wxStringStrlen(str.data);
-    return ::wxDoCmp(m_impl.data(), m_impl.length(), str.data, str.len);
+    return wxDoCmp(m_impl.data(), m_impl.length(), str.data, str.len);
 }
 
 int wxString::compare(size_t nStart, size_t nLen,
@@ -870,7 +815,7 @@ int wxString::compare(size_t nStart, size_t nLen,
     if ( str.len == npos )
         str.len = wxStringStrlen(str.data);
 
-    return ::wxDoCmp(m_impl.data() + pos, len, str.data, str.len);
+    return wxDoCmp(m_impl.data() + pos, len, str.data, str.len);
 }
 
 int wxString::compare(size_t nStart, size_t nLen,
@@ -887,7 +832,7 @@ int wxString::compare(size_t nStart, size_t nLen,
     if ( str.len == npos )
         str.len = wxStringStrlen(str.data);
 
-    return ::wxDoCmp(m_impl.data() + pos, len, str.data, str.len);
+    return wxDoCmp(m_impl.data() + pos, len, str.data, str.len);
 }
 
 #endif // HAVE_STD_STRING_COMPARE/!HAVE_STD_STRING_COMPARE
@@ -2324,3 +2269,65 @@ int wxString::Freq(wxUniChar ch) const
     return count;
 }
 
+#ifdef wxHAS_COMPILER_ADL
+} // namespace wxInternal
+#endif // wxHAS_COMPILER_ADL
+
+// ----------------------------------------------------------------------------
+// global functions
+// ----------------------------------------------------------------------------
+
+#if wxUSE_STD_IOSTREAM
+
+wxSTD ostream& operator<<(wxSTD ostream& os, const wxCStrData& str)
+{
+#if wxUSE_UNICODE && !wxUSE_UNICODE_UTF8
+    const wxScopedCharBuffer buf(str.AsCharBuf());
+    if ( !buf )
+        os.clear(wxSTD ios_base::failbit);
+    else
+        os << buf.data();
+
+    return os;
+#else
+    return os << str.AsInternal();
+#endif
+}
+
+wxSTD ostream& operator<<(wxSTD ostream& os, const wxString& str)
+{
+    return os << str.c_str();
+}
+
+wxSTD ostream& operator<<(wxSTD ostream& os, const wxScopedCharBuffer& str)
+{
+    return os << str.data();
+}
+
+#ifndef __BORLANDC__
+wxSTD ostream& operator<<(wxSTD ostream& os, const wxScopedWCharBuffer& str)
+{
+    return os << str.data();
+}
+#endif
+
+#if wxUSE_UNICODE && defined(HAVE_WOSTREAM)
+
+wxSTD wostream& operator<<(wxSTD wostream& wos, const wxString& str)
+{
+    return wos << str.wc_str();
+}
+
+wxSTD wostream& operator<<(wxSTD wostream& wos, const wxCStrData& str)
+{
+    return wos << str.AsWChar();
+}
+
+wxSTD wostream& operator<<(wxSTD wostream& wos, const wxScopedWCharBuffer& str)
+{
+    return wos << str.data();
+}
+
+#endif  // wxUSE_UNICODE && defined(HAVE_WOSTREAM)
+
+#endif // wxUSE_STD_IOSTREAM

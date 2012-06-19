@@ -122,5 +122,15 @@
 #endif
 
 
+/*
+    Does the compiler have a working argument-dependent lookup?
+
+    "Working" means good enough for finding comparison operators defined for
+    wxUniChar and wxString for the expressions involving them.
+ */
+#if wxCHECK_GCC_VERSION(3, 0) || wxCHECK_VISUALC_VERSION(8)
+    #define wxHAS_COMPILER_ADL
+#endif
+
 #endif /*  _WX_FEATURES_H_ */
 

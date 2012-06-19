@@ -13,10 +13,24 @@
 
 #include "wx/defs.h"
 #include "wx/chartype.h"
+#include "wx/stringfwd.h"
 #include "wx/stringimpl.h"
 
+// If possible, define wxUniChar inside a namespace in order to restrict the
+// comparison operators to being considered (via argument dependent lookup)
+// only for the expressions in which wxUniChar is involved, as otherwise they
+// would be also used for comparisons of "char" with other types and break, due
+// to ambiguity their existence would provoke, comparisons of "char" with enum
+// elements for example. But this does rely on working ADL so don't do it for
+// all compilers.
+#ifdef wxHAS_COMPILER_ADL
+
+namespace wxInternal
+{
+
+#endif // wxHAS_COMPILER_ADL
+
 class WXDLLIMPEXP_FWD_BASE wxUniCharRef;
-class WXDLLIMPEXP_FWD_BASE wxString;
 
 // This class represents single Unicode character. It can be converted to
 // and from char or wchar_t and implements commonly used character operations.
@@ -305,5 +319,16 @@ wxDEFINE_COMPARISONS_BY_REV(const wxUniChar&, const wxUniCharRef&)
 inline int operator-(char c1, const wxUniCharRef& c2) { return -(c2 - c1); }
 inline int operator-(const wxUniChar& c1, const wxUniCharRef& c2) { return -(c2 - c1); }
 inline int operator-(wchar_t c1, const wxUniCharRef& c2) { return -(c2 - c1); }
+
+#ifdef wxHAS_COMPILER_ADL
+
+} // namespace wxInternal
+
+// wxUniChar and wxUniCharRef themselves are public classes, so do bring them
+// into global scope.
+using wxInternal::wxUniChar;
+using wxInternal::wxUniCharRef;
+
+#endif // wxHAS_COMPILER_ADL
 
 #endif /* _WX_UNICHAR_H_ */

@@ -608,6 +608,6 @@ void StdStringTestCase::StdConversion()
     CPPUNIT_ASSERT( s7 == "hello" );
 
     wxStdWideString s8(s4);
-    CPPUNIT_ASSERT( s8 == "hello" );
+    CPPUNIT_ASSERT( s8 == L"hello" );
 }
 #endif // wxUSE_STD_STRING

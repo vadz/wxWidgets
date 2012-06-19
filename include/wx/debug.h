@@ -20,9 +20,7 @@
 #include "wx/chartype.h"     // for __TFILE__ and wxChar
 #include "wx/cpp.h"          // for __WXFUNCTION__
 #include "wx/dlimpexp.h"     // for WXDLLIMPEXP_FWD_BASE
-
-class WXDLLIMPEXP_FWD_BASE wxString;
-class WXDLLIMPEXP_FWD_BASE wxCStrData;
+#include "wx/stringfwd.h"    // can't include wx/string.h as it includes us
 
 // ----------------------------------------------------------------------------
 // Defines controlling the debugging macros

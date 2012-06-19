@@ -8,7 +8,7 @@ wxSize=<x>*<y>
 wxRect=<x>,<y> <width>*<height>
 
 wxLongLong=<m_ll>
-wxString=<m_impl>
+wxInternal::wxString=<m_impl>
 
 [Visualizer]
 wxDateTime{

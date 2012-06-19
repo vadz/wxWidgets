@@ -12,12 +12,11 @@
 #ifndef _WX_BUFFER_H
 #define _WX_BUFFER_H
 
+#include "wx/stringfwd.h"    // can't include wx/string.h as it includes us
 #include "wx/chartype.h"
 #include "wx/wxcrtbase.h"
 
 #include <stdlib.h>             // malloc() and free()
-
-class WXDLLIMPEXP_FWD_BASE wxCStrData;
 
 // ----------------------------------------------------------------------------
 // Special classes for (wide) character strings: they use malloc/free instead

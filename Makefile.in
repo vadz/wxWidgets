@@ -448,6 +448,7 @@ ALL_BASE_HEADERS =  \
 	wx/strconv.h \
 	wx/stream.h \
 	wx/string.h \
+	wx/stringfwd.h \
 	wx/stringimpl.h \
 	wx/stringops.h \
 	wx/strvararg.h \
@@ -629,6 +630,7 @@ ALL_PORTS_BASE_HEADERS =  \
 	wx/strconv.h \
 	wx/stream.h \
 	wx/string.h \
+	wx/stringfwd.h \
 	wx/stringimpl.h \
 	wx/stringops.h \
 	wx/strvararg.h \

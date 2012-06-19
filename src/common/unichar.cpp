@@ -31,6 +31,11 @@
 // implementation
 // ===========================================================================
 
+#ifdef wxHAS_COMPILER_ADL
+namespace wxInternal
+{
+#endif // wxHAS_COMPILER_ADL
+
 // ---------------------------------------------------------------------------
 // wxUniChar
 // ---------------------------------------------------------------------------
@@ -182,3 +187,7 @@ wxUniCharRef& wxUniCharRef::operator=(const wxUniChar& c)
     return *this;
 }
 #endif // wxUSE_UNICODE_UTF8
+
+#ifdef wxHAS_COMPILER_ADL
+} // namespace wxInternal
+#endif // wxHAS_COMPILER_ADL

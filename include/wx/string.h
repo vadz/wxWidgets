@@ -47,6 +47,7 @@
     #include <strings.h>    // for strcasecmp()
 #endif // HAVE_STRCASECMP_IN_STRINGS_H
 
+#include "wx/stringfwd.h"
 #include "wx/wxcrtbase.h"   // for wxChar, wxStrlen() etc.
 #include "wx/strvararg.h"
 #include "wx/buffer.h"      // for wxCharBuffer
@@ -87,18 +88,11 @@
     #endif
 #endif // wxUSE_STRING_POS_CACHE
 
-class WXDLLIMPEXP_FWD_BASE wxString;
-
 // unless this symbol is predefined to disable the compatibility functions, do
 // use them
 #ifndef WXWIN_COMPATIBILITY_STRING_PTR_AS_ITER
     #define WXWIN_COMPATIBILITY_STRING_PTR_AS_ITER 1
 #endif
-
-namespace wxPrivate
-{
-    template <typename T> struct wxStringAsBufHelper;
-}
 
 // ---------------------------------------------------------------------------
 // macros
@@ -191,6 +185,23 @@ inline int Stricmp(const char *psz1, const char *psz2)
 }
 
 #endif // WXWIN_COMPATIBILITY_2_8
+
+// See comment in wx/unichar.h for the reason we define all these classes
+// inside an internal namespace and then pull them into the global scope with
+// using declarations below. In summary, this is done to avoid having global
+// comparison operators.
+#ifdef wxHAS_COMPILER_ADL
+namespace wxInternal
+{
+#endif // wxHAS_COMPILER_ADL
+
+// Forward declarations.
+namespace wxPrivate
+{
+    template <typename T> struct wxStringAsBufHelper;
+}
+
+class WXDLLIMPEXP_FWD_BASE wxString;
 
 // ----------------------------------------------------------------------------
 // wxCStrData
@@ -4148,27 +4159,6 @@ wxDEFINE_ALL_COMPARISONS(const char *, const wxCStrData&, wxCMP_CHAR_CSTRDATA)
 // Implementation only from here until the end of file
 // ---------------------------------------------------------------------------
 
-#if wxUSE_STD_IOSTREAM
-
-#include "wx/iosfwrap.h"
-
-WXDLLIMPEXP_BASE wxSTD ostream& operator<<(wxSTD ostream&, const wxString&);
-WXDLLIMPEXP_BASE wxSTD ostream& operator<<(wxSTD ostream&, const wxCStrData&);
-WXDLLIMPEXP_BASE wxSTD ostream& operator<<(wxSTD ostream&, const wxScopedCharBuffer&);
-#ifndef __BORLANDC__
-WXDLLIMPEXP_BASE wxSTD ostream& operator<<(wxSTD ostream&, const wxScopedWCharBuffer&);
-#endif
-
-#if wxUSE_UNICODE && defined(HAVE_WOSTREAM)
-
-WXDLLIMPEXP_BASE wxSTD wostream& operator<<(wxSTD wostream&, const wxString&);
-WXDLLIMPEXP_BASE wxSTD wostream& operator<<(wxSTD wostream&, const wxCStrData&);
-WXDLLIMPEXP_BASE wxSTD wostream& operator<<(wxSTD wostream&, const wxScopedWCharBuffer&);
-
-#endif  // wxUSE_UNICODE && defined(HAVE_WOSTREAM)
-
-#endif  // wxUSE_STD_IOSTREAM
-
 // ---------------------------------------------------------------------------
 // wxCStrData implementation
 // ---------------------------------------------------------------------------
@@ -4288,21 +4278,6 @@ inline size_t operator-(const wchar_t *p, const wxCStrData& cs)
     return p - cs.AsWChar();
 }
 
-// ----------------------------------------------------------------------------
-// implementation of wx[W]CharBuffer inline methods using wxCStrData
-// ----------------------------------------------------------------------------
-
-// FIXME-UTF8: move this to buffer.h
-inline wxCharBuffer::wxCharBuffer(const wxCStrData& cstr)
-                    : wxCharTypeBufferBase(cstr.AsCharBuf())
-{
-}
-
-inline wxWCharBuffer::wxWCharBuffer(const wxCStrData& cstr)
-                    : wxCharTypeBufferBase(cstr.AsWCharBuf())
-{
-}
-
 #if wxUSE_UNICODE_UTF8
 // ----------------------------------------------------------------------------
 // implementation of wxStringIteratorNode inline methods
@@ -4345,6 +4320,36 @@ void wxStringIteratorNode::clear()
 }
 #endif // wxUSE_UNICODE_UTF8
 
+#ifdef wxHAS_COMPILER_ADL
+} // namespace wxInternal
+
+// Those must be made available in the global namespace. Notice that we already
+// did the same thing for wxString and wxCStrData in wx/stringfwd.h.
+using wxInternal::wxStringBuffer;
+using wxInternal::wxStringBufferLength;
+#if wxUSE_UNICODE
+using wxInternal::wxUTF8StringBuffer;
+using wxInternal::wxUTF8StringBufferLength;
+#endif // wxUSE_UNICODE
+
+#endif // wxHAS_COMPILER_ADL
+
+// ----------------------------------------------------------------------------
+// implementation of wx[W]CharBuffer inline methods using wxCStrData
+// ----------------------------------------------------------------------------
+
+// FIXME-UTF8: move this to buffer.h
+inline wxCharBuffer::wxCharBuffer(const wxCStrData& cstr)
+                    : wxCharTypeBufferBase(cstr.AsCharBuf())
+{
+}
+
+inline wxWCharBuffer::wxWCharBuffer(const wxCStrData& cstr)
+                    : wxCharTypeBufferBase(cstr.AsWCharBuf())
+{
+}
+
+
 #if WXWIN_COMPATIBILITY_2_8
     // lot of code out there doesn't explicitly include wx/crt.h, but uses
     // CRT wrappers that are now declared in wx/wxcrt.h and wx/wxcrtvararg.h,
@@ -4367,5 +4372,30 @@ template<bool (T)(const wxUniChar& c)>
                 return false;
         return true;
     }
+
+// ----------------------------------------------------------------------------
+// Stream insertion operators for wxString and related types
+// ----------------------------------------------------------------------------
+
+#if wxUSE_STD_IOSTREAM
+
+#include "wx/iosfwrap.h"
+
+WXDLLIMPEXP_BASE wxSTD ostream& operator<<(wxSTD ostream&, const wxString&);
+WXDLLIMPEXP_BASE wxSTD ostream& operator<<(wxSTD ostream&, const wxCStrData&);
+WXDLLIMPEXP_BASE wxSTD ostream& operator<<(wxSTD ostream&, const wxScopedCharBuffer&);
+#ifndef __BORLANDC__
+WXDLLIMPEXP_BASE wxSTD ostream& operator<<(wxSTD ostream&, const wxScopedWCharBuffer&);
+#endif
+
+#if wxUSE_UNICODE && defined(HAVE_WOSTREAM)
+
+WXDLLIMPEXP_BASE wxSTD wostream& operator<<(wxSTD wostream&, const wxString&);
+WXDLLIMPEXP_BASE wxSTD wostream& operator<<(wxSTD wostream&, const wxCStrData&);
+WXDLLIMPEXP_BASE wxSTD wostream& operator<<(wxSTD wostream&, const wxScopedWCharBuffer&);
+
+#endif  // wxUSE_UNICODE && defined(HAVE_WOSTREAM)
+
+#endif  // wxUSE_STD_IOSTREAM
 
 #endif  // _WX_WXSTRING_H_

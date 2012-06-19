@@ -1321,6 +1321,10 @@ SOURCE=..\..\include\wx\string.h
 # End Source File
 # Begin Source File
 
+SOURCE=..\..\include\wx\stringfwd.h
+# End Source File
+# Begin Source File
+
 SOURCE=..\..\include\wx\stringimpl.h
 # End Source File
 # Begin Source File

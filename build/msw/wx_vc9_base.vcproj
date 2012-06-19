@@ -1606,6 +1606,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\include\wx\stringfwd.h"
+				>
+			</File>
+			<File
 				RelativePath="..\..\include\wx\stringimpl.h"
 				>
 			</File>

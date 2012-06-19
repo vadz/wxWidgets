@@ -79,10 +79,13 @@ class wxRectPrinter(wxXYPrinterBase):
 
 # The function looking up the pretty-printer to use for the given value.
 def wxLookupFunction(val):
+    # Special case of wxString defined in a namespace.
+    if val.type.tag == 'wxInternal::wxString':
+        return wxStringPrinter(val)
+
     # Using a list is probably ok for so few items but consider switching to a
     # set (or a dict and cache class types as the keys in it?) if needed later.
-    types = ['wxString',
-             'wxDateTime',
+    types = ['wxDateTime',
              'wxFileName',
              'wxPoint',
              'wxSize',

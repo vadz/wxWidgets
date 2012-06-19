@@ -199,6 +199,7 @@ wx/stopwatch.h
 wx/strconv.h
 wx/stream.h
 wx/string.h
+wx/stringfwd.h
 wx/stringimpl.h
 wx/stringops.h
 wx/strvararg.h
