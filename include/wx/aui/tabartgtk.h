@@ -2,11 +2,14 @@
 // Name:        include/wx/aui/tabartgtk.h
 // Purpose:     declaration of the wxAuiGTKTabArt
 // Author:      Jens Lody and Teodor Petrov
-// Modified by:
+// Modified by: Malcolm MacLeod (mmacleod@webmail.co.za)
+// Modified by: Jens Lody
 // Created:     2012-03-23
 // RCS-ID:      $Id:$
 // Copyright:   (c) 2012 Jens Lody <jens@codeblocks.org>
 //                  and Teodor Petrov
+//              2012, Jens Lody for the code related to left and right
+//                  positioning
 // Licence:     wxWindows licence
 /////////////////////////////////////////////////////////////////////////////
 
@@ -23,6 +26,7 @@
 
 #include "wx/aui/tabart.h"
 #include "wx/gdicmn.h"
+#include "wx/aui/auibook.h"
 
 class wxWindow;
 class wxDC;
@@ -33,24 +37,25 @@ public:
     wxAuiGtkTabArt();
 
     virtual wxAuiTabArt* Clone();
-    virtual void DrawBorder(wxDC& dc, wxWindow* wnd, const wxRect& rect);
     virtual void DrawBackground(wxDC& dc, wxWindow* wnd, const wxRect& rect);
     virtual void DrawTab(wxDC& dc,
                          wxWindow* wnd,
-                         const wxAuiNotebookPage& page,
-                         const wxRect& in_rect,
-                         int close_button_state,
-                         wxRect* out_tab_rect,
-                         wxRect* out_button_rect,
-                         int* x_extent);
-    void DrawButton(wxDC& dc, wxWindow* wnd, const wxRect& in_rect, int bitmap_id,
-                    int button_state, int orientation, wxRect* out_rect);
-    int GetBestTabCtrlSize(wxWindow* wnd, const wxAuiNotebookPageArray& pages,
-                            const wxSize& required_bmp_size);
-    int GetBorderWidth(wxWindow* wnd);
+                         const wxAuiPaneInfo& page,
+                         const wxRect& inRect,
+                         int close_buttonState,
+                         bool haveFocus,
+                         wxRect* outTabRect,
+                         wxRect* outButtonRect,
+                         int* xExtent);
+    void DrawButton(wxDC& dc, wxWindow* wnd, const wxRect& inRect, int bitmapID, int buttonState, int orientation, wxRect* outRect);
+    wxSize GetBestTabSize(wxWindow* wnd, const wxAuiPaneInfoPtrArray& pages, const wxSize& requiredBmpSize);
+    int GetBestTabCtrlSize(wxWindow* wnd, const wxAuiPaneInfoPtrArray& pages, const wxSize& requiredBmpSize)
+                         {
+                             return GetBestTabSize(wnd, pages, requiredBmpSize).GetHeight();
+                         }
     virtual wxSize GetTabSize(wxDC& dc, wxWindow* wnd, const wxString& caption,
                               const wxBitmap& bitmap, bool active,
-                              int close_button_state, int* x_extent);
+                              int closeButtonState, int* extent);
 };
 
 #endif  // wxUSE_AUI

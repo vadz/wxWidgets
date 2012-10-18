@@ -2,10 +2,13 @@
 // Name:        auidemo.cpp
 // Purpose:     wxaui: wx advanced user interface - sample/test program
 // Author:      Benjamin I. Williams
-// Modified by:
+// Modified by: Malcolm MacLeod
+// Modified by: Jens Lody
 // Created:     2005-10-03
 // RCS-ID:      $Id$
 // Copyright:   (C) Copyright 2005, Kirix Corporation, All Rights Reserved.
+//                            2012, Jens Lody for the code related to left
+//                                  and right positioning
 // Licence:     wxWindows Library Licence, Version 3.1
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -49,6 +52,12 @@ public:
 DECLARE_APP(MyApp)
 IMPLEMENT_APP(MyApp)
 
+#include "wx/aui/tabart.h"
+#include "wx/aui/framemanager.h"
+#include "wx/containr.h"
+
+
+class wxAuiNotebook;
 
 class wxSizeReportCtrl;
 
@@ -99,10 +108,19 @@ class MyFrame : public wxFrame
         ID_NotebookWindowList,
         ID_NotebookScrollButtons,
         ID_NotebookTabFixedWidth,
-        ID_NotebookArtGloss,
+        ID_NotebookArtDefault,
         ID_NotebookArtSimple,
+#ifdef wxHAS_NATIVE_TABART
+        ID_NotebookArtGeneric,
+#endif
         ID_NotebookAlignTop,
+        ID_NotebookAlignLeft,
+        ID_NotebookAlignRight,
         ID_NotebookAlignBottom,
+        ID_NotebookSplitLeft,
+        ID_NotebookSplitRight,
+        ID_NotebookSplitTop,
+        ID_NotebookSplitBottom,
 
         ID_SampleItem,
 
@@ -157,6 +175,7 @@ private:
     void OnExit(wxCommandEvent& evt);
     void OnAbout(wxCommandEvent& evt);
     void OnTabAlignment(wxCommandEvent &evt);
+    void OnTabSplit(wxCommandEvent &evt);
 
     void OnGradient(wxCommandEvent& evt);
     void OnToolbarResizing(wxCommandEvent& evt);
@@ -606,10 +625,19 @@ BEGIN_EVENT_TABLE(MyFrame, wxFrame)
     EVT_MENU(ID_NotebookAllowTabSplit, MyFrame::OnNotebookFlag)
     EVT_MENU(ID_NotebookScrollButtons, MyFrame::OnNotebookFlag)
     EVT_MENU(ID_NotebookWindowList, MyFrame::OnNotebookFlag)
-    EVT_MENU(ID_NotebookArtGloss, MyFrame::OnNotebookFlag)
+    EVT_MENU(ID_NotebookArtDefault, MyFrame::OnNotebookFlag)
     EVT_MENU(ID_NotebookArtSimple, MyFrame::OnNotebookFlag)
+#ifdef wxHAS_NATIVE_TABART
+    EVT_MENU(ID_NotebookArtGeneric, MyFrame::OnNotebookFlag)
+#endif
     EVT_MENU(ID_NotebookAlignTop,     MyFrame::OnTabAlignment)
+    EVT_MENU(ID_NotebookAlignLeft,  MyFrame::OnTabAlignment)
+    EVT_MENU(ID_NotebookAlignRight,  MyFrame::OnTabAlignment)
     EVT_MENU(ID_NotebookAlignBottom,  MyFrame::OnTabAlignment)
+    EVT_MENU(ID_NotebookSplitLeft,  MyFrame::OnTabSplit)
+    EVT_MENU(ID_NotebookSplitRight,  MyFrame::OnTabSplit)
+    EVT_MENU(ID_NotebookSplitTop,  MyFrame::OnTabSplit)
+    EVT_MENU(ID_NotebookSplitBottom,  MyFrame::OnTabSplit)
     EVT_MENU(ID_NoGradient, MyFrame::OnGradient)
     EVT_MENU(ID_VerticalGradient, MyFrame::OnGradient)
     EVT_MENU(ID_HorizontalGradient, MyFrame::OnGradient)
@@ -718,8 +746,11 @@ MyFrame::MyFrame(wxWindow* parent,
     options_menu->Append(ID_Settings, _("Settings Pane"));
 
     wxMenu* notebook_menu = new wxMenu;
-    notebook_menu->AppendRadioItem(ID_NotebookArtGloss, _("Glossy Theme (Default)"));
+    notebook_menu->AppendRadioItem(ID_NotebookArtDefault, _("Default Theme"));
     notebook_menu->AppendRadioItem(ID_NotebookArtSimple, _("Simple Theme"));
+#ifdef wxHAS_NATIVE_TABART
+    notebook_menu->AppendRadioItem(ID_NotebookArtGeneric, _("Generic Theme"));
+#endif
     notebook_menu->AppendSeparator();
     notebook_menu->AppendRadioItem(ID_NotebookNoCloseButton, _("No Close Button"));
     notebook_menu->AppendRadioItem(ID_NotebookCloseButton, _("Close Button at Right"));
@@ -727,6 +758,8 @@ MyFrame::MyFrame(wxWindow* parent,
     notebook_menu->AppendRadioItem(ID_NotebookCloseButtonActive, _("Close Button on Active Tab"));
     notebook_menu->AppendSeparator();
     notebook_menu->AppendRadioItem(ID_NotebookAlignTop, _("Tab Top Alignment"));
+    notebook_menu->AppendRadioItem(ID_NotebookAlignLeft, _("Tab Left Alignment"));
+    notebook_menu->AppendRadioItem(ID_NotebookAlignRight, _("Tab Right Alignment"));
     notebook_menu->AppendRadioItem(ID_NotebookAlignBottom, _("Tab Bottom Alignment"));
     notebook_menu->AppendSeparator();
     notebook_menu->AppendCheckItem(ID_NotebookAllowTabMove, _("Allow Tab Move"));
@@ -735,6 +768,11 @@ MyFrame::MyFrame(wxWindow* parent,
     notebook_menu->AppendCheckItem(ID_NotebookScrollButtons, _("Scroll Buttons Visible"));
     notebook_menu->AppendCheckItem(ID_NotebookWindowList, _("Window List Button Visible"));
     notebook_menu->AppendCheckItem(ID_NotebookTabFixedWidth, _("Fixed-width Tabs"));
+    notebook_menu->AppendSeparator();
+    notebook_menu->Append(ID_NotebookSplitLeft, _("Move Active Tab to Left"));
+    notebook_menu->Append(ID_NotebookSplitRight, _("Move Active Tab to Right"));
+    notebook_menu->Append(ID_NotebookSplitTop, _("Move Active Tab to Top"));
+    notebook_menu->Append(ID_NotebookSplitBottom, _("Move Active Tab to Bottom"));
 
     m_perspectives_menu = new wxMenu;
     m_perspectives_menu->Append(ID_CreatePerspective, _("Create Perspective"));
@@ -1189,7 +1227,7 @@ void MyFrame::OnNotebookFlag(wxCommandEvent& event)
         {
             wxAuiNotebook* nb = (wxAuiNotebook*)pane.window;
 
-            if (id == ID_NotebookArtGloss)
+            if (id == ID_NotebookArtDefault)
             {
                 nb->SetArtProvider(new wxAuiDefaultTabArt);
                 m_notebook_theme = 0;
@@ -1199,6 +1237,13 @@ void MyFrame::OnNotebookFlag(wxCommandEvent& event)
                 nb->SetArtProvider(new wxAuiSimpleTabArt);
                 m_notebook_theme = 1;
             }
+#ifdef wxHAS_NATIVE_TABART
+            else if (id == ID_NotebookArtGeneric)
+            {
+                nb->SetArtProvider(new wxAuiGenericTabArt);
+                m_notebook_theme = 1;
+            }
+#endif
 
 
             nb->SetWindowStyleFlag(m_notebook_style);
@@ -1300,12 +1345,17 @@ void MyFrame::OnUpdateUI(wxUpdateUIEvent& event)
         case ID_NotebookTabFixedWidth:
             event.Check((m_notebook_style & wxAUI_NB_TAB_FIXED_WIDTH) != 0);
             break;
-        case ID_NotebookArtGloss:
+        case ID_NotebookArtDefault:
             event.Check(m_notebook_style == 0);
             break;
         case ID_NotebookArtSimple:
             event.Check(m_notebook_style == 1);
             break;
+#ifdef wxHAS_NATIVE_TABART
+        case ID_NotebookArtGeneric:
+            event.Check(m_notebook_style == 2);
+            break;
+#endif
 
     }
 }
@@ -1522,9 +1572,13 @@ void MyFrame::OnTabAlignment(wxCommandEvent &evt)
             wxAuiNotebook* nb = (wxAuiNotebook*)pane.window;
 
             long style = nb->GetWindowStyleFlag();
-            style &= ~(wxAUI_NB_TOP | wxAUI_NB_BOTTOM);
+            style &= ~(wxAUI_NB_TOP | wxAUI_NB_BOTTOM | wxAUI_NB_LEFT | wxAUI_NB_RIGHT);
             if (evt.GetId() == ID_NotebookAlignTop)
                 style |= wxAUI_NB_TOP;
+            else if (evt.GetId() == ID_NotebookAlignLeft)
+                style |= wxAUI_NB_LEFT;
+            else if (evt.GetId() == ID_NotebookAlignRight)
+                style |= wxAUI_NB_RIGHT;
             else if (evt.GetId() == ID_NotebookAlignBottom)
                 style |= wxAUI_NB_BOTTOM;
             nb->SetWindowStyleFlag(style);
@@ -1534,6 +1588,28 @@ void MyFrame::OnTabAlignment(wxCommandEvent &evt)
     }
 }
 
+void MyFrame::OnTabSplit(wxCommandEvent &evt)
+{
+    wxAuiPaneInfoArray& all_panes = m_mgr.GetAllPanes();
+    const size_t count = all_panes.GetCount();
+    for (size_t i = 0; i < count; ++i)
+    {
+        wxAuiPaneInfo& pane = all_panes.Item(i);
+        if (pane.window->IsKindOf(CLASSINFO(wxAuiNotebook)))
+        {
+            wxAuiNotebook* nb = (wxAuiNotebook*)pane.window;
+
+            if (evt.GetId() == ID_NotebookSplitLeft)
+                nb->Split(nb->GetSelection(), wxLEFT);
+            else if (evt.GetId() == ID_NotebookSplitRight)
+                nb->Split(nb->GetSelection(), wxRIGHT);
+            else if (evt.GetId() == ID_NotebookSplitTop)
+                nb->Split(nb->GetSelection(), wxTOP);
+            else if (evt.GetId() == ID_NotebookSplitBottom)
+                nb->Split(nb->GetSelection(), wxBOTTOM);
+        }
+    }
+}
 void MyFrame::OnExit(wxCommandEvent& WXUNUSED(event))
 {
     Close(true);
