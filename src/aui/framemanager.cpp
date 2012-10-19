@@ -910,6 +910,7 @@ wxAuiManager::wxAuiManager(wxWindow* managedWindow, unsigned int flags)
     m_flags = flags;
     m_skipping = false;
     m_hasMaximized = false;
+    m_doingHintCalculation = false;
 
     m_dockConstraintX = 0.3;
     m_dockConstraintY = 0.3;
@@ -2476,7 +2477,9 @@ void wxAuiManager::LayoutAddDock(wxSizer* cont, wxAuiDockInfo& dock, wxAuiDockUI
                 {
                     if(!activenotebookpagefound)
                     {
-                        ShowWnd(pane.GetWindow(),true);
+                        // Don't ever hide or show a window during hint calculation as this can affect display of windows other than the hint one.
+                        if(!m_doingHintCalculation)
+                            ShowWnd(pane.GetWindow(),true);
                         activenotebookpagefound = true;
                     }
                     else
@@ -2486,7 +2489,9 @@ void wxAuiManager::LayoutAddDock(wxSizer* cont, wxAuiDockInfo& dock, wxAuiDockUI
                         // a floating frame, hiding it in this case would make the floating frame blank.
                         if(pane.GetWindow()->GetParent()==m_frame)
                         {
-                            ShowWnd(pane.GetWindow(),false);
+                            // Don't ever hide or show a window during hint calculation as this can affect display of windows other than the hint one.
+                            if(!m_doingHintCalculation)
+                                ShowWnd(pane.GetWindow(),false);
                         }
                         // Add a debug warning?
                     }
@@ -2498,7 +2503,9 @@ void wxAuiManager::LayoutAddDock(wxSizer* cont, wxAuiDockInfo& dock, wxAuiDockUI
                     // a floating frame, hiding it in this case would make the floating frame blank.
                     if(pane.GetWindow()->GetParent()==m_frame)
                     {
-                        ShowWnd(pane.GetWindow(),false);
+                        // Don't ever hide or show a window during hint calculation as this can affect display of windows other than the hint one.
+                        if(!m_doingHintCalculation)
+                            ShowWnd(pane.GetWindow(),false);
                     }
                 }
                 // If we are only doing a drop calculation then we only want the first
@@ -2526,9 +2533,13 @@ void wxAuiManager::LayoutAddDock(wxSizer* cont, wxAuiDockInfo& dock, wxAuiDockUI
                     {
                         // The previous page was a notebook that did not have an active page and we are not part of,
                         // set the first page in that notebook to be the active page.
-                        firstPaneInNotebook->SetFlag(wxAuiPaneInfo::optionActiveNotebook,true);
-                        ShowWnd(firstPaneInNotebook->GetWindow(),true);
-                        activenotebookpagefound=true;
+                        // Don't ever hide or show a window during hint calculation as this can affect display of windows other than the hint one.
+                        if(!m_doingHintCalculation)
+                        {
+                            firstPaneInNotebook->SetFlag(wxAuiPaneInfo::optionActiveNotebook,true);
+                            ShowWnd(firstPaneInNotebook->GetWindow(),true);
+                            activenotebookpagefound=true;
+                        }
                     }
                 }
 
@@ -2565,7 +2576,9 @@ void wxAuiManager::LayoutAddDock(wxSizer* cont, wxAuiDockInfo& dock, wxAuiDockUI
 
                     if(pane.HasFlag(wxAuiPaneInfo::optionActiveNotebook))
                     {
-                        ShowWnd(pane.GetWindow(),true);
+                        // Don't ever hide or show a window during hint calculation as this can affect display of windows other than the hint one.
+                        if(!m_doingHintCalculation)
+                            ShowWnd(pane.GetWindow(),true);
                         activenotebookpagefound = true;
                     }
                     else
@@ -2576,7 +2589,9 @@ void wxAuiManager::LayoutAddDock(wxSizer* cont, wxAuiDockInfo& dock, wxAuiDockUI
                         // a floating frame, hiding it in this case would make the floating frame blank.
                         if(pane.GetWindow()->GetParent()==m_frame)
                         {
-                            ShowWnd(pane.GetWindow(),false);
+                            // Don't ever hide or show a window during hint calculation as this can affect display of windows other than the hint one.
+                            if(!m_doingHintCalculation)
+                                ShowWnd(pane.GetWindow(),false);
                         }
                     }
                 }
@@ -2631,9 +2646,13 @@ void wxAuiManager::LayoutAddDock(wxSizer* cont, wxAuiDockInfo& dock, wxAuiDockUI
 
             if(!activenotebookpagefound && firstPaneInNotebook)
             {
-                firstPaneInNotebook->SetFlag(wxAuiPaneInfo::optionActiveNotebook,true);
-                ShowWnd(firstPaneInNotebook->GetWindow(),true);
-                activenotebookpagefound=true;
+                // Don't ever hide or show a window during hint calculation as this can affect display of windows other than the hint one.
+                if(!m_doingHintCalculation)
+                {
+                    firstPaneInNotebook->SetFlag(wxAuiPaneInfo::optionActiveNotebook,true);
+                    ShowWnd(firstPaneInNotebook->GetWindow(),true);
+                    activenotebookpagefound=true;
+                }
             }
         }
 
@@ -2677,7 +2696,9 @@ void wxAuiManager::LayoutAddDock(wxSizer* cont, wxAuiDockInfo& dock, wxAuiDockUI
                 {
                     if(!activenotebookpagefound)
                     {
-                        ShowWnd(pane.GetWindow(),true);
+                        // Don't ever hide or show a window during hint calculation as this can affect display of windows other than the hint one.
+                        if(!m_doingHintCalculation)
+                            ShowWnd(pane.GetWindow(),true);
                         activenotebookpagefound = true;
                     }
                     //else
@@ -2690,7 +2711,9 @@ void wxAuiManager::LayoutAddDock(wxSizer* cont, wxAuiDockInfo& dock, wxAuiDockUI
                     // a floating frame, hiding it in this case would make the floating frame blank.
                     if(pane.GetWindow()->GetParent()==m_frame)
                     {
-                        ShowWnd(pane.GetWindow(),false);
+                        // Don't ever hide or show a window during hint calculation as this can affect display of windows other than the hint one.
+                        if(!m_doingHintCalculation)
+                            ShowWnd(pane.GetWindow(),false);
                     }
                 }
                 // If we are only doing a drop calculation then we only want the first
@@ -2719,9 +2742,13 @@ void wxAuiManager::LayoutAddDock(wxSizer* cont, wxAuiDockInfo& dock, wxAuiDockUI
                     {
                         // The previous page was a notebook that did not have an active page and we are not part of,
                         // set the first page in that notebook to be the active page.
-                        firstPaneInNotebook->SetFlag(wxAuiPaneInfo::optionActiveNotebook,true);
-                        ShowWnd(firstPaneInNotebook->GetWindow(),true);
-                        activenotebookpagefound=true;
+                        // Don't ever hide or show a window during hint calculation as this can affect display of windows other than the hint one.
+                        if(!m_doingHintCalculation)
+                        {
+                            firstPaneInNotebook->SetFlag(wxAuiPaneInfo::optionActiveNotebook,true);
+                            ShowWnd(firstPaneInNotebook->GetWindow(),true);
+                            activenotebookpagefound=true;
+                        }
                     }
                 }
 
@@ -2774,7 +2801,9 @@ void wxAuiManager::LayoutAddDock(wxSizer* cont, wxAuiDockInfo& dock, wxAuiDockUI
 
                     if(pane.HasFlag(wxAuiPaneInfo::optionActiveNotebook))
                     {
-                        ShowWnd(pane.GetWindow(),true);
+                        // Don't ever hide or show a window during hint calculation as this can affect display of windows other than the hint one.
+                        if(!m_doingHintCalculation)
+                            ShowWnd(pane.GetWindow(),true);
                         activenotebookpagefound = true;
                     }
                     else
@@ -2785,7 +2814,9 @@ void wxAuiManager::LayoutAddDock(wxSizer* cont, wxAuiDockInfo& dock, wxAuiDockUI
                         // a floating frame, hiding it in this case would make the floating frame blank.
                         if(pane.GetWindow()->GetParent()==m_frame)
                         {
-                            ShowWnd(pane.GetWindow(),false);
+                            // Don't ever hide or show a window during hint calculation as this can affect display of windows other than the hint one.
+                            if(!m_doingHintCalculation)
+                                ShowWnd(pane.GetWindow(),false);
                         }
                     }
                 }
@@ -2820,9 +2851,13 @@ void wxAuiManager::LayoutAddDock(wxSizer* cont, wxAuiDockInfo& dock, wxAuiDockUI
             {
                 // The previous page was a notebook that did not have an active page and we are not part of,
                 // set the first page in that notebook to be the active page.
-                firstPaneInNotebook->SetFlag(wxAuiPaneInfo::optionActiveNotebook,true);
-                ShowWnd(firstPaneInNotebook->GetWindow(),true);
-                activenotebookpagefound=true;
+                // Don't ever hide or show a window during hint calculation as this can affect display of windows other than the hint one.
+                if(!m_doingHintCalculation)
+                {
+                    firstPaneInNotebook->SetFlag(wxAuiPaneInfo::optionActiveNotebook,true);
+                    ShowWnd(firstPaneInNotebook->GetWindow(),true);
+                    activenotebookpagefound=true;
+                }
             }
         }
     }
@@ -3070,8 +3105,8 @@ wxSizer* wxAuiManager::LayoutAll(wxAuiPaneInfoArray& panes,
         dock.min_size = dockMinSize;
 
 
-        // if the pane's current size is less than it's
-        // minimum, increase the dock's size to it's minimum
+        // if the pane's current size is less than its
+        // minimum, increase the dock's size to its minimum
         if (dock.size < dock.min_size)
             dock.size = dock.min_size;
 
@@ -3404,7 +3439,7 @@ void wxAuiManager::Update()
             }
             else
             {
-                // frame already exists, make sure it's position
+                // frame already exists, make sure its position
                 // and size reflect the information in wxAuiPaneInfo
                 if ((p.GetFrame()->GetPosition() != p.GetFloatingPosition())
                     || (p.GetFrame()->GetSize() != p.GetFloatingSize()))
@@ -4226,9 +4261,18 @@ bool wxAuiManager::DoDropExternal(wxAuiPaneInfo& drop, const wxPoint& pt, const 
                     DetachPane(drop.GetWindow());
                     drop.GetWindow()->Reparent(targetCtrl);
 
+                    //fixme: (MJM) The below (Double update) is inefficient and can probably be replaced with a better mechanism.
+                    // Ensure active before doing actual display.
+                    otherMgr->SetActivePane(drop.GetWindow());
+
                     // Update the layout to realize new position and e.g. form notebooks if needed.
                     otherMgr->Update();
-                    otherMgr->DoFrameLayout();
+
+                    // If a notebook formed we may have lost our active status so set it again.
+                    otherMgr->SetActivePane(drop.GetWindow());
+
+                    // Update once again so that notebook can reflect our new active status.
+                    otherMgr->Update();
 
                     // Make changes visible to user.
                     otherMgr->Repaint();
@@ -4430,6 +4474,7 @@ void wxAuiManager::StartPaneDrag(wxWindow* paneWindow, const wxPoint& offset)
 wxRect wxAuiManager::CalculateHintRect(wxWindow* paneWindow, const wxPoint& pt, const wxPoint& offset)
 {
     wxRect rect;
+    m_doingHintCalculation = true;
 
     // we need to paint a hint rectangle; to find out the exact hint rectangle,
     // we will create a new temporary layout and then measure the resulting
@@ -4446,7 +4491,10 @@ wxRect wxAuiManager::CalculateHintRect(wxWindow* paneWindow, const wxPoint& pt, 
     hint.Show();
 
     if (!hint.IsOk())
+    {
+        m_doingHintCalculation = false;
         return rect;
+    }
 
     CopyDocksAndPanes(docks, panes, m_docks, m_panes);
 
@@ -4466,6 +4514,7 @@ wxRect wxAuiManager::CalculateHintRect(wxWindow* paneWindow, const wxPoint& pt, 
     // find out where the new pane would be
     if (!DoDrop(docks, panes, hint, pt, offset))
     {
+        m_doingHintCalculation = false;
         return rect;
     }
 
@@ -4490,8 +4539,13 @@ wxRect wxAuiManager::CalculateHintRect(wxWindow* paneWindow, const wxPoint& pt, 
             {
                 if(pages[j]->GetName() == wxT("__HINT__"))
                 {
-                    rect = wxRect(part.m_tab_container->GetPage(part.m_tab_container->GetActivePage()).GetWindow()->GetPosition(),
-                    part.m_tab_container->GetPage(part.m_tab_container->GetActivePage()).GetWindow()->GetSize());
+                    int activePage=part.m_tab_container->GetActivePage();
+                    //It is possible in some instances (when forming a new notebook via drag) - that no page is yet active, if this is the case act as if the first one is active.
+                    if(activePage==-1)
+                        activePage=0;
+
+                    rect = wxRect(part.m_tab_container->GetPage(activePage).GetWindow()->GetPosition(),
+                    part.m_tab_container->GetPage(activePage).GetWindow()->GetSize());
                     break;
                 }
             }
@@ -4519,6 +4573,7 @@ wxRect wxAuiManager::CalculateHintRect(wxWindow* paneWindow, const wxPoint& pt, 
 
     if (rect.IsEmpty())
     {
+        m_doingHintCalculation = false;
         return rect;
     }
 
@@ -4531,6 +4586,7 @@ wxRect wxAuiManager::CalculateHintRect(wxWindow* paneWindow, const wxPoint& pt, 
         rect.x -= rect.GetWidth();
     }
 
+    m_doingHintCalculation = false;
     return rect;
 }
 
@@ -4823,9 +4879,26 @@ void wxAuiManager::OnFloatingPaneMoved(wxWindow* wnd, wxDirection dir)
         RestoreMaximizedPane();
     }
 
+    HideHint();
+
+    //fixme: (MJM) The below (Triple update) is inefficient and can probably be replaced with a better mechanism.
+    // Update the layout to realize new position and e.g. form notebooks if needed.
     Update();
 
-    HideHint();
+    // Ensure active before doing actual display.
+    SetActivePane(pane.GetWindow());
+
+    // Update the layout to realize new position and e.g. form notebooks if needed.
+    Update();
+
+    // If a notebook formed we may have lost our active status so set it again.
+    SetActivePane(pane.GetWindow());
+
+    // Update once again so that notebook can reflect our new active status.
+    Update();
+
+    // Make changes visible to user.
+    Repaint();
 }
 
 void wxAuiManager::OnFloatingPaneResized(wxWindow* wnd, const wxRect& rect)
@@ -5757,12 +5830,25 @@ void wxAuiManager::OnLeftUp(wxMouseEvent& evt)
         }
 
 
+        //fixme: (MJM) The below (Triple update) is inefficient and can probably be replaced with a better mechanism.
+        GetManagedWindow()->Freeze();
+
         // Update the layout to realize new position and e.g. form notebooks if needed.
         Update();
 
         // Ensure active before doing actual display.
         SetActivePane(pane.GetWindow());
 
+        // Update the layout to realize new position and e.g. form notebooks if needed.
+        Update();
+
+        // If a notebook formed we may have lost our active status so set it again.
+        SetActivePane(pane.GetWindow());
+
+        // Update once again so that notebook can reflect our new active status.
+        Update();
+
+        GetManagedWindow()->Thaw();
         // Make changes visible to user.
         Repaint();
 
@@ -6093,7 +6179,7 @@ void wxAuiManager::OnMotion(wxMouseEvent& evt)
                                         closeButton = true;
                                     }
                                     int oldhitextent;
-                                    m_actionPart->m_tab_container->GetArtProvider()->GetTabSize(Temp,NULL, paneInfo->GetCaption(), paneInfo->GetBitmap(),true,closeButton ? wxAUI_BUTTON_STATE_NORMAL : wxAUI_BUTTON_STATE_HIDDEN,&oldhitextent);
+                                    m_actionPart->m_tab_container->GetArtProvider()->GetTabSize(Temp,paneInfo->GetWindow(), paneInfo->GetCaption(), paneInfo->GetBitmap(),true,closeButton ? wxAUI_BUTTON_STATE_NORMAL : wxAUI_BUTTON_STATE_HIDDEN,&oldhitextent);
 
 
                                     closeButton=false;
@@ -6102,7 +6188,7 @@ void wxAuiManager::OnMotion(wxMouseEvent& evt)
                                         closeButton = true;
                                     }
                                     int newhitextent;
-                                    m_actionPart->m_tab_container->GetArtProvider()->GetTabSize(Temp,NULL,hitPane->GetCaption(),hitPane->GetBitmap(),false,closeButton ? wxAUI_BUTTON_STATE_NORMAL : wxAUI_BUTTON_STATE_HIDDEN,&newhitextent);
+                                    m_actionPart->m_tab_container->GetArtProvider()->GetTabSize(Temp,hitPane->GetWindow(),hitPane->GetCaption(),hitPane->GetBitmap(),false,closeButton ? wxAUI_BUTTON_STATE_NORMAL : wxAUI_BUTTON_STATE_HIDDEN,&newhitextent);
 
                                     if(hitPane->GetPage()<paneInfo->GetPage() && newhitextent>oldhitextent)
                                     {

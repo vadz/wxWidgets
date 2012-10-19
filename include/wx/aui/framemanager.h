@@ -826,6 +826,7 @@ protected:
     int  m_currentDragItem;
     bool m_skipping;
     bool m_hasMaximized;
+    bool m_doingHintCalculation;     // set to true if we are in the process of calculating a hint.
 
     double m_dockConstraintX;        // 0.0 .. 1.0; max pct of window width a dock can consume
     double m_dockConstraintY;        // 0.0 .. 1.0; max pct of window height a dock can consume
