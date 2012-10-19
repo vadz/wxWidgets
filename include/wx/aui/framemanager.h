@@ -804,7 +804,7 @@ protected:
 
     wxWindow* m_frame;               // the window being managed
     wxAuiDockArt* m_art;             // dock art object which does all drawing
-    wxAuiTabArt* m_tab_art;          // tab art object which does all teh drawing for notebooks.
+    wxAuiTabArt* m_tab_art;          // tab art object which does all the drawing for notebooks.
     unsigned int m_flags;            // manager flags wxAUI_MGR_*
 
     wxAuiPaneInfoArray m_panes;      // array of panes structures

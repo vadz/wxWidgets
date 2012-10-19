@@ -4809,7 +4809,7 @@ void wxAuiManager::OnFloatingPaneMoved(wxWindow* wnd, wxDirection dir)
         DoDrop(m_docks, m_panes, pane, clientPt, actionOffset);
     }
 
-    // if the pane is still floating, update it's floating
+    // if the pane is still floating, update its floating
     // position (that we store)
     if (pane.IsFloating())
     {
@@ -5523,7 +5523,7 @@ bool wxAuiManager::DoEndResizeAction(wxMouseEvent& evt)
         // check against the pane's minimum size, if specified. please note
         // that this is not enough to ensure that the minimum size will
         // not be violated, because the whole frame might later be shrunk,
-        // causing the size of the pane to violate it's minimum size
+        // causing the size of the pane to violate its minimum size
         if (pane->GetMinSize().IsFullySpecified())
         {
             minSize = 0;
@@ -6409,7 +6409,7 @@ void wxAuiManager::OnChildFocus(wxChildFocusEvent& evt)
         }
     }
 
-    // when a child pane has it's focus set, we should change the
+    // when a child pane has its focus set, we should change the
     // pane's active state to reflect this. (this is only true if
     // active panes are allowed by the owner)
     if (HasFlag(wxAUI_MGR_ALLOW_ACTIVE_PANE))
