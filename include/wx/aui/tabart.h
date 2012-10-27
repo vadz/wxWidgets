@@ -110,7 +110,7 @@ public:
                          const wxAuiPaneInfoPtrArray& pages,
                          const wxSize& requiredBmpSize) = 0;
 
-    int m_fixedTabWidth;
+    int m_fixedTabSize;
     int m_tabCtrlHeight;
     int m_tabCtrlWidth;
     unsigned int m_flags;

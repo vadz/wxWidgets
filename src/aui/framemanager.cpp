@@ -114,7 +114,7 @@ bool TabHasCloseButton(unsigned int flags,wxAuiPaneInfo& page)
 
 const int auiToolBarLayer = 10;
 //fixme: (MJM) This should be set by the art somewhere not hardcoded, temporary hardcoding while we iron out some issues with the tab art providers.
-const int notebookTabHeight = 30;
+const int notebookTabHeight = 42;
 
 
 wxAuiPaneInfo::wxAuiPaneInfo()
@@ -2383,10 +2383,15 @@ void wxAuiManager::LayoutAddNotebook(wxAuiTabArt* tabArt,wxAuiTabContainer* note
     {
         //fixme: (MJM) This should be set via the art provider not hardcoded, temporary hardcoding while we iron out some issues with the tab art providers.
         sizerItem = notebookSizer->Add(m_art->GetMetric(wxAUI_DOCKART_SASH_SIZE), /*tabArt->m_tabCtrlHeight*/notebookTabHeight, 0, wxEXPAND);
+        if(!HasFlag(wxAUI_MGR_NB_TAB_FIXED_HEIGHT))
+        {
+            tabContainerRecalcList.Add(notebookContainer);
+            tabContainerRecalcSizers.Add(sizerItem);
+        }
     }
     else
     {
-        sizerItem = notebookSizer->Add(tabArt->m_fixedTabWidth, m_art->GetMetric(wxAUI_DOCKART_SASH_SIZE), 0, wxEXPAND);
+        sizerItem = notebookSizer->Add(tabArt->m_fixedTabSize, m_art->GetMetric(wxAUI_DOCKART_SASH_SIZE), 0, wxEXPAND);
         if(!HasFlag(wxAUI_MGR_NB_TAB_FIXED_WIDTH))
         {
             tabContainerRecalcList.Add(notebookContainer);
@@ -2862,14 +2867,11 @@ void wxAuiManager::LayoutAddDock(wxSizer* cont, wxAuiDockInfo& dock, wxAuiDockUI
         }
     }
 
-    unsigned int recalcTabWidthIndex;
-    for(recalcTabWidthIndex=0;recalcTabWidthIndex<tabContainerRecalcList.size();recalcTabWidthIndex++)
+    unsigned int recalcTabSizeIndex;
+    for(recalcTabSizeIndex=0; recalcTabSizeIndex < tabContainerRecalcList.size(); recalcTabSizeIndex++)
     {
-        int totalSize = 0;
-        int visibleSize = 0;
-        wxMemoryDC dc;
-        tabContainerRecalcList[recalcTabWidthIndex]->CalculateRequiredWidth(dc,m_frame,totalSize,visibleSize);
-        tabContainerRecalcSizers[recalcTabWidthIndex]->SetInitSize(totalSize,-1);
+        wxSize tabSize = m_tab_art->GetBestTabSize(m_frame, tabContainerRecalcList[recalcTabSizeIndex]->GetPages(), wxSize(16,16));
+        tabContainerRecalcSizers[recalcTabSizeIndex]->SetMinSize(tabSize);
     }
 
     if (dock.dock_direction == wxAUI_DOCK_CENTER || hasMaximizedPane)

@@ -57,6 +57,7 @@ enum wxAuiManagerOption
     wxAUI_MGR_NB_TAB_MOVE              = 1 << 14,
     wxAUI_MGR_ALLOW_EXTERNAL_MOVE      = 1 << 15,
     wxAUI_MGR_NB_TAB_FIXED_WIDTH       = 1 << 16,
+    wxAUI_MGR_NB_TAB_FIXED_HEIGHT      = wxAUI_MGR_NB_TAB_FIXED_WIDTH,
     wxAUI_MGR_NB_SCROLL_BUTTONS        = 1 << 17,
     wxAUI_MGR_NB_WINDOWLIST_BUTTON     = 1 << 18,
     wxAUI_MGR_NB_CLOSE_BUTTON          = 1 << 19,

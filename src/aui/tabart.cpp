@@ -166,7 +166,7 @@ wxAuiGenericTabArt::wxAuiGenericTabArt()
     m_selectedFont.SetWeight(wxBOLD);
     m_measuringFont = m_selectedFont;
 
-    m_fixedTabWidth = 100;
+    m_fixedTabSize = 20;
     m_tabCtrlHeight = 0;
 
 #if defined( __WXMAC__ ) && wxOSX_USE_COCOA_OR_CARBON
@@ -231,55 +231,56 @@ void wxAuiGenericTabArt::SetSizingInfo(const wxSize& tabCtrlSize, size_t tabCoun
 {
     if (IsHorizontal())
     {
-        m_fixedTabWidth = 100;
-        int totWidth = (int)tabCtrlSize.x - GetIndentSize() - 4;
+        m_fixedTabSize = 100;
+
+        int tot_width = (int)tabCtrlSize.x - GetIndentSize() - 4;
 
         if (m_flags & wxAUI_NB_CLOSE_BUTTON)
-            totWidth -= m_activeCloseBmp.GetWidth();
+            tot_width -= m_activeCloseBmp.GetWidth();
         if (m_flags & wxAUI_NB_WINDOWLIST_BUTTON)
-            totWidth -= m_activeWindowListBmp.GetWidth();
+            tot_width -= m_activeWindowListBmp.GetWidth();
 
         if (tabCount > 0)
         {
-            m_fixedTabWidth = totWidth/(int)tabCount;
+                m_fixedTabSize = tot_width/(int)tabCount;
         }
 
+        if (m_fixedTabSize < 100)
+            m_fixedTabSize = 100;
 
-        if (m_fixedTabWidth < 100)
-            m_fixedTabWidth = 100;
+        if (m_fixedTabSize > tot_width/2)
+            m_fixedTabSize = tot_width/2;
 
-        if (m_fixedTabWidth > totWidth/2)
-            m_fixedTabWidth = totWidth/2;
-
-        if (m_fixedTabWidth > 220)
-            m_fixedTabWidth = 220;
+        if (m_fixedTabSize > 220)
+            m_fixedTabSize = 220;
 
         m_tabCtrlHeight = tabCtrlSize.y;
     }
     else
     {
-        m_fixedTabWidth = 100;
+        m_fixedTabSize = 20;
 
-        //Below is only necessary for left/right notebooks where the tabs themselves run upwards (instead of left to right) - we don't support this currently so commenting it out.
-        #if 0
-        int totHeight = (int)tabCtrlSize.y - GetIndentSize() - 4;
+        int tot_height = (int)tabCtrlSize.y - GetIndentSize() - 4;
+
         if (m_flags & wxAUI_NB_CLOSE_BUTTON)
-            totHeight -= m_activeCloseBmp.GetHeight();
+            tot_height -= m_activeCloseBmp.GetHeight();
         if (m_flags & wxAUI_NB_WINDOWLIST_BUTTON)
-            totHeight -= m_activeWindowListBmp.GetHeight();
+            tot_height -= m_activeWindowListBmp.GetHeight();
 
         if (tabCount > 0)
         {
-            m_fixedTabWidth = totHeight/(int)tabCount;
+            m_fixedTabSize = tot_height/(int)tabCount;
         }
-        if (m_fixedTabWidth < 20)
-           m_fixedTabWidth = 20;
-        if (m_fixedTabWidth > totHeight/2)
-           m_fixedTabWidth = totHeight/2;
 
-        if (m_fixedTabWidth > 60)
-            m_fixedTabWidth = 60;
-        #endif
+
+        if (m_fixedTabSize < 20)
+            m_fixedTabSize = 20;
+
+        if (m_fixedTabSize > tot_height/2)
+            m_fixedTabSize = tot_height/2;
+
+        if (m_fixedTabSize > 60)
+            m_fixedTabSize = 60;
 
         m_tabCtrlWidth = tabCtrlSize.x;
     }
@@ -786,15 +787,15 @@ wxSize wxAuiGenericTabArt::GetTabSize(wxDC& dc, wxWindow* WXUNUSED(wnd), const w
     {
         if (m_flags & wxAUI_NB_TAB_FIXED_WIDTH)
         {
-            tabWidth = m_fixedTabWidth;
+            tabWidth = m_fixedTabSize;
         }
         *extent = tabWidth;
     }
     else
     {
-        if (m_flags & wxAUI_MGR_NB_TAB_FIXED_WIDTH)
+        if (m_flags & wxAUI_NB_TAB_FIXED_HEIGHT)
         {
-            tabWidth = m_fixedTabWidth;
+            tabHeight = m_fixedTabSize;
         }
         *extent = tabHeight;
     }
@@ -1015,7 +1016,7 @@ wxAuiSimpleTabArt::wxAuiSimpleTabArt()
     m_measuringFont = m_selectedFont;
 
     m_flags = 0;
-    m_fixedTabWidth = 100;
+    m_fixedTabSize = 20;
 
     wxColour baseColour = wxSystemSettings::GetColour(wxSYS_COLOUR_3DFACE);
 
@@ -1067,57 +1068,55 @@ void wxAuiSimpleTabArt::SetSizingInfo(const wxSize& tabCtrlSize, size_t tabCount
 {
     if (IsHorizontal())
     {
-        m_fixedTabWidth = 100;
+        m_fixedTabSize = 100;
 
-        int totWidth = (int)tabCtrlSize.x - GetIndentSize() - 4;
+        int tot_width = (int)tabCtrlSize.x - GetIndentSize() - 4;
 
         if (m_flags & wxAUI_NB_CLOSE_BUTTON)
-            totWidth -= m_activeCloseBmp.GetWidth();
+            tot_width -= m_activeCloseBmp.GetWidth();
         if (m_flags & wxAUI_NB_WINDOWLIST_BUTTON)
-            totWidth -= m_activeWindowListBmp.GetWidth();
+            tot_width -= m_activeWindowListBmp.GetWidth();
 
         if (tabCount > 0)
         {
-            m_fixedTabWidth = totWidth/(int)tabCount;
+                m_fixedTabSize = tot_width/(int)tabCount;
         }
 
 
-        if (m_fixedTabWidth < 100)
-            m_fixedTabWidth = 100;
+        if (m_fixedTabSize < 100)
+            m_fixedTabSize = 100;
 
-        if (m_fixedTabWidth > totWidth/2)
-            m_fixedTabWidth = totWidth/2;
+        if (m_fixedTabSize > tot_width/2)
+            m_fixedTabSize = tot_width/2;
 
-        if (m_fixedTabWidth > 220)
-            m_fixedTabWidth = 220;
+        if (m_fixedTabSize > 220)
+            m_fixedTabSize = 220;
     }
     else
     {
-        m_fixedTabWidth = 100;
+        m_fixedTabSize = 20;
 
-        //Below is only necessary for left/right notebooks where the tabs themselves run upwards (instead of left to right) - we don't support this currently so commenting it out.
-        #if 0
-        int totHeight = (int)tabCtrlSize.y - GetIndentSize() - 4;
+        int tot_height = (int)tabCtrlSize.y - GetIndentSize() - 4;
+
         if (m_flags & wxAUI_NB_CLOSE_BUTTON)
-            totHeight -= m_activeCloseBmp.GetHeight();
+            tot_height -= m_activeCloseBmp.GetHeight();
         if (m_flags & wxAUI_NB_WINDOWLIST_BUTTON)
-            totHeight -= m_activeWindowListBmp.GetHeight();
+            tot_height -= m_activeWindowListBmp.GetHeight();
 
         if (tabCount > 0)
         {
-            m_fixedTabWidth = totHeight/(int)tabCount;
+            m_fixedTabSize = tot_height/(int)tabCount;
         }
 
 
-        if (m_fixedTabWidth < 20)
-            m_fixedTabWidth = 20;
+        if (m_fixedTabSize < 20)
+            m_fixedTabSize = 20;
 
-        if (m_fixedTabWidth > totHeight/2)
-            m_fixedTabWidth = totHeight/2;
+        if (m_fixedTabSize > tot_height/2)
+            m_fixedTabSize = tot_height/2;
 
-        if (m_fixedTabWidth > 60)
-            m_fixedTabWidth = 60;
-        #endif
+        if (m_fixedTabSize > 60)
+            m_fixedTabSize = 60;
     }
 }
 
@@ -1403,20 +1402,15 @@ wxSize wxAuiSimpleTabArt::GetTabSize(wxDC& dc, wxWindow* WXUNUSED(wnd), const wx
     {
         if (m_flags & wxAUI_MGR_NB_TAB_FIXED_WIDTH)
         {
-            tabWidth = m_fixedTabWidth;
+            tabWidth = m_fixedTabSize;
         }
         *extent = tabWidth - (tabHeight/2) - 1;
     }
     else
     {
         if (m_flags & wxAUI_MGR_NB_TAB_FIXED_WIDTH)
-        {
-             tabWidth = m_fixedTabWidth;
-        }
-        else
-        {
-            tabWidth += 16;
-        }
+             tabWidth = m_fixedTabSize;
+        tabWidth += 16;
         *extent = tabHeight + 2;
     }
 
