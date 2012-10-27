@@ -1158,7 +1158,10 @@ void wxAuiTabContainer::CalculateRequiredHeight(wxDC& dc,wxWindow* wnd,int& tota
         }
         else
         {
-            totalSize += size.y;
+            if (i+1 < pageCount)
+                totalSize += extent;
+            else
+                totalSize += size.y;
         }
         if (i >= m_tabOffset)
         {
@@ -1168,7 +1171,10 @@ void wxAuiTabContainer::CalculateRequiredHeight(wxDC& dc,wxWindow* wnd,int& tota
             }
             else
             {
-                visibleSize += size.y;
+                if (i+1 < pageCount)
+                    visibleSize += extent;
+                else
+                    visibleSize += size.y;
             }
         }
     }
@@ -1202,17 +1208,24 @@ void wxAuiTabContainer::CalculateRequiredWidth(wxDC& dc,wxWindow* wnd,int& total
 
         if (IsHorizontal())
         {
-            totalSize += size.x;
+            if (i+1 < pageCount)
+                totalSize += extent;
+            else
+                totalSize += size.x;
         }
         else
         {
              totalSize = std::max(totalSize,size.x);
         }
+
         if (i >= m_tabOffset)
         {
             if (IsHorizontal())
             {
-                visibleSize += size.x;
+                if (i+1 < pageCount)
+                    visibleSize += extent;
+                else
+                    visibleSize += size.x;
             }
             else
             {
@@ -1258,7 +1271,6 @@ void wxAuiTabContainer::Render(wxDC* rawDC, wxWindow* wnd)
     int backwButtonsSize = 0;
     int forwButtonsSize = 0;
 
-    int offset = 0;
 
     int locationBtnRightTop;
     int locationBtnLeftBottom;
@@ -1285,11 +1297,9 @@ void wxAuiTabContainer::Render(wxDC* rawDC, wxWindow* wnd)
 
 
     // draw the forward buttons on the top
-    offset = m_rect.x + m_rect.width;
     for (i = buttonCount; i > 0 ; --i)
     {
         wxAuiTabContainerButton& button = m_buttons.Item(i - 1);
-
         if (button.location != locationBtnRightTop)
             continue;
         if (button.curState & wxAUI_BUTTON_STATE_HIDDEN)
@@ -1298,7 +1308,6 @@ void wxAuiTabContainer::Render(wxDC* rawDC, wxWindow* wnd)
             continue;
 
         wxRect button_rect = m_rect;
-        button_rect.SetWidth(offset);
         button_rect.SetX(1);
         button_rect.SetY(1);
 
@@ -1310,7 +1319,6 @@ void wxAuiTabContainer::Render(wxDC* rawDC, wxWindow* wnd)
                           locationBtnRightTop,
                           &button.rect);
 
-        offset -= button.rect.GetWidth();
         if (IsHorizontal())
         {
             forwButtonsSize += button.rect.GetWidth();
@@ -1326,27 +1334,20 @@ void wxAuiTabContainer::Render(wxDC* rawDC, wxWindow* wnd)
     // afforded on screen
     int totalSize = 0;
     int visibleSize = 0;
+    int btn_size;
     if(IsHorizontal())
     {
         CalculateRequiredWidth(dc,wnd,totalSize,visibleSize);
-    }
-    else
-    {
-        CalculateRequiredHeight(dc,wnd,totalSize,visibleSize);
-    }
-
-    size_t tabOffset=m_tabOffset;
-    int btn_size;
-    if (IsHorizontal())
-    {
         btn_size = forwButtonsSize;
     }
     else
     {
-        // If all tabs can fit on screen then we don't want to apply offset even if we still have an offset, so set to 0.
-        tabOffset=0;
+        CalculateRequiredHeight(dc,wnd,totalSize,visibleSize);
         btn_size = backwButtonsSize;
     }
+    // ensure, we show as max tabs as possible
+    while (m_tabOffset > 0 && IsTabVisible(pageCount-1, m_tabOffset-1, &dc, wnd) )
+            --m_tabOffset;
 
     // show up/down buttons
     for (i = 0; i < buttonCount; ++i)
@@ -1367,7 +1368,7 @@ void wxAuiTabContainer::Render(wxDC* rawDC, wxWindow* wnd)
         wxAuiTabContainerButton& button = m_buttons.Item(i);
         if (button.id == wxAUI_BUTTON_LEFT || button.id == wxAUI_BUTTON_UP)
         {
-            if (tabOffset == 0)
+            if (m_tabOffset == 0)
                 button.curState |= wxAUI_BUTTON_STATE_DISABLED;
             else
                 button.curState &= ~wxAUI_BUTTON_STATE_DISABLED;
@@ -1392,7 +1393,6 @@ void wxAuiTabContainer::Render(wxDC* rawDC, wxWindow* wnd)
 
         wxRect button_rect = m_rect;
         button_rect.SetY(1);
-        button_rect.SetWidth(offset);
 
         if (IsHorizontal())
         {
@@ -1407,7 +1407,6 @@ void wxAuiTabContainer::Render(wxDC* rawDC, wxWindow* wnd)
                           locationBtnRightTop,
                           &button.rect);
 
-        offset -= button.rect.GetWidth();
         if (IsHorizontal())
         {
             forwButtonsSize += button.rect.GetWidth();
@@ -1419,7 +1418,6 @@ void wxAuiTabContainer::Render(wxDC* rawDC, wxWindow* wnd)
     }
 
 
-    offset = 0;
 
     // draw the buttons on the bottom side
 
@@ -1434,7 +1432,6 @@ void wxAuiTabContainer::Render(wxDC* rawDC, wxWindow* wnd)
 
         wxRect button_rect = m_rect;
         button_rect.SetX(1);
-        button_rect.width -= offset;
         button_rect.SetY(1);
 
         if (!IsHorizontal() && button.id == wxAUI_BUTTON_DOWN)
@@ -1450,7 +1447,6 @@ void wxAuiTabContainer::Render(wxDC* rawDC, wxWindow* wnd)
                           locationBtnLeftBottom,
                           &button.rect);
 
-        offset += button.rect.GetWidth();
         if (IsHorizontal())
         {
             backwButtonsSize += button.rect.GetWidth();
@@ -1462,7 +1458,7 @@ void wxAuiTabContainer::Render(wxDC* rawDC, wxWindow* wnd)
     }
 
     // this is not a typo, we use the size we determined when drawing the top (aka backw) buttons
-    offset = backwButtonsSize;
+    int offset = backwButtonsSize;
 
     if (offset == 0)
         offset += m_tab_art->GetIndentSize();
@@ -1485,7 +1481,7 @@ void wxAuiTabContainer::Render(wxDC* rawDC, wxWindow* wnd)
 
 
     // buttons before the tab offset must be set to hidden
-    for (i = 0; i < tabOffset; ++i)
+    for (i = 0; i < m_tabOffset; ++i)
     {
         m_tabCloseButtons.Item(i).curState = wxAUI_BUTTON_STATE_HIDDEN;
     }
@@ -1530,7 +1526,7 @@ void wxAuiTabContainer::Render(wxDC* rawDC, wxWindow* wnd)
         rect.width = m_rect.width;
     }
 
-    for (i = tabOffset; i < pageCount; ++i)
+    for (i = m_tabOffset; i < pageCount; ++i)
     {
         wxAuiPaneInfo& page = *m_pages.Item(i);
         wxAuiTabContainerButton& tab_button = m_tabCloseButtons.Item(i);
@@ -1594,7 +1590,7 @@ void wxAuiTabContainer::Render(wxDC* rawDC, wxWindow* wnd)
 
 
     // draw the active tab again so it stands in the foreground
-    if (active >= tabOffset && active < m_pages.GetCount())
+    if (active >= m_tabOffset && active < m_pages.GetCount())
     {
         wxAuiPaneInfo& page = *m_pages.Item(active);
 
@@ -1835,28 +1831,8 @@ bool wxAuiTabContainer::TabHitTest(int x, int y, wxAuiPaneInfo** hit) const
             return false;
     }
 
-    // find out if size of tabs is larger than can be
-    // afforded on screen
-    int totalSize = 0;
-    int visibleSize = 0;
-    wxMemoryDC dc;
-    if(IsHorizontal())
-    {
-        CalculateRequiredWidth(dc,m_pages.Item(0)->GetWindow(),totalSize,visibleSize);
-    }
-    else
-    {
-        CalculateRequiredHeight(dc,m_pages.Item(0)->GetWindow(),totalSize,visibleSize);
-    }
-
-    size_t tabOffset=m_tabOffset;
-    if (totalSize <= m_rect.GetWidth())
-    {
-        tabOffset=0;
-    }
-
     size_t i, pageCount = m_pages.GetCount();
-    for (i = tabOffset; i < pageCount; ++i)
+    for (i = m_tabOffset; i < pageCount; ++i)
     {
         wxAuiPaneInfo& page = *m_pages.Item(i);
         if (page.rect.Contains(x,y))

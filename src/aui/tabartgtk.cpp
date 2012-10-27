@@ -108,20 +108,11 @@ void ButtonStateAndShadow(int buttonState, GtkStateType& state, GtkShadowType& s
     }
 }
 
-wxRect DrawCloseButton(wxDC& dc, GtkWidget* widget, int buttonState, wxRect const& inRect, int orientation, GdkRectangle* clipRect)
+wxRect CalculateCloseButtonRect(wxRect const& inRect, int orientation)
 {
     GtkStyle* styleButton = gtk_widget_get_style(wxGTKPrivate::GetButtonWidget());
     int xthickness = styleButton->xthickness;
     int ythickness = styleButton->ythickness;
-
-    wxBitmap bmp(gtk_widget_render_icon(widget, GTK_STOCK_CLOSE, GTK_ICON_SIZE_SMALL_TOOLBAR, "tab"));
-
-    if(bmp.GetWidth() != s_CloseIconSize || bmp.GetHeight() != s_CloseIconSize)
-    {
-        wxImage img = bmp.ConvertToImage();
-        img.Rescale(s_CloseIconSize, s_CloseIconSize);
-        bmp = img;
-    }
 
     int buttonSize = s_CloseIconSize + 2 * xthickness;
 
@@ -141,6 +132,26 @@ wxRect DrawCloseButton(wxDC& dc, GtkWidget* widget, int buttonState, wxRect cons
 
     outRect.width = buttonSize;
     outRect.height = buttonSize;
+
+    return outRect;
+}
+
+wxRect DrawCloseButton(wxDC& dc, GtkWidget* widget, int buttonState, wxRect const& inRect, int orientation, GdkRectangle* clipRect)
+{
+    GtkStyle* styleButton = gtk_widget_get_style(wxGTKPrivate::GetButtonWidget());
+    int xthickness = styleButton->xthickness;
+    int ythickness = styleButton->ythickness;
+
+    wxBitmap bmp(gtk_widget_render_icon(widget, GTK_STOCK_CLOSE, GTK_ICON_SIZE_SMALL_TOOLBAR, "tab"));
+
+    if(bmp.GetWidth() != s_CloseIconSize || bmp.GetHeight() != s_CloseIconSize)
+    {
+        wxImage img = bmp.ConvertToImage();
+        img.Rescale(s_CloseIconSize, s_CloseIconSize);
+        bmp = img;
+    }
+
+    wxRect outRect = CalculateCloseButtonRect(inRect, orientation);
 
     wxGTKDCImpl* impldc = (wxGTKDCImpl*) dc.GetImpl();
     GdkWindow* window = impldc->GetGDKWindow();
@@ -241,6 +252,7 @@ void wxAuiGtkTabArt::DrawTab(wxDC& dc, wxWindow* wnd, const wxAuiPaneInfo& page,
         }
         else//wxAUI_NB_RIGHT
         {
+            tabRect.x = inRect.width - tabRect.width;
             if (!page.HasFlag(wxAuiPaneInfo::optionActiveNotebook))
                 tabRect.width -= 2 * GTK_NOTEBOOK (wxGTKPrivate::GetNotebookWidget())->tab_vborder;
             gapRect.x = tabRect.x - gapRect.width;
@@ -440,11 +452,20 @@ void wxAuiGtkTabArt::DrawButton(wxDC& dc, wxWindow* wnd, const wxRect& inRect, i
             break;
 
         case wxAUI_BUTTON_RIGHT:
+            if (HasFlag(wxAUI_NB_WINDOWLIST_BUTTON))
+            {
+                int scrollArrowHLength;
+                gtk_widget_style_get(widget,
+                                     "scroll-arrow-hlength", &scrollArrowHLength,
+                                     NULL);
+                rect.width -= 1.5 * scrollArrowHLength;
+            }
+            if (HasFlag(wxAUI_NB_CLOSE_BUTTON))
+                rect.width -= CalculateCloseButtonRect(inRect, orientation).GetWidth();
             rect = DrawSimpleArrow(dc, widget, buttonState, rect, orientation, GTK_ARROW_RIGHT);
             break;
 
         case wxAUI_BUTTON_UP:
-            rect.width = wnd->GetRect().GetWidth();
             rect = DrawSimpleArrow(dc, widget, buttonState, rect, orientation, GTK_ARROW_UP);
             break;
 
@@ -462,6 +483,8 @@ void wxAuiGtkTabArt::DrawButton(wxDC& dc, wxWindow* wnd, const wxRect& inRect, i
                 rect.height = 1.5 * scrollArrowVLength;
                 rect.width = 1.5 * scrollArrowHLength;
                 rect.x = inRect.x + inRect.width - rect.width;
+                if (HasFlag(wxAUI_NB_CLOSE_BUTTON))
+                    rect.x -= CalculateCloseButtonRect(inRect, orientation).GetWidth();
 
                 if (orientation == wxUP)
                 {
