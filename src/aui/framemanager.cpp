@@ -4180,108 +4180,38 @@ bool wxAuiManager::DoDrop(wxAuiDockInfoArray& docks, wxAuiPaneInfoArray& panes, 
 }
 
 
-bool wxAuiManager::DoDropExternal(wxAuiPaneInfo& drop, const wxPoint& pt, const wxPoint& actionOffset)
+// Alert other manager of the drop and let it try handle it.
+bool wxAuiManager::DoDropExternal(wxAuiManager* otherMgr, wxWindow* otherWnd, wxAuiPaneInfo& drop, const wxPoint& screenPt, const wxPoint& actionOffset)
 {
     if(HasFlag(wxAUI_MGR_ALLOW_EXTERNAL_MOVE))
     {
-        wxAuiDockUIPart* part = HitTest(pt.x, pt.y);
-        if(!part)
+        wxAuiManagerEvent e(wxEVT_AUI_ALLOW_DND);
+        e.SetManager(this);
+        e.SetPane(&drop);
+        e.Veto(); // dropping must be explicitly approved by control owner
+        otherWnd->GetEventHandler()->ProcessEvent(e);
+        if(e.GetVeto())
         {
-            wxPoint screenPt = ::wxGetMousePosition();
-            wxWindow* targetCtrl = ::wxFindWindowAtPoint(screenPt);
-            // If we are on top of a hint window then quickly hide the hint window and get the window that is underneath it.
-            if(targetCtrl==m_hintWnd)
-            {
-                m_hintWnd->Hide();
-                targetCtrl = ::wxFindWindowAtPoint(screenPt);
-                m_hintWnd->Show();
-            }
+            // no answer or negative answer
+            return false;
+        }
 
-            // Find the manager this window belongs to (if it does belong to one)
-            wxAuiManager* otherMgr = NULL;
-            while(targetCtrl)
-            {
-                if(!wxDynamicCast(targetCtrl,wxAuiFloatingFrame))
-                {
-                    if(targetCtrl->GetEventHandler() && wxDynamicCast(targetCtrl->GetEventHandler(),wxAuiManager))
-                    {
-                        otherMgr = ((wxAuiManager*)targetCtrl->GetEventHandler());
-                        break;
-                    }
-                }
-                targetCtrl = targetCtrl->GetParent();
-            }
-            // Alert other manager of the drop and have it show hint.
-            if(otherMgr && otherMgr != this)
-            {
-                // find out from the destination control if it's ok to drop this tab here.
-                if(wxDynamicCast(targetCtrl,wxAuiNotebook))
-                {
-                    wxAuiNotebookEvent e(wxEVT_COMMAND_AUINOTEBOOK_ALLOW_DND, GetManagedWindow()->GetId());
-                    int selIndex=GetAllPanes().Index(drop);
-                    e.SetSelection(selIndex);
-                    e.SetOldSelection(selIndex);
-                    e.SetEventObject((wxAuiNotebook*)GetManagedWindow());
-                    e.SetDragSource((wxAuiNotebook*)GetManagedWindow());
-                    e.Veto(); // dropping must be explicitly approved by control owner
+        wxAuiPaneInfo dropExternal=drop;
+        dropExternal.SetFlag(wxAuiPaneInfo::optionActive,false);
+        dropExternal.SetFlag(wxAuiPaneInfo::optionActiveNotebook,false);
 
-                    targetCtrl->GetEventHandler()->ProcessEvent(e);
-
-                    if (!e.IsAllowed())
-                    {
-                        // no answer or negative answer
-                        return false;
-                    }
-                }
-                else
-                {
-                    wxAuiManagerEvent e(wxEVT_AUI_ALLOW_DND);
-                    e.SetManager(this);
-                    e.SetPane(&drop);
-                    e.Veto(); // dropping must be explicitly approved by control owner
-                    targetCtrl->GetEventHandler()->ProcessEvent(e);
-                    if(e.GetVeto())
-                    {
-                        // no answer or negative answer
-                        return false;
-                    }
-                }
-
-                wxAuiPaneInfo dropExternal=drop;
-                dropExternal.SetFlag(wxAuiPaneInfo::optionActive,false);
-                dropExternal.SetFlag(wxAuiPaneInfo::optionActiveNotebook,false);
-
-                otherMgr->AddPane(dropExternal.GetWindow(),dropExternal);
-                wxPoint clientPt = otherMgr->GetManagedWindow()->ScreenToClient(screenPt);
-                if(otherMgr->DoDrop(otherMgr->m_docks, otherMgr->m_panes, dropExternal, clientPt, actionOffset))
-                {
-                    DetachPane(drop.GetWindow());
-                    drop.GetWindow()->Reparent(targetCtrl);
-
-                    //fixme: (MJM) The below (Double update) is inefficient and can probably be replaced with a better mechanism.
-                    // Ensure active before doing actual display.
-                    otherMgr->SetActivePane(drop.GetWindow());
-
-                    // Update the layout to realize new position and e.g. form notebooks if needed.
-                    otherMgr->Update();
-
-                    // If a notebook formed we may have lost our active status so set it again.
-                    otherMgr->SetActivePane(drop.GetWindow());
-
-                    // Update once again so that notebook can reflect our new active status.
-                    otherMgr->Update();
-
-                    // Make changes visible to user.
-                    otherMgr->Repaint();
-
-                    return true;
-                }
-                else
-                {
-                    otherMgr->DetachPane(drop.GetWindow());
-                    return false;
-                }
-            }
+        otherMgr->AddPane(dropExternal.GetWindow(),dropExternal);
+        wxPoint clientPt = otherMgr->GetManagedWindow()->ScreenToClient(screenPt);
+        if(otherMgr->DoDrop(otherMgr->m_docks, otherMgr->m_panes, dropExternal, clientPt, actionOffset))
+        {
+            DetachPane(drop.GetWindow());
+            drop.GetWindow()->Reparent(otherWnd);
+            return true;
+        }
+        else
+        {
+            otherMgr->DetachPane(drop.GetWindow());
+            return false;
         }
     }
     return false;
@@ -5820,34 +5750,81 @@ void wxAuiManager::OnLeftUp(wxMouseEvent& evt)
         HideHint();
 
         // Move the pane to new position.
-        wxPoint pt = evt.GetPosition();
-        if(!DoDropExternal(pane, pt, wxPoint(0,0)))
+        wxPoint screenPt = ::wxGetMousePosition();
+        wxPoint clientPt = m_frame->ScreenToClient(screenPt);
+
+        wxWindow* targetCtrl = ::wxFindWindowAtPoint(screenPt);
+        // If we are on top of a hint window then quickly hide the hint window and get the window that is underneath it.
+        if(targetCtrl==m_hintWnd)
         {
-            DoDrop(m_docks, m_panes, pane, pt, wxPoint(0,0));
+            m_hintWnd->Hide();
+            targetCtrl = ::wxFindWindowAtPoint(screenPt);
+            m_hintWnd->Show();
+        }
+        // Find the manager this window belongs to (if it does belong to one)
+        wxAuiManager* otherMgr = NULL;
+        while(targetCtrl)
+        {
+            if(!wxDynamicCast(targetCtrl,wxAuiFloatingFrame))
+            {
+                if(targetCtrl->GetEventHandler() && wxDynamicCast(targetCtrl->GetEventHandler(),wxAuiManager))
+                {
+                    otherMgr = ((wxAuiManager*)targetCtrl->GetEventHandler());
+                    break;
+                }
+            }
+            targetCtrl = targetCtrl->GetParent();
+        }
+
+        bool didDrop=false;
+        // Alert other manager of the drop and have it show hint.
+        if(otherMgr)
+        {
+            if(otherMgr != this)
+            {
+                didDrop = DoDropExternal(otherMgr, targetCtrl, pane, screenPt, wxPoint(0,0));
+
+                //Update ourselves here, the next block of code will update the target control
+                if(didDrop)
+                {
+                    Update();
+                    Repaint();
+                }
+            }
+            else
+            {
+                didDrop = DoDrop(m_docks, m_panes, pane, clientPt, wxPoint(0,0));
+            }
         }
 
 
-        //fixme: (MJM) The below (Triple update) is inefficient and can probably be replaced with a better mechanism.
-        GetManagedWindow()->Freeze();
+        if(didDrop)
+        {
+            //fixme: (MJM) The below (Triple update) is inefficient and can probably be replaced with a better mechanism.
+            otherMgr->GetManagedWindow()->Freeze();
 
-        // Update the layout to realize new position and e.g. form notebooks if needed.
-        Update();
+            // Update the layout to realize new position and e.g. form notebooks if needed.
+            otherMgr->Update();
 
-        // Ensure active before doing actual display.
-        SetActivePane(pane.GetWindow());
+            // Ensure active before doing actual display.
+            otherMgr->SetActivePane(pane.GetWindow());
 
-        // Update the layout to realize new position and e.g. form notebooks if needed.
-        Update();
+            // Update the layout to realize new position and e.g. form notebooks if needed.
+            otherMgr->Update();
 
-        // If a notebook formed we may have lost our active status so set it again.
-        SetActivePane(pane.GetWindow());
+            // If a notebook formed we may have lost our active status so set it again.
+            otherMgr->SetActivePane(pane.GetWindow());
 
-        // Update once again so that notebook can reflect our new active status.
-        Update();
+            // Update once again so that notebook can reflect our new active status.
+            otherMgr->Update();
 
-        GetManagedWindow()->Thaw();
-        // Make changes visible to user.
-        Repaint();
+            otherMgr->GetManagedWindow()->Thaw();
+
+            // Make changes visible to user.
+            otherMgr->Repaint();
+        }
+
+
 
         // Cancel the action and release the mouse.
         m_action = actionNone;

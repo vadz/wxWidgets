@@ -68,6 +68,7 @@ extern void wxAuiDoInsertPage(wxAuiPaneInfoArray&,int,int,int,int,int);
 
 BEGIN_EVENT_TABLE(wxAuiNotebook, wxControl)
     EVT_SIZE(wxAuiNotebook::OnSize)
+    EVT_AUI_ALLOW_DND(wxAuiNotebook::OnPaneDrop)
 END_EVENT_TABLE()
 
 // -- wxAuiNotebook class implementation --
@@ -448,6 +449,23 @@ wxAuiTabContainer* wxAuiNotebook::GetActiveTabCtrl()
 void wxAuiNotebook::OnTabCancelDrag(wxAuiNotebookEvent& commandEvent)
 {
     //fixme: (MJM) merge - this has been broken in the merge and needs to be re-implemented
+}
+
+void wxAuiNotebook::OnPaneDrop(wxAuiManagerEvent& evt)
+{
+    // Fire our own notebook specific event in place of normal manager one.
+    // This is for backwards compatibility with older notebook code, before the aui manager handled this.
+    wxAuiNotebookEvent e(wxEVT_COMMAND_AUINOTEBOOK_ALLOW_DND, m_mgr.GetManagedWindow()->GetId());
+    int selIndex=m_mgr.GetAllPanes().Index(*evt.GetPane());
+    e.SetSelection(selIndex);
+    e.SetOldSelection(selIndex);
+    e.SetEventObject(this);
+    e.SetDragSource(this);
+    e.Veto(); // dropping must be explicitly approved by control owner
+
+    ProcessEvent(e);
+
+    evt.Veto(!e.IsAllowed());
 }
 
 void wxAuiNotebook::Split(size_t pageIndex, int direction)

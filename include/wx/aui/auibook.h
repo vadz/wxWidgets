@@ -240,6 +240,7 @@ protected:
     void Init(long style);
     wxAuiTabContainer* GetActiveTabCtrl();
     void OnTabCancelDrag(wxAuiNotebookEvent& evt);
+    void OnPaneDrop(wxAuiManagerEvent& evt);
 
 protected:
     wxAuiManager m_mgr;

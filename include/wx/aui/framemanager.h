@@ -731,7 +731,7 @@ protected:
 
     //Functions for handling pane drag and drop.
     bool DoDrop(wxAuiDockInfoArray& docks, wxAuiPaneInfoArray& panes, wxAuiPaneInfo& drop, const wxPoint& pt, const wxPoint& actionOffset = wxPoint(0,0));
-    bool DoDropExternal(wxAuiPaneInfo& drop, const wxPoint& pt, const wxPoint& actionOffset = wxPoint(0,0));
+    bool DoDropExternal(wxAuiManager* otherMgr,wxWindow* otherWnd,wxAuiPaneInfo& drop, const wxPoint& screenPt, const wxPoint& actionOffset = wxPoint(0,0));
     virtual bool ProcessDockResult(wxAuiPaneInfo& target, const wxAuiPaneInfo& newPos);
 
     //Functions to handle rendering
