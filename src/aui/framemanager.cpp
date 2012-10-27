@@ -2379,25 +2379,20 @@ int wxAuiManager::GetNotebookFlags()
 void wxAuiManager::LayoutAddNotebook(wxAuiTabArt* tabArt,wxAuiTabContainer* notebookContainer,wxSizer* notebookSizer,wxAuiDockUIPart& part,wxAuiDockInfo& dock,wxAuiDockUIPartArray& uiparts,wxAuiTabContainerPointerArray& tabContainerRecalcList,wxAuiSizerItemPointerArray& tabContainerRecalcSizers,wxAuiPaneInfo* pane,int orient)
 {
     wxSizerItem* sizerItem;
+
+    wxSize tabSize = tabArt->GetBestTabSize(m_frame, notebookContainer->GetPages(), wxSize(16,16));
+
     if(orient==wxHORIZONTAL)
     {
-        //fixme: (MJM) This should be set via the art provider not hardcoded, temporary hardcoding while we iron out some issues with the tab art providers.
-        sizerItem = notebookSizer->Add(m_art->GetMetric(wxAUI_DOCKART_SASH_SIZE), /*tabArt->m_tabCtrlHeight*/notebookTabHeight, 0, wxEXPAND);
-        if(!HasFlag(wxAUI_MGR_NB_TAB_FIXED_HEIGHT))
-        {
-            tabContainerRecalcList.Add(notebookContainer);
-            tabContainerRecalcSizers.Add(sizerItem);
-        }
+        sizerItem = notebookSizer->Add(m_art->GetMetric(wxAUI_DOCKART_SASH_SIZE), tabSize.y, 0, wxEXPAND);
     }
     else
     {
-        sizerItem = notebookSizer->Add(tabArt->m_fixedTabSize, m_art->GetMetric(wxAUI_DOCKART_SASH_SIZE), 0, wxEXPAND);
-        if(!HasFlag(wxAUI_MGR_NB_TAB_FIXED_WIDTH))
-        {
-            tabContainerRecalcList.Add(notebookContainer);
-            tabContainerRecalcSizers.Add(sizerItem);
-        }
+        sizerItem = notebookSizer->Add(tabSize.x, m_art->GetMetric(wxAUI_DOCKART_SASH_SIZE), 0, wxEXPAND);
     }
+
+    tabContainerRecalcList.Add(notebookContainer);
+    tabContainerRecalcSizers.Add(sizerItem);
 
     part.type = wxAuiDockUIPart::typePaneTab;
     part.dock = &dock;

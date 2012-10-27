@@ -262,10 +262,14 @@ void wxAuiGenericTabArt::SetSizingInfo(const wxSize& tabCtrlSize, size_t tabCoun
 
         int tot_height = (int)tabCtrlSize.y - GetIndentSize() - 4;
 
+        int btn_height = 0;
+
         if (m_flags & wxAUI_NB_CLOSE_BUTTON)
-            tot_height -= m_activeCloseBmp.GetHeight();
+            btn_height = m_activeCloseBmp.GetHeight();
         if (m_flags & wxAUI_NB_WINDOWLIST_BUTTON)
-            tot_height -= m_activeWindowListBmp.GetHeight();
+            btn_height = wxMax(btn_height,m_activeWindowListBmp.GetHeight());
+
+        tot_height -= btn_height;
 
         if (tabCount > 0)
         {
@@ -958,6 +962,8 @@ wxSize wxAuiGenericTabArt::GetBestTabSize(wxWindow* wnd, const wxAuiPaneInfoPtrA
     wxClientDC dc(wnd);
     dc.SetFont(m_measuringFont);
 
+    SetSizingInfo(wnd->GetSize(), pages.GetCount());
+
     // sometimes a standard bitmap size needs to be enforced, especially
     // if some tabs have bitmaps and others don't.  This is important because
     // it prevents the tab control from resizing when tabs are added.
@@ -1119,10 +1125,14 @@ void wxAuiSimpleTabArt::SetSizingInfo(const wxSize& tabCtrlSize, size_t tabCount
 
         int tot_height = (int)tabCtrlSize.y - GetIndentSize() - 4;
 
+        int btn_height = 0;
+
         if (m_flags & wxAUI_NB_CLOSE_BUTTON)
-            tot_height -= m_activeCloseBmp.GetHeight();
+            btn_height = m_activeCloseBmp.GetHeight();
         if (m_flags & wxAUI_NB_WINDOWLIST_BUTTON)
-            tot_height -= m_activeWindowListBmp.GetHeight();
+            btn_height = wxMax(btn_height,m_activeWindowListBmp.GetHeight());
+
+        tot_height -= btn_height;
 
         if (tabCount > 0)
         {
@@ -1428,14 +1438,14 @@ wxSize wxAuiSimpleTabArt::GetTabSize(wxDC& dc, wxWindow* WXUNUSED(wnd), const wx
     {
         if (HasFlag(wxAUI_MGR_NB_TAB_FIXED_WIDTH))
         {
-            tabWidth = m_fixedTabSize;
+            tabWidth = m_fixedTabSize + tabHeight/2 ;
         }
         *extent = tabWidth - (tabHeight/2) - 1;
     }
     else
     {
         if (HasFlag(wxAUI_NB_TAB_FIXED_HEIGHT))
-             tabWidth = m_fixedTabSize;
+             tabHeight = m_fixedTabSize - 2;
         tabWidth += 16;
         *extent = tabHeight + 2;
     }
@@ -1572,6 +1582,8 @@ wxSize wxAuiSimpleTabArt::GetBestTabSize(wxWindow* wnd, const wxAuiPaneInfoPtrAr
 {
     wxClientDC dc(wnd);
     dc.SetFont(m_measuringFont);
+
+    SetSizingInfo(wnd->GetSize(), pages.GetCount());
 
     wxSize maxSize;
     size_t i, pageCount = pages.GetCount();
