@@ -73,9 +73,6 @@ protected:
     virtual void OSXDoRun();
     virtual void OSXDoStop();
 
-    // should we exit the loop?
-    bool m_shouldExit;
-
     // the loop exit code
     int m_exitcode;
 
