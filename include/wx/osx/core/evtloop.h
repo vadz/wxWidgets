@@ -69,9 +69,8 @@ protected:
 
     virtual int DoDispatchTimeout(unsigned long timeout);
 
-    virtual void DoRun();
-
-    virtual void DoStop();
+    virtual void OSXDoRun();
+    virtual void OSXDoStop();
 
     // should we exit the loop?
     bool m_shouldExit;
