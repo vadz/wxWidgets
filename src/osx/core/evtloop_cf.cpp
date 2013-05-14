@@ -350,7 +350,7 @@ int wxCFEventLoop::DoDispatchTimeout(unsigned long timeout)
     return 1;
 }
 
-void wxCFEventLoop::DoRun()
+void wxCFEventLoop::OSXDoRun()
 {
     for ( ;; )
     {
@@ -371,7 +371,7 @@ void wxCFEventLoop::DoRun()
     }
 }
 
-void wxCFEventLoop::DoStop()
+void wxCFEventLoop::OSXDoStop()
 {
     CFRunLoopStop(CFGetCurrentRunLoop());
 }
@@ -400,7 +400,7 @@ int wxCFEventLoop::Run()
         {
 #endif // wxUSE_EXCEPTIONS
 
-            DoRun();
+            OSXDoRun();
 
 #if wxUSE_EXCEPTIONS
             // exit the outer loop as well
@@ -438,7 +438,7 @@ void wxCFEventLoop::Exit(int rc)
 {
     m_exitcode = rc;
     m_shouldExit = true;
-    DoStop();
+    OSXDoStop();
 }
 
 wxCFEventLoopPauseIdleEvents::wxCFEventLoopPauseIdleEvents()
