@@ -35,6 +35,8 @@ enum
 // function will be called when the process terminates.
 // ----------------------------------------------------------------------------
 
+class wxUnixProcess;
+
 class WXDLLIMPEXP_BASE wxProcess : public wxEvtHandler
 {
 public:
@@ -116,6 +118,10 @@ public:
     // implementation only - don't use!
     // --------------------------------
 
+#ifdef __UNIX__
+    wxUnixProcess *GetUnixProcess() const { return m_unixProcess; }
+#endif
+
     // needs to be public since it needs to be used from wxExecute() global func
     void SetPid(long pid) { m_pid = pid; }
 
@@ -140,6 +146,11 @@ protected:
 
     DECLARE_DYNAMIC_CLASS(wxProcess)
     wxDECLARE_NO_COPY_CLASS(wxProcess);
+
+private:
+#ifdef __UNIX__
+    wxUnixProcess *m_unixProcess;
+#endif
 };
 
 // ----------------------------------------------------------------------------

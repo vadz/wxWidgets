@@ -26,6 +26,14 @@
 
 #include <CoreFoundation/CFSocket.h>
 
+namespace
+{
+
+WX_DECLARE_HASH_MAP(int, CFSocketRef, wxIntegerHash, wxIntegerEqual, FDSockets);
+FDSockets gs_sockets;
+
+}
+
 /*!
     Called due to source signal detected by the CFRunLoop.
     This is nearly identical to the wxGTK equivalent.
@@ -36,22 +44,7 @@ extern "C" void WXCF_EndProcessDetector(CFSocketRef s,
                                         void const *WXUNUSED(data),
                                         void *info)
 {
-    /*
-        Either our pipe was closed or the process ended successfully.  Either way,
-        we're done.  It's not if waitpid is going to magically succeed when
-        we get fired again.  CFSocketInvalidate closes the fd for us and also
-        invalidates the run loop source for us which should cause it to
-        release the CFSocket (thus causing it to be deallocated) and remove
-        itself from the runloop which should release it and cause it to also
-        be deallocated.  Of course, it's possible the RunLoop hangs onto
-        one or both of them by retaining/releasing them within its stack
-        frame.  However, that shouldn't be depended on.  Assume that s is
-        deallocated due to the following call.
-     */
-    CFSocketInvalidate(s);
-
-    // Now tell wx that the process has ended.
-    wxHandleProcessTermination(static_cast<wxEndProcessData *>(info));
+    wxOnReadWaiting(static_cast<wxFDIOHandler *>(info), CFSocketGetNative(s));
 }
 
 /*!
@@ -62,12 +55,11 @@ extern "C" void WXCF_EndProcessDetector(CFSocketRef s,
     apparently be used with CFSocket so long as you only tell CFSocket
     to do things with it that would be valid for a non-socket fd.
  */
-int wxGUIAppTraits::AddProcessCallback(wxEndProcessData *proc_data, int fd)
+void wxGUIAppTraits::AddProcessCallback(wxFDIOHandler& handler, int fd)
 {
-    static int s_last_tag = 0;
     CFSocketContext context =
     {   0
-    ,   static_cast<void*>(proc_data)
+    ,   &handler
     ,   NULL
     ,   NULL
     ,   NULL
@@ -76,32 +68,62 @@ int wxGUIAppTraits::AddProcessCallback(wxEndProcessData *proc_data, int fd)
     if(cfSocket == NULL)
     {
         wxLogError(wxT("Failed to create socket for end process detection"));
-        return 0;
+        return;
     }
+
+    /* When IO is complete and we need to stop the callbacks, we need to
+       call CFSocketInvalidate().  By default, CFSocketInvalidate() will
+       also close the fd, which is undesired and could cause lots of
+       problems.  In order to not close the fd, we need to clear the
+       kCFSocketCloseOnInvalidate flag.  See:
+
+       https://developer.apple.com/library/mac/#documentation/CoreFOundation/Reference/CFSocketRef/Reference/reference.html
+       */
+    CFOptionFlags sockopt = CFSocketGetSocketFlags(cfSocket);
+
+    /* Clear the close-on-invalidate flag. */
+    sockopt &= ~kCFSocketCloseOnInvalidate;
+
+    CFSocketSetSocketFlags(cfSocket, sockopt);
+
     CFRunLoopSourceRef runLoopSource = CFSocketCreateRunLoopSource(kCFAllocatorDefault, cfSocket, /*highest priority:*/0);
     if(runLoopSource == NULL)
     {
         wxLogError(wxT("Failed to create CFRunLoopSource from CFSocket for end process detection"));
-        // closes the fd.. we can't really stop it, nor do we necessarily want to.
         CFSocketInvalidate(cfSocket);
         CFRelease(cfSocket);
-        return 0;
+        return;
     }
-    // Now that the run loop source has the socket retained and we no longer
-    // need to refer to it within this method, we can release it.
-    CFRelease(cfSocket);
+
+    // Save the socket so that we can remove it later if asked to.
+    gs_sockets[fd] = cfSocket;
 
     CFRunLoopAddSource(CFRunLoopGetCurrent(), runLoopSource, kCFRunLoopCommonModes);
     // Now that the run loop has the source retained we can release it.
     CFRelease(runLoopSource);
+}
 
-    /*
-        Feed wx some bullshit.. we don't use it since CFSocket helpfully passes
-        itself into our callback and that's enough to be able to
-        CFSocketInvalidate it which is all we need to do to get everything we
-        just created to be deallocated.
-     */
-    return ++s_last_tag;
+void wxGUIAppTraits::RemoveProcessCallback(int fd)
+{
+    const FDSockets::iterator it = gs_sockets.find(fd);
+    wxCHECK_RET( it != gs_sockets.end(), "No such FD" );
+
+   /*
+       CFSocketInvalidate does not close the fd due to clearing of
+       the kCFSocketCloseOnInvalidate when the socket (fd) was
+       created.
+
+       CFSocketInvalidate invalidates the run loop source for us which should
+       cause it to release the CFSocket (thus causing it to be deallocated) and
+       remove itself from the runloop which should release it and
+       cause it to also be deallocated.  Of course, it's possible
+       the RunLoop hangs onto one or both of them by
+       retaining/releasing them within its stack frame.  However,
+       that shouldn't be depended on. Assume that s is deallocated
+       due to the following call.
+    */
+   CFSocketInvalidate(it->second);
+   gs_sockets.erase(it);
 }
 
 /////////////////////////////////////////////////////////////////////////////

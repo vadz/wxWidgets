@@ -12,9 +12,13 @@
 #ifndef _WX_UNIX_APPTBASE_H_
 #define _WX_UNIX_APPTBASE_H_
 
+#include "wx/hashmap.h"
+
 struct wxEndProcessData;
 struct wxExecuteData;
 class wxFDIOManager;
+class wxFDIOHandler;
+class wxSelectDispatcher;
 
 // ----------------------------------------------------------------------------
 // wxAppTraits: the Unix version adds extra hooks needed by Unix code
@@ -33,15 +37,46 @@ public:
     // wxEXEC_NOEVENTS one which is implemented at the GUI level
     virtual int WaitForChild(wxExecuteData& execData);
 
-    // integrate the monitoring of the given fd with the port-specific event
-    // loop: when this fd, which corresponds to a dummy pipe opened between the
-    // parent and child processes, is closed by the child, the parent is
-    // notified about this via a call to wxHandleProcessTermination() function
+    /** Common code for GUI and console apps to wait for process
+        termination for synchronous execution. */
+    int WaitForChildSync(wxExecuteData& execData);
+
+    // Integrate the monitoring of the given fd with the port-specific event
+    // loop: when this fd is written to, OnReadWaiting() of the provided
+    // handler will be called.
     //
-    // the default implementation uses wxFDIODispatcher and so is suitable for
-    // the console applications or ports which don't have any specific event
-    // loop
-    virtual int AddProcessCallback(wxEndProcessData *data, int fd);
+    // The lifetime of the handler must be long enough, call
+    // RemoveProcessCallback() before destroying it.
+    virtual void AddProcessCallback(wxFDIOHandler& handler, int fd);
+
+    // Remove the callback previously installed by AddProcessCallback().
+    virtual void RemoveProcessCallback(int fd);
+
+    /*
+        Wrapper for calling the platform specific, AddProcessCallback, so that
+        there is more control over the handling of callbacks that might still
+        be occurring after we don't want them anymore, but the fd is still
+        closing.
+
+        Additional parameter dispatcher indicates that this specific
+        wxFDIODispatcher will be used instead of the current event loop, so the
+        callback needs to be set differently in that case. This is needed for
+        the wxEXEC_NOEVENTS case of wxExecute.
+     */
+    void
+    RegisterProcessCallback(wxFDIOHandler& handler,
+                            int fd,
+                            wxFDIODispatcher *dispatcher = NULL);
+
+    /** Disables the callback and removes the fd from the hash that
+        keeps track of which fds have callbacks. */
+    void UnRegisterProcessCallback(int fd);
+
+    // Check if we have an handler for the events on the given FD.
+    bool HasCallbackForFD(int fd) const
+    {
+        return m_fdHandlers.find(fd) != m_fdHandlers.end();
+    }
 
 #if wxUSE_SOCKETS
     // return a pointer to the object which should be used to integrate
@@ -57,10 +92,26 @@ public:
 #endif // wxUSE_SOCKETS
 
 protected:
-    // a helper for the implementation of WaitForChild() in wxGUIAppTraits:
-    // checks the streams used for redirected IO in execData and returns true
-    // if there is any activity in them
-    bool CheckForRedirectedIO(wxExecuteData& execData);
+    // Information we keep for each FD.
+    struct FDHandlerData
+    {
+        FDHandlerData()
+        {
+            handler = NULL;
+            dispatcher = NULL;
+        }
+
+        FDHandlerData(wxFDIOHandler* handler_, wxFDIODispatcher* dispatcher_)
+            : handler(handler_), dispatcher(dispatcher_)
+        {
+        }
+
+        wxFDIOHandler* handler;
+        wxFDIODispatcher* dispatcher;
+    };
+
+    WX_DECLARE_HASH_MAP(int, FDHandlerData, wxIntegerHash, wxIntegerEqual, FDHandlers);
+    FDHandlers m_fdHandlers;
 };
 
 #endif // _WX_UNIX_APPTBASE_H_

@@ -126,32 +126,48 @@ wxWindow* wxFindWindowAtPoint(const wxPoint& pt)
 // subprocess routines
 // ----------------------------------------------------------------------------
 
+namespace
+{
+
+WX_DECLARE_HASH_MAP(int, int, wxIntegerHash, wxIntegerEqual, FDSourceIDs);
+FDSourceIDs gs_sourceIDs;
+
+}
+
 extern "C" {
 static
 void GTK_EndProcessDetector(gpointer data, gint source,
                             GdkInputCondition WXUNUSED(condition) )
 {
-    wxEndProcessData * const
-        proc_data = static_cast<wxEndProcessData *>(data);
+    wxFDIOHandler* const handler = static_cast<wxFDIOHandler *>(data);
 
-    // child exited, end waiting
-    close(source);
-
-    // don't call us again!
-    gdk_input_remove(proc_data->tag);
-
-    wxHandleProcessTermination(proc_data);
-}
+    wxOnReadWaiting(handler, fd);
 }
 
-int wxGUIAppTraits::AddProcessCallback(wxEndProcessData *proc_data, int fd)
+void wxGUIAppTraits::AddProcessCallback(wxFDIOHandler& handler, int fd)
 {
     int tag = gdk_input_add(fd,
                             GDK_INPUT_READ,
                             GTK_EndProcessDetector,
-                            (gpointer)proc_data);
+                            (gpointer)&handler);
 
-    return tag;
+    gs_sourceIDs[fd] = tag;
+}
+
+void wxGUIAppTraits::RemoveProcessCallback(int fd)
+{
+    // child exited, end waiting
+
+    // Don't close the fd because wxProcess will close it in its
+    // destructor.  Also we don't want to close it so that we can
+    // keep using the output/error streams in the wxProcess.
+    // close(fd);
+
+    const FDSourceIDs::iterator it = gs_sourceIDs.find(fd);
+    wxCHECK_RET( it != gs_sourceIDs.end(), "No such FD" );
+
+    gdk_input_remove(it->second);
+    gs_sourceIDs.erase(it);
 }
 
 #if wxUSE_TIMER

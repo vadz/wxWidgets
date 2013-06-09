@@ -27,6 +27,7 @@
 
 #include "wx/gtk/private/timer.h"
 #include "wx/evtloop.h"
+#include "wx/app.h"
 
 #include <gtk/gtk.h>
 #ifdef GDK_WINDOWING_WIN32
@@ -192,29 +193,54 @@ const gchar *wx_pango_version_check (int major, int minor, int micro)
 
 #ifdef __UNIX__
 
-extern "C" {
-static gboolean EndProcessDetector(GIOChannel* source, GIOCondition, void* data)
+namespace
 {
-    wxEndProcessData * const
-        proc_data = static_cast<wxEndProcessData *>(data);
 
-    // child exited, end waiting
-    close(g_io_channel_unix_get_fd(source));
+WX_DECLARE_HASH_MAP(int, guint, wxIntegerHash, wxIntegerEqual, FDSourceIDs);
+FDSourceIDs gs_sourceIDs;
 
-    wxHandleProcessTermination(proc_data);
-
-    // don't call us again!
-    return false;
-}
 }
 
-int wxGUIAppTraits::AddProcessCallback(wxEndProcessData *proc_data, int fd)
+extern "C" {
+
+static gboolean GTK_OnReadWaiting(GIOChannel* source, GIOCondition WXUNUSED(cond), void* data)
+{
+    int fd = g_io_channel_unix_get_fd(source);
+
+    wxFDIOHandler* const handler = static_cast<wxFDIOHandler *>(data);
+
+    wxOnReadWaiting(handler, fd);
+
+    if ( gs_sourceIDs.find(fd) == gs_sourceIDs.end() )
+    {
+        // We must have been disconnected, don't call us again.
+        return false;
+    }
+
+    return true;
+}
+
+}
+
+void wxGUIAppTraits::AddProcessCallback(wxFDIOHandler& handler, int fd)
 {
     GIOChannel* channel = g_io_channel_unix_new(fd);
     GIOCondition cond = GIOCondition(G_IO_IN | G_IO_HUP | G_IO_ERR);
-    unsigned id = g_io_add_watch(channel, cond, EndProcessDetector, proc_data);
+    guint sourceId = g_io_add_watch(channel, cond, GTK_OnReadWaiting, &handler);
+
+    // Save the source so that we can remove it later with g_source_remove()
+    gs_sourceIDs[fd] = sourceId;
+
     g_io_channel_unref(channel);
-    return int(id);
+}
+
+void wxGUIAppTraits::RemoveProcessCallback(int fd)
+{
+    const FDSourceIDs::iterator it = gs_sourceIDs.find(fd);
+    wxCHECK_RET( it != gs_sourceIDs.end(), "No such FD" );
+
+    g_source_remove(it->second);
+    gs_sourceIDs.erase(it);
 }
 
 #endif // __UNIX__

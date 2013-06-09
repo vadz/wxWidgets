@@ -83,28 +83,40 @@ void wxFlushEvents(WXDisplay* wxdisplay)
 // wxExecute stuff
 // ----------------------------------------------------------------------------
 
-static void xt_notify_end_process(XtPointer data, int *WXUNUSED(fid),
-                                  XtInputId *id)
+namespace
 {
-    wxEndProcessData *proc_data = (wxEndProcessData *)data;
 
-    wxHandleProcessTermination(proc_data);
+WX_DECLARE_HASH_MAP(int, int, wxIntegerHash, wxIntegerEqual, FDInputIDs);
+FDInputIDs gs_inputIDs;
 
-    // VZ: I think they should be the same...
-    wxASSERT( (int)*id == proc_data->tag );
-
-    XtRemoveInput(*id);
 }
 
-int wxGUIAppTraits::AddProcessCallback(wxEndProcessData *proc_data, int fd)
+static void xt_notify_end_process(XtPointer data, int *fid,
+                                  XtInputId *id)
+{
+    wxFDIOHandler* const handler = static_cast<wxFDIOHandler *>(data);
+
+    wxOnReadWaiting(handler, *fid);
+}
+
+void wxGUIAppTraits::AddProcessCallback(wxFDIOHandler& handler, int fd)
 {
     XtInputId id = XtAppAddInput((XtAppContext) wxTheApp->GetAppContext(),
                                  fd,
                                  (XtPointer *) XtInputReadMask,
                                  (XtInputCallbackProc) xt_notify_end_process,
-                                 (XtPointer) proc_data);
+                                 (XtPointer) &handler);
 
-    return (int)id;
+    gs_inputIDs[fd] = id;
+}
+
+void wxGUIAppTraits::RemoveProcessCallback(int fd)
+{
+    const FDInputIDs::iterator it = gs_inputIDs.find(fd);
+    wxCHECK_RET( it != gs_inputIDs.end(), "No such FD" );
+
+    XtRemoveInput(it->second);
+    gs_inputIDs.erase(it);
 }
 
 // ----------------------------------------------------------------------------

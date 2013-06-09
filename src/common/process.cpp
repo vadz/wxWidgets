@@ -20,6 +20,10 @@
 // For compilers that support precompilation, includes "wx.h".
 #include "wx/wxprec.h"
 
+#ifdef __UNIX__
+#include "wx/unix/private/unixprocess.h"
+#endif
+
 #ifdef __BORLANDC__
     #pragma hdrstop
 #endif
@@ -58,6 +62,10 @@ void wxProcess::Init(wxEvtHandler *parent, int id, int flags)
     m_errorStream  = NULL;
     m_outputStream = NULL;
 #endif // wxUSE_STREAMS
+
+#ifdef __UNIX__
+    m_unixProcess = new wxUnixProcess();
+#endif
 }
 
 /* static */
@@ -89,6 +97,10 @@ wxProcess::~wxProcess()
     delete m_errorStream;
     delete m_outputStream;
 #endif // wxUSE_STREAMS
+
+#ifdef __UNIX__
+    delete m_unixProcess;
+#endif
 }
 
 void wxProcess::OnTerminate(int pid, int status)

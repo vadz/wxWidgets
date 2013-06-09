@@ -51,9 +51,7 @@ class WXDLLIMPEXP_CORE wxGUIAppTraits : public wxGUIAppTraitsBase
 public:
     virtual wxEventLoopBase *CreateEventLoop();
     virtual int WaitForChild(wxExecuteData& execData);
-#ifdef wxHAS_GUI_PROCESS_CALLBACKS
-    virtual int AddProcessCallback(wxEndProcessData *data, int fd);
-#endif
+
 #if wxUSE_TIMER
     virtual wxTimerImpl *CreateTimerImpl(wxTimer *timer);
 #endif
@@ -88,6 +86,12 @@ public:
 #endif
 
 #endif // wxUSE_SOCKETS
+
+protected:
+#ifdef wxHAS_GUI_PROCESS_CALLBACKS
+    virtual void AddProcessCallback(wxFDIOHandler& handler, int fd);
+    virtual void RemoveProcessCallback(int fd);
+#endif
 };
 
 #endif // wxUSE_GUI
