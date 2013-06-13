@@ -2,7 +2,7 @@
 // Name:        wx/msw/stackwalk.h
 // Purpose:     wxStackWalker for MSW
 // Author:      Vadim Zeitlin
-// Modified by:
+// Modified by: Suzumizaki-kimitaka 2013-04-09
 // Created:     2005-01-08
 // RCS-ID:      $Id$
 // Copyright:   (c) 2005 Vadim Zeitlin <vadim@wxwindows.org>
@@ -20,6 +20,7 @@ struct _EXCEPTION_POINTERS;
 
 // and these in dbghelp.h
 struct _SYMBOL_INFO;
+struct _SYMBOL_INFOW;
 
 // ----------------------------------------------------------------------------
 // wxStackFrame
@@ -53,7 +54,11 @@ public:
     GetParam(size_t n, wxString *type, wxString *name, wxString *value) const;
 
     // callback used by OnGetParam(), don't call directly
-    void OnParam(_SYMBOL_INFO *pSymInfo);
+#ifdef UNICODE
+    void OnParam(_SYMBOL_INFOW * pSymInfo);
+#else
+    void OnParam(_SYMBOL_INFO * pSymInfo);
+#endif
 
 protected:
     virtual void OnGetName();
