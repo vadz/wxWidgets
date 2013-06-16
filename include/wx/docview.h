@@ -739,7 +739,7 @@ private:
     {
         BaseClass::OnActivate(event);
 
-        if ( m_childView )
+        if ( m_childView && event.GetSkipped() )
             m_childView->Activate(event.GetActive());
     }
 
