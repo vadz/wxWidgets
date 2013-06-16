@@ -48,10 +48,6 @@ public:
                 long style = wxDEFAULT_FRAME_STYLE | wxVSCROLL | wxHSCROLL,
                 const wxString& name = wxFrameNameStr);
 
-    // we don't store the active child in m_currentChild unlike the base class
-    // version so override this method to find it dynamically
-    virtual wxMDIChildFrame *GetActiveChild() const;
-
     // implement base class pure virtuals
     // ----------------------------------
 
@@ -144,6 +140,9 @@ public:
 
     virtual bool CreateClient(wxMDIParentFrame *parent,
                               long style = wxVSCROLL | wxHSCROLL);
+
+    virtual wxMDIChildFrame *GetActiveChild();
+    virtual void SetActiveChild(wxMDIChildFrame* pChildFrame);
 
 private:
     virtual void AddChildGTK(wxWindowGTK* child);

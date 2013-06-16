@@ -249,16 +249,6 @@ wxMDIParentFrame::~wxMDIParentFrame()
 // wxMDIParentFrame child management
 // ----------------------------------------------------------------------------
 
-wxMDIChildFrame *wxMDIParentFrame::GetActiveChild() const
-{
-    HWND hWnd = (HWND)::SendMessage(GetWinHwnd(GetClientWindow()),
-                                    WM_MDIGETACTIVE, 0, 0L);
-    if ( !hWnd )
-        return NULL;
-
-    return static_cast<wxMDIChildFrame *>(wxFindWinFromHandle(hWnd));
-}
-
 int wxMDIParentFrame::GetChildFramesCount() const
 {
     int count = 0;
@@ -1130,7 +1120,7 @@ bool wxMDIChildFrame::HandleMDIActivate(long WXUNUSED(activate),
         activated = false;
         parent->SetActiveChild(NULL);
 
-        WXHMENU hMenuParent = parent->m_hMenu;
+        WXHMENU hMenuParent = parent->MSWGetActiveMenu();
 
         // activate the parent menu only when there is no other child
         // that has been activated
@@ -1345,6 +1335,23 @@ bool wxMDIClientWindow::CreateClient(wxMDIParentFrame *parent, long style)
     SubclassWin(m_hWnd);
 
     return true;
+}
+
+wxMDIChildFrame *wxMDIClientWindow::GetActiveChild()
+{
+    HWND hWnd = (HWND)::SendMessage(m_hWnd, WM_MDIGETACTIVE, 0, 0L);
+    if ( !hWnd )
+        return NULL;
+
+    return static_cast<wxMDIChildFrame *>(wxFindWinFromHandle(hWnd));
+}
+
+void wxMDIClientWindow::SetActiveChild(wxMDIChildFrame* pChildFrame)
+{
+    if ( pChildFrame )
+    {
+        pChildFrame->Activate();
+    }
 }
 
 // Explicitly call default scroll behaviour

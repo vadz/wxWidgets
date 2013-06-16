@@ -22,20 +22,49 @@
 // forward declarations
 class WXDLLIMPEXP_FWD_CORE wxMDIParentFrame;
 class WXDLLIMPEXP_FWD_CORE wxMDIChildFrame;
-class WXDLLIMPEXP_FWD_CORE wxMDIClientWindowBase;
 class WXDLLIMPEXP_FWD_CORE wxMDIClientWindow;
 
+/*
+    The MDI classes defined in this header can actually work with either the
+    standard wxMDI{Parent,Child}Frame classes or with other classes providing
+    the necessary interface, notably wxAUI-based equivalents. So the code here
+    is parametrized by a traits-like template parameter defining the classes to
+    use. This allows us to avoid duplicating it for the default and AUI cases.
+ */
+
 // ----------------------------------------------------------------------------
-// wxMDIParentFrameBase: base class for parent frame for MDI children
+// wxMDIStandardClasses: define the standard MDI classes to use
 // ----------------------------------------------------------------------------
 
-class WXDLLIMPEXP_CORE wxMDIParentFrameBase : public wxFrame
+struct wxMDIStandardClasses
 {
+    // The base classes for MDI parent, child and client window classes
+    // respectively.
+    typedef wxFrame ParentBaseClass;
+    typedef wxFrame ChildBaseClass;
+    typedef wxWindow ClientBaseClass;
+
+
+    // The derived, i.e. really used, classes of these windows.
+    typedef wxMDIParentFrame ParentClass;
+    typedef wxMDIChildFrame ChildClass;
+    typedef wxMDIClientWindow ClientClass;
+};
+
+// ----------------------------------------------------------------------------
+// wxMDIAnyParentWindow: base class for parent frame for MDI children
+// ----------------------------------------------------------------------------
+
+template <class MDIClasses>
+class WXDLLIMPEXP_CORE wxMDIAnyParentWindow : public MDIClasses::ParentBaseClass
+{
+    typedef typename MDIClasses::ChildClass  MDIChild;
+    typedef typename MDIClasses::ClientClass MDIClient;
+
 public:
-    wxMDIParentFrameBase()
+    wxMDIAnyParentWindow()
     {
         m_clientWindow = NULL;
-        m_currentChild = NULL;
 #if wxUSE_MENUS
         m_windowMenu = NULL;
 #endif // wxUSE_MENUS
@@ -55,7 +84,7 @@ public:
      */
 
 #if wxUSE_MENUS
-    virtual ~wxMDIParentFrameBase()
+    virtual ~wxMDIAnyParentWindow()
     {
         delete m_windowMenu;
     }
@@ -64,15 +93,24 @@ public:
     // accessors
     // ---------
 
-    // Get or change the active MDI child window
-    virtual wxMDIChildFrame *GetActiveChild() const
-        { return m_currentChild; }
-    virtual void SetActiveChild(wxMDIChildFrame *child)
-        { m_currentChild = child; }
-
-
     // Get the client window
-    wxMDIClientWindowBase *GetClientWindow() const { return m_clientWindow; }
+    MDIClient *GetClientWindow() const { return m_clientWindow; }
+
+    // Get or change the active MDI child window
+    virtual MDIChild *GetActiveChild() const
+    {
+        MDIClient* const client = GetClientWindow();
+        return client ? client->GetActiveChild() : NULL;
+    }
+
+    virtual void SetActiveChild(MDIChild *child)
+    {
+        MDIClient* const client = GetClientWindow();
+        wxCHECK_RET( client, wxS("Can't activate without client window") );
+
+        if ( client->GetActiveChild() != child )
+            client->SetActiveChild(child);
+    }
 
 
     // MDI windows menu functions
@@ -113,22 +151,22 @@ public:
     */
 
     // Create the client window class (don't Create() the window here, just
-    // return a new object of a wxMDIClientWindow-derived class)
+    // return a new object of a MDIClasses::ClientClass-derived class)
     //
     // Notice that if you override this method you should use the default
     // constructor and Create() and not the constructor creating the window
     // when creating the frame or your overridden version is not going to be
     // called (as the call to a virtual function from ctor will be dispatched
     // to this class version)
-    virtual wxMDIClientWindow *OnCreateClient();
+    virtual MDIClient *OnCreateClient()
+        { return new MDIClient; }
 
 protected:
-    // This is wxMDIClientWindow for all the native implementations but not for
-    // the generic MDI version which has its own wxGenericMDIClientWindow and
+    // This is MDIClasses::ClientClass for all the native implementations but
+    // not for the generic MDI which has its own wxGenericMDIClientWindow and
     // so we store it as just a base class pointer because we don't need its
     // exact type anyhow
-    wxMDIClientWindowBase *m_clientWindow;
-    wxMDIChildFrame *m_currentChild;
+    MDIClient *m_clientWindow;
 
 #if wxUSE_MENUS
     // the current window menu or NULL if we are not using it
@@ -136,19 +174,24 @@ protected:
 #endif // wxUSE_MENUS
 };
 
+typedef wxMDIAnyParentWindow<wxMDIStandardClasses> wxMDIParentFrameBase;
+
 // ----------------------------------------------------------------------------
-// wxMDIChildFrameBase: child frame managed by wxMDIParentFrame
+// wxMDIAnyChildWindow: child frame managed by MDI parent frame
 // ----------------------------------------------------------------------------
 
-class WXDLLIMPEXP_CORE wxMDIChildFrameBase : public wxFrame
+template <class MDIClasses>
+class WXDLLIMPEXP_CORE wxMDIAnyChildWindow : public MDIClasses::ChildBaseClass
 {
+    typedef typename MDIClasses::ParentClass MDIParent;
+
 public:
-    wxMDIChildFrameBase() { m_mdiParent = NULL; }
+    wxMDIAnyChildWindow() { m_mdiParent = NULL; }
 
     /*
         Derived classes should provide Create() with the following signature:
 
-    bool Create(wxMDIParentFrame *parent,
+    bool Create(MDIClasses::ParentClass *parent,
                 wxWindowID id,
                 const wxString& title,
                 const wxPoint& pos = wxDefaultPosition,
@@ -165,10 +208,10 @@ public:
     // Return the MDI parent frame: notice that it may not be the same as
     // GetParent() (our parent may be the client window or even its subwindow
     // in some implementations)
-    wxMDIParentFrame *GetMDIParent() const { return m_mdiParent; }
+    MDIParent *GetMDIParent() const { return m_mdiParent; }
 
     // Synonym for GetMDIParent(), was used in some other ports
-    wxMDIParentFrame *GetMDIParentFrame() const { return GetMDIParent(); }
+    MDIParent *GetMDIParentFrame() const { return GetMDIParent(); }
 
 
     // in most ports MDI children frames are not really top-level, the only
@@ -187,8 +230,10 @@ public:
     virtual void Raise() { Activate(); }
 
 protected:
-    wxMDIParentFrame *m_mdiParent;
+    MDIParent *m_mdiParent;
 };
+
+typedef wxMDIAnyChildWindow<wxMDIStandardClasses> wxMDIChildFrameBase;
 
 // ----------------------------------------------------------------------------
 // wxTDIChildFrame: child frame used by TDI implementations
@@ -308,11 +353,15 @@ protected:
 };
 
 // ----------------------------------------------------------------------------
-// wxMDIClientWindowBase: child of parent frame, parent of children frames
+// wxMDIAnyClientWindow: child of parent frame, parent of children frames
 // ----------------------------------------------------------------------------
 
-class WXDLLIMPEXP_CORE wxMDIClientWindowBase : public wxWindow
+template <class MDIClasses>
+class WXDLLIMPEXP_CORE wxMDIAnyClientWindow : public MDIClasses::ClientBaseClass
 {
+    typedef typename MDIClasses::ParentClass MDIParent;
+    typedef typename MDIClasses::ChildClass  MDIChild;
+
 public:
     /*
         The derived class must provide the default ctor only (CreateClient()
@@ -321,9 +370,14 @@ public:
 
     // Can be overridden in the derived classes but the base class version must
     // be usually called first to really create the client window.
-    virtual bool CreateClient(wxMDIParentFrame *parent,
+    virtual bool CreateClient(MDIParent *parent,
                               long style = wxVSCROLL | wxHSCROLL) = 0;
+
+    virtual MDIChild* GetActiveChild() = 0;
+    virtual void SetActiveChild(MDIChild* pChildFrame) = 0;
 };
+
+typedef wxMDIAnyClientWindow<wxMDIStandardClasses> wxMDIClientWindowBase;
 
 // ----------------------------------------------------------------------------
 // Include the port-specific implementation of the base classes defined above
@@ -363,11 +417,6 @@ public:
 #elif defined(__WXCOCOA__)
     #include "wx/cocoa/mdi.h"
 #endif
-
-inline wxMDIClientWindow *wxMDIParentFrameBase::OnCreateClient()
-{
-    return new wxMDIClientWindow;
-}
 
 #endif // wxUSE_MDI
 

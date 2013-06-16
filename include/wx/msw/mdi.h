@@ -53,10 +53,6 @@ public:
 
     static bool IsTDI() { return false; }
 
-    // we don't store the active child in m_currentChild so override this
-    // function to find it dynamically
-    virtual wxMDIChildFrame *GetActiveChild() const;
-
     virtual void Cascade();
     virtual void Tile(wxOrientation orient = wxHORIZONTAL);
     virtual void ArrangeIcons();
@@ -245,6 +241,9 @@ public:
     // Note: this is virtual, to allow overridden behaviour.
     virtual bool CreateClient(wxMDIParentFrame *parent,
                               long style = wxVSCROLL | wxHSCROLL);
+
+    virtual wxMDIChildFrame *GetActiveChild();
+    virtual void SetActiveChild(wxMDIChildFrame* pChildFrame);
 
     // Explicitly call default scroll behaviour
     void OnScroll(wxScrollEvent& event);

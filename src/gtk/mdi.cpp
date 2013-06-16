@@ -208,39 +208,6 @@ void wxMDIParentFrame::DoGetClientSize(int* width, int* height) const
     }
 }
 
-wxMDIChildFrame *wxMDIParentFrame::GetActiveChild() const
-{
-    if (!m_clientWindow) return NULL;
-
-    GtkNotebook *notebook = GTK_NOTEBOOK(m_clientWindow->m_widget);
-    if (!notebook) return NULL;
-
-    gint i = gtk_notebook_get_current_page( notebook );
-    if (i < 0) return NULL;
-
-    GtkWidget* page = gtk_notebook_get_nth_page(notebook, i);
-    if (!page) return NULL;
-
-    wxWindowList::compatibility_iterator node = m_clientWindow->GetChildren().GetFirst();
-    while (node)
-    {
-        if ( wxPendingDelete.Member(node->GetData()) )
-            return NULL;
-
-        wxMDIChildFrame *child_frame = wxDynamicCast( node->GetData(), wxMDIChildFrame );
-
-        if (!child_frame)
-            return NULL;
-
-        if (child_frame->m_widget == page)
-            return child_frame;
-
-        node = node->GetNext();
-    }
-
-    return NULL;
-}
-
 void wxMDIParentFrame::ActivateNext()
 {
     if (m_clientWindow)
@@ -413,6 +380,51 @@ bool wxMDIClientWindow::CreateClient(wxMDIParentFrame *parent, long style)
     Show( true );
 
     return true;
+}
+
+wxMDIChildFrame *wxMDIClientWindow::GetActiveChild()
+{
+    GtkNotebook *notebook = GTK_NOTEBOOK(m_widget);
+    if (!notebook) return NULL;
+
+    gint i = gtk_notebook_get_current_page( notebook );
+    if (i < 0) return NULL;
+
+    GtkWidget* page = gtk_notebook_get_nth_page(notebook, i);
+    if (!page) return NULL;
+
+    wxWindowList::compatibility_iterator node = GetChildren().GetFirst();
+    while (node)
+    {
+        if ( wxPendingDelete.Member(node->GetData()) )
+            return NULL;
+
+        wxMDIChildFrame *child_frame = wxDynamicCast( node->GetData(), wxMDIChildFrame );
+
+        if (!child_frame)
+            return NULL;
+
+        if (child_frame->m_widget == page)
+            return child_frame;
+
+        node = node->GetNext();
+    }
+
+    return NULL;
+}
+
+void wxMDIClientWindow::SetActiveChild(wxMDIChildFrame* pChildFrame)
+{
+    if ( !pChildFrame || wxPendingDelete.Member(pChildFrame) )
+        return;
+
+    GtkNotebook *notebook = GTK_NOTEBOOK(m_widget);
+    if (!notebook)
+        return;
+
+    gint page = gtk_notebook_page_num(notebook, pChildFrame->m_widget);
+    if (page != -1)
+        gtk_notebook_set_current_page(notebook, page);
 }
 
 void wxMDIClientWindow::AddChildGTK(wxWindowGTK* child)

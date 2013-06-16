@@ -256,34 +256,6 @@ void wxMDIParentFrame::OnInternalIdle()
     }
 }
 
-wxMDIChildFrame *wxMDIParentFrame::GetActiveChild() const
-{
-    if (!m_clientWindow) return NULL;
-
-    GtkNotebook *notebook = GTK_NOTEBOOK(m_clientWindow->m_widget);
-    if (!notebook) return NULL;
-
-    gint i = gtk_notebook_get_current_page( notebook );
-    if (i < 0) return NULL;
-
-    GtkNotebookPage* page = (GtkNotebookPage*) (g_list_nth(notebook->children,i)->data);
-    if (!page) return NULL;
-
-    wxWindowList::compatibility_iterator node = m_clientWindow->GetChildren().GetFirst();
-    while (node)
-    {
-        wxMDIChildFrame *child_frame = wxDynamicCast( node->GetData(), wxMDIChildFrame );
-
-        wxASSERT_MSG( child_frame, wxT("child is not a wxMDIChildFrame") );
-
-        if (child_frame->m_page == page)
-            return child_frame;
-        node = node->GetNext();
-    }
-
-    return NULL;
-}
-
 void wxMDIParentFrame::ActivateNext()
 {
     if (m_clientWindow)
@@ -480,6 +452,46 @@ bool wxMDIClientWindow::CreateClient( wxMDIParentFrame *parent, long style )
     Show( true );
 
     return true;
+}
+
+wxMDIChildFrame *wxMDIClientWindow::GetActiveChild()
+{
+    GtkNotebook *notebook = GTK_NOTEBOOK(m_widget);
+    if (!notebook) return NULL;
+
+    gint i = gtk_notebook_get_current_page( notebook );
+    if (i < 0) return NULL;
+
+    GtkNotebookPage* page = (GtkNotebookPage*) (g_list_nth(notebook->children,i)->data);
+    if (!page) return NULL;
+
+    wxWindowList::compatibility_iterator node = GetChildren().GetFirst();
+    while (node)
+    {
+        wxMDIChildFrame *child_frame = wxDynamicCast( node->GetData(), wxMDIChildFrame );
+
+        wxASSERT_MSG( child_frame, wxT("child is not a wxMDIChildFrame") );
+
+        if (child_frame->m_page == page)
+            return child_frame;
+        node = node->GetNext();
+    }
+
+    return NULL;
+}
+
+void wxMDIClientWindow::SetActiveChild(wxMDIChildFrame* pChildFrame)
+{
+    if ( !pChildFrame || wxPendingDelete.Member(pChildFrame) )
+        return;
+
+    GtkNotebook *notebook = GTK_NOTEBOOK(m_widget);
+    if (!notebook)
+        return;
+
+    gint page = gtk_notebook_page_num(notebook, pChildFrame->m_widget);
+    if (page != -1)
+        gtk_notebook_set_current_page(notebook, page);
 }
 
 #endif
