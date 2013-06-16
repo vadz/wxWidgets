@@ -3,6 +3,7 @@
 // Purpose:     Document/view demo
 // Author:      Julian Smart
 // Modified by: Vadim Zeitlin: merge with the MDI version and general cleanup
+//              Kinaou Hervé: added the AUI MDI framework management
 // Created:     04/01/98
 // RCS-ID:      $Id$
 // Copyright:   (c) 1998 Julian Smart
@@ -16,6 +17,8 @@
     It can be run in several ways:
         * With "--mdi" command line option to use multiple MDI child frames
           for the multiple documents (this is the default).
+        * With "--aui" command line option to use multiple AUI MDI child
+          frames (wxAuiNotebook tabs) for the multiple documents.
         * With "--sdi" command line option to use multiple top level windows
           for the multiple documents
         * With "--single" command line option to support opening a single
@@ -49,6 +52,9 @@
 
 #include "wx/docview.h"
 #include "wx/docmdi.h"
+#if wxUSE_AUI
+    #include "wx/aui/tabdocmdi.h"
+#endif
 
 #include "docview.h"
 #include "doc.h"
@@ -93,6 +99,7 @@ MyApp::MyApp()
 namespace CmdLineOption
 {
 
+const char * const AUI = "aui";
 const char * const MDI = "mdi";
 const char * const SDI = "sdi";
 const char * const SINGLE = "single";
@@ -103,8 +110,14 @@ void MyApp::OnInitCmdLine(wxCmdLineParser& parser)
 {
     wxApp::OnInitCmdLine(parser);
 
+#if wxUSE_MDI_ARCHITECTURE
     parser.AddSwitch("", CmdLineOption::MDI,
                      "run in MDI mode: multiple documents, single window");
+#endif
+#if wxUSE_AUI
+    parser.AddSwitch("", CmdLineOption::AUI,
+                     "run in AUI MDI mode: multiple documents, single window, with AUI framework");
+#endif
     parser.AddSwitch("", CmdLineOption::SDI,
                      "run in SDI mode: multiple documents, multiple windows");
     parser.AddSwitch("", CmdLineOption::SINGLE,
@@ -121,6 +134,15 @@ bool MyApp::OnCmdLineParsed(wxCmdLineParser& parser)
         m_mode = Mode_MDI;
         numModeOptions++;
     }
+
+#if wxUSE_AUI
+    if ( parser.Found(CmdLineOption::AUI) )
+    {
+        m_mode = Mode_AUI;
+        numModeOptions++;
+    }
+#endif
+
 #endif // wxUSE_MDI_ARCHITECTURE
 
     if ( parser.Found(CmdLineOption::SDI) )
@@ -198,6 +220,15 @@ bool MyApp::OnInit()
                                         wxDefaultPosition,
                                         wxSize(500, 400));
     }
+#if wxUSE_AUI
+    else if ( m_mode == Mode_AUI )
+    {
+        frame = new wxAuiDocMDIParentFrame(docManager, NULL, wxID_ANY,
+                                           GetAppDisplayName(),
+                                           wxDefaultPosition,
+                                           wxSize(500, 400));
+    }
+#endif //wxUSE_AUI
     else
 #endif // wxUSE_MDI_ARCHITECTURE
     {
@@ -315,7 +346,21 @@ wxFrame *MyApp::CreateChildFrame(wxView *view, bool isCanvas)
                             wxSize(300, 300)
                        );
     }
-    else
+#if wxUSE_AUI
+    else if ( GetMode() == Mode_AUI )
+    {
+        subframe = new wxAuiDocMDIChildFrame
+                       (
+                            doc,
+                            view,
+                            wxStaticCast(GetTopWindow(), wxAuiDocMDIParentFrame),
+                            wxID_ANY,
+                            "Child Frame",
+                            wxDefaultPosition,
+                            wxSize(300, 300)
+                       );
+    }
+#endif // wxUSE_AUI
 #endif // wxUSE_MDI_ARCHITECTURE
     {
         subframe = new wxDocChildFrame
@@ -372,6 +417,13 @@ void MyApp::OnAbout(wxCommandEvent& WXUNUSED(event))
         case Mode_MDI:
             modeName = "MDI";
             break;
+
+#if wxUSE_AUI
+        case Mode_AUI:
+            modeName = "AUI";
+            break;
+#endif // wxUSE_AUI
+
 #endif // wxUSE_MDI_ARCHITECTURE
 
         case Mode_SDI:
@@ -400,9 +452,9 @@ void MyApp::OnAbout(wxCommandEvent& WXUNUSED(event))
         "running in %s mode.\n"
         "%d open documents.\n"
         "\n"
-        "Authors: Julian Smart, Vadim Zeitlin\n"
+        "Authors: Julian Smart, Vadim Zeitlin, Kinaou Hervé\n"
         "\n"
-        "Usage: docview [--{mdi,sdi,single}]",
+        "Usage: docview [--{aui,mdi,sdi,single}]",
         modeName,
         docsCount
     );

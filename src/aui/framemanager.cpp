@@ -915,7 +915,7 @@ void wxAuiManager::SetManagedWindow(wxWindow* wnd)
 
     if (wxDynamicCast(m_frame, wxMDIParentFrame))
     {
-        wxMDIParentFrame* mdi_frame = (wxMDIParentFrame*)m_frame;
+        wxMDIParentFrame* mdi_frame = wxDynamicCast(m_frame, wxMDIParentFrame);
         wxWindow* client_window = mdi_frame->GetClientWindow();
 
         wxASSERT_MSG(client_window, wxT("Client window is NULL!"));
@@ -926,8 +926,9 @@ void wxAuiManager::SetManagedWindow(wxWindow* wnd)
     }
     else if (wxDynamicCast(m_frame, wxAuiMDIParentFrame))
     {
-        wxAuiMDIParentFrame* mdi_frame = (wxAuiMDIParentFrame*)m_frame;
-        wxAuiMDIClientWindow* client_window = mdi_frame->GetClientWindow();
+        wxAuiMDIParentFrame* mdi_frame = wxDynamicCast(m_frame, wxAuiMDIParentFrame);
+        wxWindow* client_window = mdi_frame->GetClientWindow();
+
         wxASSERT_MSG(client_window, wxT("Client window is NULL!"));
 
         AddPane(client_window,

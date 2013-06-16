@@ -256,6 +256,7 @@ ____MONOLIB_GUI_SRC_FILENAMES_OBJECTS =  &
 	$(OBJS)\monodll_floatpane.obj &
 	$(OBJS)\monodll_auibook.obj &
 	$(OBJS)\monodll_auibar.obj &
+	$(OBJS)\monodll_tabdocmdi.obj &
 	$(OBJS)\monodll_tabmdi.obj &
 	$(OBJS)\monodll_tabart.obj &
 	$(OBJS)\monodll_xh_auinotbk.obj &
@@ -1684,6 +1685,7 @@ ____MONOLIB_GUI_SRC_FILENAMES_1_OBJECTS =  &
 	$(OBJS)\monolib_floatpane.obj &
 	$(OBJS)\monolib_auibook.obj &
 	$(OBJS)\monolib_auibar.obj &
+	$(OBJS)\monolib_tabdocmdi.obj &
 	$(OBJS)\monolib_tabmdi.obj &
 	$(OBJS)\monolib_tabart.obj &
 	$(OBJS)\monolib_xh_auinotbk.obj &
@@ -9557,6 +9559,7 @@ AUIDLL_OBJECTS =  &
 	$(OBJS)\auidll_floatpane.obj &
 	$(OBJS)\auidll_auibook.obj &
 	$(OBJS)\auidll_auibar.obj &
+	$(OBJS)\auidll_tabdocmdi.obj &
 	$(OBJS)\auidll_tabmdi.obj &
 	$(OBJS)\auidll_tabart.obj &
 	$(OBJS)\auidll_xh_auinotbk.obj &
@@ -9577,6 +9580,7 @@ AUILIB_OBJECTS =  &
 	$(OBJS)\auilib_floatpane.obj &
 	$(OBJS)\auilib_auibook.obj &
 	$(OBJS)\auilib_auibar.obj &
+	$(OBJS)\auilib_tabdocmdi.obj &
 	$(OBJS)\auilib_tabmdi.obj &
 	$(OBJS)\auilib_tabart.obj &
 	$(OBJS)\auilib_xh_auinotbk.obj &
@@ -12966,6 +12970,9 @@ $(OBJS)\monodll_auibook.obj :  .AUTODEPEND ..\..\src\aui\auibook.cpp
 	$(CXX) -bt=nt -zq -fo=$^@ $(MONODLL_CXXFLAGS) $<
 
 $(OBJS)\monodll_auibar.obj :  .AUTODEPEND ..\..\src\aui\auibar.cpp
+	$(CXX) -bt=nt -zq -fo=$^@ $(MONODLL_CXXFLAGS) $<
+
+$(OBJS)\monodll_tabdocmdi.obj :  .AUTODEPEND ..\..\src\aui\tabdocmdi.cpp
 	$(CXX) -bt=nt -zq -fo=$^@ $(MONODLL_CXXFLAGS) $<
 
 $(OBJS)\monodll_tabmdi.obj :  .AUTODEPEND ..\..\src\aui\tabmdi.cpp
@@ -19940,6 +19947,9 @@ $(OBJS)\monolib_auibook.obj :  .AUTODEPEND ..\..\src\aui\auibook.cpp
 	$(CXX) -bt=nt -zq -fo=$^@ $(MONOLIB_CXXFLAGS) $<
 
 $(OBJS)\monolib_auibar.obj :  .AUTODEPEND ..\..\src\aui\auibar.cpp
+	$(CXX) -bt=nt -zq -fo=$^@ $(MONOLIB_CXXFLAGS) $<
+
+$(OBJS)\monolib_tabdocmdi.obj :  .AUTODEPEND ..\..\src\aui\tabdocmdi.cpp
 	$(CXX) -bt=nt -zq -fo=$^@ $(MONOLIB_CXXFLAGS) $<
 
 $(OBJS)\monolib_tabmdi.obj :  .AUTODEPEND ..\..\src\aui\tabmdi.cpp
@@ -38560,6 +38570,9 @@ $(OBJS)\auidll_auibook.obj :  .AUTODEPEND ..\..\src\aui\auibook.cpp
 $(OBJS)\auidll_auibar.obj :  .AUTODEPEND ..\..\src\aui\auibar.cpp
 	$(CXX) -bt=nt -zq -fo=$^@ $(AUIDLL_CXXFLAGS) $<
 
+$(OBJS)\auidll_tabdocmdi.obj :  .AUTODEPEND ..\..\src\aui\tabdocmdi.cpp
+	$(CXX) -bt=nt -zq -fo=$^@ $(AUIDLL_CXXFLAGS) $<
+
 $(OBJS)\auidll_tabmdi.obj :  .AUTODEPEND ..\..\src\aui\tabmdi.cpp
 	$(CXX) -bt=nt -zq -fo=$^@ $(AUIDLL_CXXFLAGS) $<
 
@@ -38588,6 +38601,9 @@ $(OBJS)\auilib_auibook.obj :  .AUTODEPEND ..\..\src\aui\auibook.cpp
 	$(CXX) -bt=nt -zq -fo=$^@ $(AUILIB_CXXFLAGS) $<
 
 $(OBJS)\auilib_auibar.obj :  .AUTODEPEND ..\..\src\aui\auibar.cpp
+	$(CXX) -bt=nt -zq -fo=$^@ $(AUILIB_CXXFLAGS) $<
+
+$(OBJS)\auilib_tabdocmdi.obj :  .AUTODEPEND ..\..\src\aui\tabdocmdi.cpp
 	$(CXX) -bt=nt -zq -fo=$^@ $(AUILIB_CXXFLAGS) $<
 
 $(OBJS)\auilib_tabmdi.obj :  .AUTODEPEND ..\..\src\aui\tabmdi.cpp

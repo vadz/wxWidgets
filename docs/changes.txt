@@ -601,6 +601,7 @@ All:
 
 All (GUI):
 
+- Allow using AUI classes as MDI windows in doc-view framework (Kinaou Hervé).
 - Add support for wxAuiNotebook to XRC (Steven Lamerton).
 - Add support for wxRibbonBar and related controls to XRC (Armel Asselin).
 - Add wxBITMAP_PNG() macro similar to wxBITMAP() but for PNG files.

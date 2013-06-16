@@ -435,6 +435,9 @@
 				RelativePath="..\..\include\wx\aui\tabart.h">
 			</File>
 			<File
+				RelativePath="..\..\include\wx\aui\tabdocmdi.h">
+			</File>
+			<File
 				RelativePath="..\..\include\wx\aui\tabmdi.h">
 			</File>
 			<File
@@ -462,6 +465,9 @@
 			</File>
 			<File
 				RelativePath="..\..\src\aui\tabart.cpp">
+			</File>
+			<File
+				RelativePath="..\..\src\aui\tabdocmdi.cpp">
 			</File>
 			<File
 				RelativePath="..\..\src\aui\tabmdi.cpp">

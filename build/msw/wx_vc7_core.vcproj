@@ -2550,6 +2550,9 @@
 				RelativePath="..\..\include\wx\aui\tabart.h">
 			</File>
 			<File
+				RelativePath="..\..\include\wx\aui\tabdocmdi.h">
+			</File>
+			<File
 				RelativePath="..\..\include\wx\aui\tabmdi.h">
 			</File>
 			<File

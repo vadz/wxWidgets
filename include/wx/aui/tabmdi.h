@@ -18,25 +18,52 @@
 // headers
 // ----------------------------------------------------------------------------
 
-#include "wx/frame.h"
+#include "wx/mdi.h"
 #include "wx/panel.h"
 #include "wx/notebook.h"
 #include "wx/icon.h"
 #include "wx/aui/auibook.h"
 
-//-----------------------------------------------------------------------------
-// classes
-//-----------------------------------------------------------------------------
-
 class WXDLLIMPEXP_FWD_AUI wxAuiMDIParentFrame;
 class WXDLLIMPEXP_FWD_AUI wxAuiMDIClientWindow;
 class WXDLLIMPEXP_FWD_AUI wxAuiMDIChildFrame;
+
+// ----------------------------------------------------------------------------
+// constants
+// ----------------------------------------------------------------------------
+
+enum MDI_MENU_ID
+{
+    wxWINDOWCLOSE = 4001,
+    wxWINDOWCLOSEALL,
+    wxWINDOWNEXT,
+    wxWINDOWPREV
+};
+
+// ----------------------------------------------------------------------------
+// wxMDIAUIClasses: define the kind of windows the MDI base classes use
+// ----------------------------------------------------------------------------
+
+struct wxMDIAUIClasses
+{
+    // The classes to inherit our MDI classes from.
+    typedef wxFrame ParentBaseClass;
+    typedef wxFrame ChildBaseClass;
+    typedef wxAuiNotebook ClientBaseClass;
+
+    // And the AUI MDI classes themselves.
+    typedef wxAuiMDIParentFrame ParentClass;
+    typedef wxAuiMDIChildFrame ChildClass;
+    typedef wxAuiMDIClientWindow ClientClass;
+};
 
 //-----------------------------------------------------------------------------
 // wxAuiMDIParentFrame
 //-----------------------------------------------------------------------------
 
-class WXDLLIMPEXP_AUI wxAuiMDIParentFrame : public wxFrame
+typedef wxMDIAnyParentWindow<wxMDIAUIClasses> wxAuiMDIParentFrameBase;
+
+class WXDLLIMPEXP_AUI wxAuiMDIParentFrame : public wxAuiMDIParentFrameBase
 {
 public:
     wxAuiMDIParentFrame();
@@ -63,7 +90,6 @@ public:
     wxAuiNotebook* GetNotebook() const;
 
 #if wxUSE_MENUS
-    wxMenu* GetWindowMenu() const { return m_pWindowMenu; }
     void SetWindowMenu(wxMenu* pMenu);
 
     virtual void SetMenuBar(wxMenuBar *pMenuBar);
@@ -71,10 +97,6 @@ public:
 
     void SetChildMenuBar(wxAuiMDIChildFrame *pChild);
 
-    wxAuiMDIChildFrame *GetActiveChild() const;
-    void SetActiveChild(wxAuiMDIChildFrame* pChildFrame);
-
-    wxAuiMDIClientWindow *GetClientWindow() const;
     virtual wxAuiMDIClientWindow *OnCreateClient();
 
     virtual void Cascade() { /* Has no effect */ }
@@ -84,22 +106,20 @@ public:
     virtual void ActivatePrevious();
 
 protected:
-    wxAuiMDIClientWindow*   m_pClientWindow;
-    wxEvent*                m_pLastEvt;
+    wxEvent    *m_pLastEvt;
 
 #if wxUSE_MENUS
-    wxMenu              *m_pWindowMenu;
-    wxMenuBar           *m_pMyMenuBar;
+    wxMenuBar  *m_pMyMenuBar;
 #endif // wxUSE_MENUS
 
 protected:
-    void Init();
 
 #if wxUSE_MENUS
     void RemoveWindowMenu(wxMenuBar *pMenuBar);
     void AddWindowMenu(wxMenuBar *pMenuBar);
 
-    void DoHandleMenu(wxCommandEvent &event);
+    void OnHandleMenu(wxCommandEvent &event) { DoHandleMenu(event); }
+    virtual void DoHandleMenu(wxCommandEvent &event);
     void DoHandleUpdateUI(wxUpdateUIEvent &event);
 #endif // wxUSE_MENUS
 
@@ -116,7 +136,9 @@ private:
 // wxAuiMDIChildFrame
 //-----------------------------------------------------------------------------
 
-class WXDLLIMPEXP_AUI wxAuiMDIChildFrame : public wxPanel
+typedef wxMDIAnyChildWindow<wxMDIAUIClasses>  wxAuiMDIChildFrameBase;
+
+class WXDLLIMPEXP_AUI wxAuiMDIChildFrame : public wxAuiMDIChildFrameBase
 {
 public:
     wxAuiMDIChildFrame();
@@ -190,15 +212,11 @@ public:
 
     virtual bool IsTopLevel() const { return false; }
 
+protected:
     void OnMenuHighlight(wxMenuEvent& evt);
     void OnActivate(wxActivateEvent& evt);
-    void OnCloseWindow(wxCloseEvent& evt);
 
-    void SetMDIParentFrame(wxAuiMDIParentFrame* parent);
-    wxAuiMDIParentFrame* GetMDIParentFrame() const;
-
-protected:
-    void Init();
+    virtual void DoActivate(wxActivateEvent& WXUNUSED(evt)) {}
     virtual void DoSetSize(int x, int y, int width, int height, int sizeFlags);
     virtual void DoMoveWindow(int x, int y, int width, int height);
 
@@ -206,6 +224,11 @@ protected:
     virtual void DoSetSizeHints(int WXUNUSED(minW), int WXUNUSED(minH),
                                 int WXUNUSED(maxW), int WXUNUSED(maxH),
                                 int WXUNUSED(incW), int WXUNUSED(incH)) {}
+private:
+    // set to false by the Destroy method to avoid DoActivate to be called when
+    // children class is destroyed (and the pointer to the virtual method is NULL)
+    bool m_doActivate;
+
 public:
     // This function needs to be called when a size change is confirmed,
     // we needed this function to prevent anybody from the outside
@@ -214,7 +237,6 @@ public:
     void DoShow(bool show);
 
 protected:
-    wxAuiMDIParentFrame* m_pMDIParentFrame;
     wxRect m_mdiNewRect;
     wxRect m_mdiCurRect;
     wxString m_title;
@@ -239,10 +261,12 @@ private:
 // wxAuiMDIClientWindow
 //-----------------------------------------------------------------------------
 
-class WXDLLIMPEXP_AUI wxAuiMDIClientWindow : public wxAuiNotebook
+typedef wxMDIAnyClientWindow<wxMDIAUIClasses> wxAuiMDIClientWindowBase;
+
+class WXDLLIMPEXP_AUI wxAuiMDIClientWindow : public wxAuiMDIClientWindowBase
 {
 public:
-    wxAuiMDIClientWindow();
+    wxAuiMDIClientWindow() {}
     wxAuiMDIClientWindow(wxAuiMDIParentFrame *parent, long style = 0);
 
     virtual bool CreateClient(wxAuiMDIParentFrame *parent,
@@ -266,6 +290,7 @@ private:
     DECLARE_DYNAMIC_CLASS(wxAuiMDIClientWindow)
     DECLARE_EVENT_TABLE()
 };
+
 #endif // wxUSE_AUI
 
 #endif // _WX_AUITABMDI_H_

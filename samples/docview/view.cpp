@@ -53,7 +53,7 @@ bool DrawingView::OnCreate(wxDocument *doc, long flags)
         wxFrame* frame = app.CreateChildFrame(this, true);
         wxASSERT(frame == GetFrame());
         m_canvas = new MyCanvas(this);
-        frame->Show();
+        m_canvas->SetSize(frame->GetClientSize());
     }
     else // single document mode
     {
@@ -163,7 +163,7 @@ bool TextEditView::OnCreate(wxDocument *doc, long flags)
     m_text = new wxTextCtrl(frame, wxID_ANY, "",
                             wxDefaultPosition, wxDefaultSize,
                             wxTE_MULTILINE);
-    frame->Show();
+    m_text->SetSize(frame->GetClientSize());
 
     return true;
 }
@@ -316,7 +316,7 @@ bool ImageView::OnCreate(wxDocument* doc, long flags)
     wxFrame* frame = wxGetApp().CreateChildFrame(this, false);
     wxASSERT(frame == GetFrame());
     m_canvas = new ImageCanvas(this);
-    frame->Show();
+    m_canvas->SetSize(frame->GetClientSize());
 
     return true;
 }

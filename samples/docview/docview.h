@@ -3,6 +3,7 @@
 // Purpose:     Document/view demo
 // Author:      Julian Smart
 // Modified by: Vadim Zeitlin: merge with the MDI version and general cleanup
+//              Kinaou Hervé: added the AUI MDI framework management
 // Created:     04/01/98
 // RCS-ID:      $Id$
 // Copyright:   (c) 1998 Julian Smart
@@ -28,6 +29,9 @@ public:
     {
 #if wxUSE_MDI_ARCHITECTURE
         Mode_MDI,   // MDI mode: multiple documents, single top level window
+#if wxUSE_AUI
+        Mode_AUI,   // AUI MDI mode: multiple child AUI panes, single AUI parent
+#endif
 #endif // wxUSE_MDI_ARCHITECTURE
         Mode_SDI,   // SDI mode: multiple documents, multiple top level windows
         Mode_Single // single document mode (and hence single top level window)

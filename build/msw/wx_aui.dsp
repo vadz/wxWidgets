@@ -336,6 +336,10 @@ SOURCE=..\..\include\wx\aui\tabart.h
 # End Source File
 # Begin Source File
 
+SOURCE=..\..\include\wx\aui\tabdocmdi.h
+# End Source File
+# Begin Source File
+
 SOURCE=..\..\include\wx\aui\tabmdi.h
 # End Source File
 # Begin Source File
@@ -369,6 +373,10 @@ SOURCE=..\..\src\aui\framemanager.cpp
 # Begin Source File
 
 SOURCE=..\..\src\aui\tabart.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\src\aui\tabdocmdi.cpp
 # End Source File
 # Begin Source File
 

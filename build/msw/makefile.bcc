@@ -1390,6 +1390,7 @@ AUIDLL_OBJECTS =  \
 	$(OBJS)\auidll_floatpane.obj \
 	$(OBJS)\auidll_auibook.obj \
 	$(OBJS)\auidll_auibar.obj \
+	$(OBJS)\auidll_tabdocmdi.obj \
 	$(OBJS)\auidll_tabmdi.obj \
 	$(OBJS)\auidll_tabart.obj \
 	$(OBJS)\auidll_xh_auinotbk.obj \
@@ -1410,6 +1411,7 @@ AUILIB_OBJECTS =  \
 	$(OBJS)\auilib_floatpane.obj \
 	$(OBJS)\auilib_auibook.obj \
 	$(OBJS)\auilib_auibar.obj \
+	$(OBJS)\auilib_tabdocmdi.obj \
 	$(OBJS)\auilib_tabmdi.obj \
 	$(OBJS)\auilib_tabart.obj \
 	$(OBJS)\auilib_xh_auinotbk.obj \
@@ -1796,6 +1798,7 @@ ____MONOLIB_GUI_SRC_FILENAMES_OBJECTS =  \
 	$(OBJS)\monodll_floatpane.obj \
 	$(OBJS)\monodll_auibook.obj \
 	$(OBJS)\monodll_auibar.obj \
+	$(OBJS)\monodll_tabdocmdi.obj \
 	$(OBJS)\monodll_tabmdi.obj \
 	$(OBJS)\monodll_tabart.obj \
 	$(OBJS)\monodll_xh_auinotbk.obj \
@@ -3188,6 +3191,7 @@ ____MONOLIB_GUI_SRC_FILENAMES_1_OBJECTS =  \
 	$(OBJS)\monolib_floatpane.obj \
 	$(OBJS)\monolib_auibook.obj \
 	$(OBJS)\monolib_auibar.obj \
+	$(OBJS)\monolib_tabdocmdi.obj \
 	$(OBJS)\monolib_tabmdi.obj \
 	$(OBJS)\monolib_tabart.obj \
 	$(OBJS)\monolib_xh_auinotbk.obj \
@@ -12327,6 +12331,9 @@ $(OBJS)\monodll_auibook.obj: ..\..\src\aui\auibook.cpp
 $(OBJS)\monodll_auibar.obj: ..\..\src\aui\auibar.cpp
 	$(CXX) -q -c -P -o$@ $(MONODLL_CXXFLAGS) ..\..\src\aui\auibar.cpp
 
+$(OBJS)\monodll_tabdocmdi.obj: ..\..\src\aui\tabdocmdi.cpp
+	$(CXX) -q -c -P -o$@ $(MONODLL_CXXFLAGS) ..\..\src\aui\tabdocmdi.cpp
+
 $(OBJS)\monodll_tabmdi.obj: ..\..\src\aui\tabmdi.cpp
 	$(CXX) -q -c -P -o$@ $(MONODLL_CXXFLAGS) ..\..\src\aui\tabmdi.cpp
 
@@ -17856,6 +17863,9 @@ $(OBJS)\monolib_auibook.obj: ..\..\src\aui\auibook.cpp
 
 $(OBJS)\monolib_auibar.obj: ..\..\src\aui\auibar.cpp
 	$(CXX) -q -c -P -o$@ $(MONOLIB_CXXFLAGS) ..\..\src\aui\auibar.cpp
+
+$(OBJS)\monolib_tabdocmdi.obj: ..\..\src\aui\tabdocmdi.cpp
+	$(CXX) -q -c -P -o$@ $(MONOLIB_CXXFLAGS) ..\..\src\aui\tabdocmdi.cpp
 
 $(OBJS)\monolib_tabmdi.obj: ..\..\src\aui\tabmdi.cpp
 	$(CXX) -q -c -P -o$@ $(MONOLIB_CXXFLAGS) ..\..\src\aui\tabmdi.cpp
@@ -32499,6 +32509,9 @@ $(OBJS)\auidll_auibook.obj: ..\..\src\aui\auibook.cpp
 $(OBJS)\auidll_auibar.obj: ..\..\src\aui\auibar.cpp
 	$(CXX) -q -c -P -o$@ $(AUIDLL_CXXFLAGS) ..\..\src\aui\auibar.cpp
 
+$(OBJS)\auidll_tabdocmdi.obj: ..\..\src\aui\tabdocmdi.cpp
+	$(CXX) -q -c -P -o$@ $(AUIDLL_CXXFLAGS) ..\..\src\aui\tabdocmdi.cpp
+
 $(OBJS)\auidll_tabmdi.obj: ..\..\src\aui\tabmdi.cpp
 	$(CXX) -q -c -P -o$@ $(AUIDLL_CXXFLAGS) ..\..\src\aui\tabmdi.cpp
 
@@ -32528,6 +32541,9 @@ $(OBJS)\auilib_auibook.obj: ..\..\src\aui\auibook.cpp
 
 $(OBJS)\auilib_auibar.obj: ..\..\src\aui\auibar.cpp
 	$(CXX) -q -c -P -o$@ $(AUILIB_CXXFLAGS) ..\..\src\aui\auibar.cpp
+
+$(OBJS)\auilib_tabdocmdi.obj: ..\..\src\aui\tabdocmdi.cpp
+	$(CXX) -q -c -P -o$@ $(AUILIB_CXXFLAGS) ..\..\src\aui\tabdocmdi.cpp
 
 $(OBJS)\auilib_tabmdi.obj: ..\..\src\aui\tabmdi.cpp
 	$(CXX) -q -c -P -o$@ $(AUILIB_CXXFLAGS) ..\..\src\aui\tabmdi.cpp
