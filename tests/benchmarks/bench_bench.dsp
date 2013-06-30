@@ -1,4 +1,4 @@
-# Microsoft Developer Studio Project File - Name="bench" - Package Owner=<4>
+# Microsoft Developer Studio Project File - Name="bench_bench" - Package Owner=<4>
 # Microsoft Developer Studio Generated Build File, Format Version 6.00
 # ** DO NOT EDIT **
 
@@ -8,12 +8,12 @@ CFG=bench - Win32 Debug
 !MESSAGE This is not a valid makefile. To build this project using NMAKE,
 !MESSAGE use the Export Makefile command and run
 !MESSAGE 
-!MESSAGE NMAKE /f "bench.mak".
+!MESSAGE NMAKE /f "bench_bench.mak".
 !MESSAGE 
 !MESSAGE You can specify a configuration when running NMAKE
 !MESSAGE by defining the macro CFG on the command line. For example:
 !MESSAGE 
-!MESSAGE NMAKE /f "bench.mak" CFG="bench - Win32 Debug"
+!MESSAGE NMAKE /f "bench_bench.mak" CFG="bench - Win32 Debug"
 !MESSAGE 
 !MESSAGE Possible choices for configuration are:
 !MESSAGE 
