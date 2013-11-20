@@ -35,13 +35,13 @@ public:
     wxAuiDocMDIParentFrame() : wxAuiDocMDIParentFrameBase() { }
 
     wxAuiDocMDIParentFrame(wxDocManager *manager,
-                        wxFrame *parent,
-                        wxWindowID id,
-                        const wxString& title,
-                        const wxPoint& pos = wxDefaultPosition,
-                        const wxSize& size = wxDefaultSize,
-                        long style = wxDEFAULT_FRAME_STYLE,
-                        const wxString& name = wxFrameNameStr);
+                           wxFrame *parent,
+                           wxWindowID id,
+                           const wxString& title,
+                           const wxPoint& pos = wxDefaultPosition,
+                           const wxSize& size = wxDefaultSize,
+                           long style = wxDEFAULT_FRAME_STYLE,
+                           const wxString& name = wxFrameNameStr);
 
     bool Create(wxDocManager *manager,
                 wxFrame *frame,
@@ -58,7 +58,6 @@ public:
     wxDocManager *GetDocumentManager(void) const { return m_docManager; }
 
 protected:
-    void OnNotebookPageChanged(wxAuiNotebookEvent &event);
     void OnCloseWindow(wxCloseEvent& event);
 
 #if wxUSE_MENUS

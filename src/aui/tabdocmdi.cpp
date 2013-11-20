@@ -51,18 +51,7 @@ bool wxAuiDocMDIParentFrame::Create(wxDocManager *manager,
                                     long style,
                                     const wxString& name)
 {
-    if (wxAuiDocMDIParentFrameBase::Create(manager, frame, id, title, pos, size, style, name))
-    {
-        GetClientWindow()->Connect(GetClientWindow()->GetId(),
-            wxEVT_COMMAND_AUINOTEBOOK_PAGE_CHANGED,
-            wxAuiNotebookEventHandler(wxAuiDocMDIParentFrame::OnNotebookPageChanged),
-            NULL,
-            this);
-
-        return true;
-    }
-
-    return false;
+    return wxAuiDocMDIParentFrameBase::Create(manager, frame, id, title, pos, size, style, name);
 }
 
 // Extend event processing to search the view's event table
@@ -82,18 +71,6 @@ bool wxAuiDocMDIParentFrame::TryBefore(wxEvent& event)
     return wxAuiDocMDIParentFrameBase::TryBefore(event);
 }
 
-void wxAuiDocMDIParentFrame::OnNotebookPageChanged(wxAuiNotebookEvent &event)
-{
-    wxWindow *selWnd = GetClientWindow()->GetPage(event.GetSelection());
-    if (selWnd && selWnd->IsKindOf(CLASSINFO(wxAuiDocMDIChildFrame)))
-    {
-        wxAuiDocMDIChildFrame *selFrm = wxDynamicCast(selWnd, wxAuiDocMDIChildFrame);
-        if (selFrm && selFrm->GetView())
-            selFrm->GetView()->Activate(true);
-    }
-    event.Skip(true);
-}
-
 void wxAuiDocMDIParentFrame::OnCloseWindow(wxCloseEvent& event)
 {
     wxCommandEvent eventCloseAll(wxEVT_COMMAND_MENU_SELECTED, wxWINDOWCLOSEALL);
@@ -102,12 +79,6 @@ void wxAuiDocMDIParentFrame::OnCloseWindow(wxCloseEvent& event)
 
     if (eventCloseAll.GetSkipped())
     {
-        GetClientWindow()->Disconnect(GetClientWindow()->GetId(),
-            wxEVT_COMMAND_AUINOTEBOOK_PAGE_CHANGED,
-            wxAuiNotebookEventHandler(wxAuiDocMDIParentFrame::OnNotebookPageChanged),
-            NULL,
-            this);
-
         wxAuiMDIParentFrame::OnCloseWindow(event);
     }
 }
