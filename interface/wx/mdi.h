@@ -1,13 +1,397 @@
 /////////////////////////////////////////////////////////////////////////////
 // Name:        mdi.h
-// Purpose:     interface of wxMDIClientWindow
+// Purpose:     interface of wxMDIParentFrame, wxMDIChildFrame, wxMDIClientWindow,
+//              wxMDIAnyParentWindow, wxMDIAnyChildWindow, wxMDIAnyClientWindow
 // Author:      wxWidgets team
 // RCS-ID:      $Id$
 // Licence:     wxWindows licence
 /////////////////////////////////////////////////////////////////////////////
 
 /**
+    @struct wxMDIDefaultTraits
+
+    Define the kind of windows the MDI base classes use.
+    
+    @library{wxaui}
+    @category{managedwnd}
+
+    @see wxMDIAnyParentWindow, wxMDIAnyChildWindow, wxMDIAnyClientWindow
+*/
+struct wxMDIDefaultTraits
+{
+    typedef wxFrame             ParentWindow;
+    typedef wxFrame             ChildWindow;
+    typedef wxWindow            ClientWindow;
+
+    typedef wxMDIParentFrame    MDIParent;
+    typedef wxMDIChildFrame     MDIChild;
+    typedef wxMDIClientWindow   MDIClient;
+};
+
+/**
+    @class wxMDIAnyParentWindow
+
+    Base class for parent frame for MDI children.
+    All MDI classes are templates, parametrized on the kind of windows they use.
+    e.g. wxMDIParentFrame inherits from wxMDIParentFrameBase which is a typedef of
+    wxMDIAnyParentWindow<wxMDIDefaultTraits>.
+
+    Derived classes should provide constructor and Create() method with the
+    following declaration:
+    <pre>
+    bool Create(wxWindow *parent,
+                wxWindowID winid,
+                const wxString& title,
+                const wxPoint& pos = wxDefaultPosition,
+                const wxSize& size = wxDefaultSize,
+                long style = wxDEFAULT_FRAME_STYLE | wxVSCROLL | wxHSCROLL,
+                const wxString& name = wxFrameNameStr);
+    </pre>
+    and the following function:
+    <pre>
+    static bool IsTDI();
+    </pre>
+    
+    @library{wxcore}
+    @category{managedwnd}
+
+    @see wxMDIAnyChildWindow, wxMDIAnyClientWindow
+*/
+template <class Traits>
+class WXDLLIMPEXP_CORE wxMDIAnyParentWindow : public Traits::ParentWindow
+{
+public:
+    wxMDIAnyParentWindow();
+    virtual ~wxMDIAnyParentWindow();
+
+    /**
+        Get the active MDI child window.
+    */
+    virtual Traits::MDIChild *GetActiveChild() const;
+    /**
+        Change the active MDI child window.
+    */
+    virtual void SetActiveChild(Traits::MDIChild *child);
+    /**
+        Get the client window.
+    */
+    Traits::MDIClient *GetClientWindow() const;
+
+    /**
+        Get the current Window menu or NULL if we don't have
+        because of wxFRAME_NO_WINDOW_MENU style.
+    */
+    wxMenu* GetWindowMenu() const;
+
+    /**
+        Use the given menu instead of the default window menu.
+        The menu can be NULL to disable the window menu completely.
+    */
+    virtual void SetWindowMenu(wxMenu *menu);
+
+
+    /**
+        Has no effect if not overloaded.
+    */
+    virtual void Cascade();
+    /**
+        Has no effect if not overloaded.
+    */
+    virtual void Tile(wxOrientation WXUNUSED(orient) = wxHORIZONTAL);
+    /**
+        Has no effect if not overloaded.
+    */
+    virtual void ArrangeIcons();
+    
+    /**
+        Pure virtual method reimplemented in the overloads.
+    */
+    virtual void ActivateNext();
+    /**
+        Pure virtual method reimplemented in the overloads.
+    */
+    virtual void ActivatePrevious();
+
+    /**
+        Create the client window class (don't Create() the window here, just
+        return a new object of a Traits::MDIClient-derived class).
+
+        Notice that if you override this method you should use the default
+        constructor and Create() and not the constructor creating the window
+        when creating the frame or your overridden version is not going to be
+        called (as the call to a virtual function from ctor will be dispatched
+        to this class version)
+    */
+    virtual Traits::MDIClient *OnCreateClient();
+
+protected:
+    /**
+        Override to pass menu/toolbar events to the active child first.
+    */
+    virtual bool TryBefore(wxEvent& event);
+
+    /**
+        This is Traits::MDIClient for all the native implementations but not for
+        the generic MDI version which has its own wxGenericMDIClientWindow and
+        so we store it as just a base class pointer because we don't need its
+        exact type anyhow.
+    */
+    Traits::MDIClient *m_clientWindow;
+
+    /**
+        The current window menu or NULL if we are not using it.
+        Defined if wxUSE_MENUS is set to 1.
+    */
+    wxMenu *m_windowMenu;
+};
+
+/**
+    @class wxMDIAnyChildWindow
+
+    Base class for child frame managed by MDI Parent.
+    All MDI classes are templates, parametrized on the kind of windows they use.
+    e.g. wxMDIChildFrame inherits from wxMDIChildFrameBase which is a typedef of
+    wxMDIAnyChildWindow<wxMDIDefaultTraits>.
+
+    Derived classes should provide the Create() method with the following signature:
+    <pre>
+    bool Create(Traits::MDIParent *parent,
+                wxWindowID id,
+                const wxString& title,
+                const wxPoint& pos = wxDefaultPosition,
+                const wxSize& size = wxDefaultSize,
+                long style = wxDEFAULT_FRAME_STYLE,
+                const wxString& name = wxFrameNameStr);
+    </pre>
+    And set m_mdiParent to parent parameter.
+
+    @library{wxcore}
+    @category{managedwnd}
+
+    @see wxMDIAnyParentWindow, wxMDIAnyClientWindow
+*/
+template <class Traits>
+class WXDLLIMPEXP_CORE wxMDIAnyChildWindow : public Traits::ChildWindow
+{
+public:
+    wxMDIAnyChildWindow();
+
+    /**
+        Pure virtual method reimplemented in the overloads.
+    */
+    virtual void Activate();
+
+    /**
+        Get the MDI parent frame: notice that it may not be the same as
+        GetParent() (our parent may be the client window or even its subwindow
+        in some implementations)
+    */
+    Traits::MDIParent *GetMDIParent() const;
+    /**
+        Synonym for GetMDIParent(), was used in some other ports.
+        Should not be used in a new implementation.
+    */
+    Traits::MDIParent *GetMDIParentFrame() const;
+
+    /**
+        In most ports MDI children frames are not really top-level, the only
+        exception are the Mac ports in which MDI children are just normal top
+        level windows too.
+    */
+    virtual bool IsTopLevel() const;
+    /**
+        In all ports keyboard navigation must stop at MDI child frame level and
+        can't cross its boundary. Indicate this by overriding this function to
+        return @c true.
+    */
+    virtual bool IsTopNavigationDomain() const;
+
+    /**
+        Raising any frame is supposed to show it but wxFrame Raise()
+        implementation doesn't work for MDI child frames in most forms so
+        forward this to Activate() which serves the same purpose by default.
+    */
+    virtual void Raise();
+
+    protected:
+    Traits::MDIParent *m_mdiParent;
+};
+
+/**
+    @class wxTDIChildFrame
+
+    wxTDIChildFrame inherits from wxMDIChildFrameBase which is a typedef of
+    wxMDIAnyChildWindow<wxMDIDefaultTraits>.
+    
+    It is the child frame used by TDI (Tabbed Document Interface)
+    framework implementations.
+
+    @library{wxcore}
+    @category{managedwnd}
+
+    @see wxMDIChildFrame
+*/
+class WXDLLIMPEXP_CORE wxTDIChildFrame : public wxMDIChildFrameBase
+{
+public:
+
+    /**
+        Overload this method to implement a status bar for MDI children.
+        Returns NULL if not overloaded.
+    */
+    virtual wxStatusBar* CreateStatusBar(int WXUNUSED(number) = 1,
+                                         long WXUNUSED(style) = 1,
+                                         wxWindowID WXUNUSED(id) = 1,
+                                         const wxString& WXUNUSED(name) = wxEmptyString);
+
+    /**
+        Returns NULL if not overloaded.
+    */
+    virtual wxStatusBar *GetStatusBar() const;
+    /**
+        Has no effect if not overloaded.
+    */
+    virtual void SetStatusText(const wxString &WXUNUSED(text), int WXUNUSED(number)=0);
+    /**
+        Has no effect if not overloaded.
+    */
+    virtual void SetStatusWidths(int WXUNUSED(n), const int WXUNUSED(widths)[]);
+
+    // no toolbar
+    //
+    // TODO: again, it should be possible to have tool bars
+    /**
+        Returns NULL if not overloaded.
+    */
+    virtual wxToolBar *CreateToolBar(long WXUNUSED(style),
+                                     wxWindowID WXUNUSED(id),
+                                     const wxString& WXUNUSED(name));
+    /**
+        Returns NULL if not overloaded.
+    */
+    virtual wxToolBar *GetToolBar() const;
+
+    // no icon
+    /**
+        Has no effect if not overloaded.
+    */
+    virtual void SetIcons(const wxIconBundle& WXUNUSED(icons));
+
+    /**
+        Get the title used as tab label.
+    */
+    virtual wxString GetTitle() const;
+    /**
+        Pure virtual method reimplemented in the overloads.
+    */
+    virtual void SetTitle(const wxString& title);
+
+    /**
+        Has no effect if not overloaded.
+    */
+    virtual void Maximize(bool WXUNUSED(maximize) = true);
+    /**
+        @return @c true if not overloaded
+    */
+    virtual bool IsMaximized() const;
+    /**
+        @return @c true if not overloaded
+    */
+    virtual bool IsAlwaysMaximized() const;
+    /**
+        Has no effect if not overloaded.
+    */
+    virtual void Iconize(bool WXUNUSED(iconize) = true);
+    /**
+        @return @c false if not overloaded
+    */
+    virtual bool IsIconized() const;
+    /**
+        Has no effect if not overloaded.
+    */
+    virtual void Restore();
+    /**
+        @return @c false if not overloaded
+    */
+    virtual bool ShowFullScreen(bool WXUNUSED(show), long WXUNUSED(style));
+    /**
+        @return @c false if not overloaded
+    */
+    virtual bool IsFullScreen() const;
+
+    /**
+        Override these functions is needed to ensure that a child window is
+        created even though we derive from wxFrame -- basically we make it
+        behave as just a wxWindow by short-circuiting wxTLW changes to the base
+        class behaviour.
+    */
+    virtual void AddChild(wxWindowBase *child);
+    virtual bool Destroy();
+
+protected:
+    virtual void DoGetSize(int *width, int *height);
+    virtual void DoSetSize(int x, int y, int width, int height, int sizeFlags);
+    virtual void DoGetClientSize(int *width, int *height) const;
+
+    virtual void DoSetClientSize(int width, int height);
+
+    /**
+        Has no effect if not overloaded.
+    */
+    virtual void DoSetSizeHints(int WXUNUSED(minW), int WXUNUSED(minH),
+                                int WXUNUSED(maxW), int WXUNUSED(maxH),
+                                int WXUNUSED(incW), int WXUNUSED(incH));
+
+    wxString m_title;
+};
+
+/**
+    @class wxMDIAnyClientWindow
+
+    Base class, child of parent frame and parent of children frames.
+
+    All MDI classes are templates, parametrized on the kind of windows they use.
+    e.g. wxMDIClientWindow inherits from wxMDIClientWindowBase which is a typedef of
+    wxMDIAnyClientWindow<wxMDIDefaultTraits>.
+
+    The derived class must provide the default ctor only (CreateClient()
+    will be called later).
+    
+    @library{wxcore}
+    @category{managedwnd}
+
+    @see wxMDIAnyParentWindow, wxMDIAnyChildWindow
+*/
+template <class Traits>
+class WXDLLIMPEXP_CORE wxMDIAnyClientWindow : public Traits::ClientWindow
+{
+public:
+    /**
+        Pure virtual method reimplemented in the overloads.
+    */
+    virtual bool CreateClient(Traits::MDIParent *parent,
+                              long style = wxVSCROLL | wxHSCROLL);
+
+    /**
+        Pure virtual method reimplemented in the overloads.
+    */
+    virtual Traits::MDIChild* GetActiveChild();
+    /**
+        Pure virtual method reimplemented in the overloads.
+    */
+    virtual void SetActiveChild(Traits::MDIChild* pChildFrame);
+};
+
+
+
+
+/**
     @class wxMDIClientWindow
+    
+    Port-specific implementation.
+
+    wxMDIClientWindow inherits from wxMDIClientWindowBase which is a typedef of
+    wxMDIAnyClientWindow<wxMDIDefaultTraits>.
 
     An MDI client window is a child of wxMDIParentFrame, and manages zero or
     more wxMDIChildFrame objects.
@@ -33,7 +417,7 @@
 
     @see wxMDIChildFrame, wxMDIParentFrame, wxFrame
 */
-class wxMDIClientWindow : public wxWindow
+class wxMDIClientWindow : public wxMDIClientWindowBase
 {
 public:
     /**
@@ -66,6 +450,11 @@ public:
 
 /**
     @class wxMDIParentFrame
+    
+    Port-specific implementation.
+
+    wxMDIParentFrame inherits from wxMDIParentFrameBase which is a typedef of
+    wxMDIAnyParentWindow<wxMDIDefaultTraits>.
 
     An MDI (Multiple Document Interface) parent frame is a window which can
     contain MDI child frames in its client area which emulates the full
@@ -97,6 +486,16 @@ public:
     application has a single MDI parent frame window inside which multiple MDI
     child frames, i.e. objects of class wxMDIChildFrame, can be created.
 
+    wxUSE_GENERIC_MDI_AS_NATIVE may be predefined to force the generic MDI
+    implementation use even on the platforms which usually don't use it.
+
+    Notice that generic MDI can still be used without this, but you would need
+    to explicitly use wxGenericMDIXXX classes in your code (and currently also
+    add src/generic/mdig.cpp to your build as it's not compiled in if generic
+    MDI is not used by default -- but this may change later...).
+    wxUniv always uses the generic MDI implementation and so do the ports
+    without native version (although wxCocoa seems to have one -- but it's
+    probably not functional)
 
     @beginStyleTable
 
@@ -113,7 +512,7 @@ public:
 
     @see wxMDIChildFrame, wxMDIClientWindow, wxFrame, wxDialog
 */
-class wxMDIParentFrame : public wxFrame
+class wxMDIParentFrame : public wxMDIParentFrameBase
 {
 public:
 
@@ -344,6 +743,11 @@ public:
 /**
     @class wxMDIChildFrame
 
+    Port-specific implementation.
+    
+    wxMDIChildFrame inherits from wxMDIChildFrameBase which is a typedef of
+    wxMDIAnyChildWindow<wxMDIDefaultTraits>.
+
     An MDI child frame is a frame that can only exist inside a
     wxMDIClientWindow, which is itself a child of wxMDIParentFrame.
 
@@ -368,7 +772,7 @@ public:
 
     @see wxMDIClientWindow, wxMDIParentFrame, wxFrame
 */
-class wxMDIChildFrame : public wxFrame
+class wxMDIChildFrame : public wxMDIChildFrameBase
 {
 public:
     /**
