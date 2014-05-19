@@ -167,7 +167,6 @@
 
 #ifdef __ANDROID__
 #   define __WXANDROID__
-#   define __WXHANDHELD__
 #   include "wx/android/config_android.h"
 #endif
 
@@ -181,6 +180,8 @@
    could be already defined by configure but it must be included after defining
    the compiler macros above as msvc/wx/setup.h relies on them under Windows.
  */
+
+// this is temp
 #ifndef __WXANDROID__
 #   include "wx/setup.h"
 #else

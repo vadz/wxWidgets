@@ -1828,9 +1828,7 @@ public:
 
 private:
     wxCoord  m_x, m_y;
-#if defined(__WXANDROID__) || defined(__WXHANDHELD__)
     wxCursor m_cursor;
-#endif
 
 private:
     DECLARE_DYNAMIC_CLASS_NO_ASSIGN(wxSetCursorEvent)
