@@ -12,7 +12,7 @@
 #ifndef _WX_APP_H_BASE_
 #define _WX_APP_H_BASE_
 
-// ----------------------------------------------------------------------------
+// ----------------------------------------------------------------------------wx/
 // headers we have to include here
 // ----------------------------------------------------------------------------
 
@@ -708,6 +708,8 @@ protected:
     #include "wx/osx/app.h"
 #elif defined(__WXCOCOA__)
     #include "wx/cocoa/app.h"
+#elif defined(__WXANDROID__)
+    #include "wx/android/app.h"
 #endif
 
 #else // !GUI

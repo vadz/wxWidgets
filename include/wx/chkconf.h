@@ -755,7 +755,7 @@
 #endif /* !defined(wxUSE_HTML) */
 
 #ifndef wxUSE_LIBMSPACK
-#   if !defined(__UNIX__)
+#   if !defined(__UNIX__) || defined(__WXANDROID__)
         /* set to 0 on platforms that don't have libmspack */
 #       define wxUSE_LIBMSPACK 0
 #   else

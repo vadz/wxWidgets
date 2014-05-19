@@ -1,12 +1,3 @@
-/////////////////////////////////////////////////////////////////////////////
-// Name:        wx/univ/setup.h
-// Purpose:     Configuration for the universal build of the library
-// Author:      Julian Smart
-// Created:     01/02/97
-// Copyright:   (c) Julian Smart
-// Licence:     wxWindows licence
-/////////////////////////////////////////////////////////////////////////////
-
 #ifndef _WX_SETUP_H_
 #define _WX_SETUP_H_
 
@@ -710,7 +701,7 @@
 // Default is 1
 //
 // Recommended setting: 1
-#define wxUSE_WEBVIEW 1
+#define wxUSE_WEBVIEW 0
 
 // Use the IE wxWebView backend
 //
@@ -888,8 +879,8 @@
 // Default is 1 for all settings.
 //
 // Recommended setting: 1 for wxUSE_TOOLBAR and wxUSE_TOOLBAR_NATIVE.
-#define wxUSE_TOOLBAR 1
-#define wxUSE_TOOLBAR_NATIVE 1
+#define wxUSE_TOOLBAR 0
+#define wxUSE_TOOLBAR_NATIVE 0
 
 // wxNotebook is a control with several "tabs" located on one of its sides. It
 // may be used to logically organise the data presented to the user instead of
@@ -931,7 +922,7 @@
 // Default is 1.
 //
 // Recommended setting: 1
-#define wxUSE_TOOLBOOK 1
+#define wxUSE_TOOLBOOK 0
 
 // wxTaskBarIcon is a small notification icon shown in the system toolbar or
 // dock.
@@ -1019,7 +1010,7 @@
 // the GTK+ stock icons replaces it so it is normally not necessary.
 //
 // Recommended setting: 1 but can be turned off to reduce the library size.
-#define wxUSE_ARTPROVIDER_TANGO 1
+#define wxUSE_ARTPROVIDER_TANGO 0
 
 // Hotkey support (currently Windows only)
 #define wxUSE_HOTKEY 1
@@ -1087,7 +1078,7 @@
 // Default is 1.
 //
 // Recommended setting: 1 (but can be safely disabled if you don't use it)
-#define wxUSE_PREFERENCES_EDITOR 1
+#define wxUSE_PREFERENCES_EDITOR 0
 
 // wxRichToolTip is a customizable tooltip class which has more functionality
 // than the stock (but native, unlike this class) wxToolTip.
@@ -1355,7 +1346,7 @@
 // space)
 #define wxUSE_SNGLINST_CHECKER  1
 
-#define wxUSE_DRAGIMAGE 1
+#define wxUSE_DRAGIMAGE 0
 
 #define wxUSE_IPC         1
                                 // 0 for no interprocess comms
@@ -1399,7 +1390,7 @@
 
 // Set to 1 to compile in support for wxSVGFileDC, a wxDC subclass which allows
 // to create files in SVG (Scalable Vector Graphics) format.
-#define wxUSE_SVG 1
+#define wxUSE_SVG 0
 
 // Should wxDC provide SetTransformMatrix() and related methods?
 //
@@ -1596,6 +1587,14 @@
 // Recommended setting: 0, this is mainly used for testing
 #define wxUSE_DATEPICKCTRL_GENERIC 0
 
+// Set this to 1 to be able to use wxTimePickerCtrlGeneric in addition to the
+// native wxTimePickerCtrl for the platforms that have the latter (MSW).
+//
+// Default is 0.
+//
+// Recommended setting: 0, this is mainly used for testing
+#define wxUSE_TIMEPICKCTRL_GENERIC 0
+
 // ----------------------------------------------------------------------------
 // Crash debugging helpers
 // ----------------------------------------------------------------------------
@@ -1609,21 +1608,5 @@
 #define wxUSE_CRASHREPORT 1
 /* --- end MSW options --- */
 
-/* --- start wxUniv options --- */
-// ----------------------------------------------------------------------------
-// wxUniversal-only options
-// ----------------------------------------------------------------------------
-
-// Set to 1 to enable compilation of all themes, this is the default
-#define wxUSE_ALL_THEMES    1
-
-// Set to 1 to enable the compilation of individual theme if wxUSE_ALL_THEMES
-// is unset, if it is set these options are not used; notice that metal theme
-// uses Win32 one
-#define wxUSE_THEME_GTK     0
-#define wxUSE_THEME_METAL   0
-#define wxUSE_THEME_MONO    0
-#define wxUSE_THEME_WIN32   0
-/* --- end wxUniv options --- */
-
 #endif // _WX_SETUP_H_
+

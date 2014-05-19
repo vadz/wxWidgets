@@ -61,6 +61,8 @@ public:
 #elif defined(__WXCOCOA__)
     #define wxCURSOR_DEFAULT_TYPE   wxBITMAP_TYPE_MACCURSOR_RESOURCE
     #include "wx/cocoa/cursor.h"
+#elif defined(__WXANDROID__)
+    #include "wx/android/cursor.h"
 #endif
 
 #include "wx/utils.h"
