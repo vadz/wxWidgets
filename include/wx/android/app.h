@@ -1,6 +1,7 @@
 #ifndef _WX_APP_H_
 #define _WX_APP_H_
 
+// android specific
 #include <jni.h>
 
 #include "wx/event.h"

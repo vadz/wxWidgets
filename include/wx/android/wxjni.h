@@ -1,5 +1,5 @@
-#ifndef __WX_JNI
-#define __WX_JNI
+#ifndef _WX_JNI_H_
+#define _WX_JNI_H_
 
 #include <jni.h>
 #include <stack>
@@ -82,4 +82,4 @@ Java_org_wxwidgets_MainActivity_onCreateOMenu( JNIEnv* env,jobject thiz,
 #ifdef __cplusplus
 }
 #endif
-#endif // __WX_JNI
+#endif // _WX_JNI_H_
