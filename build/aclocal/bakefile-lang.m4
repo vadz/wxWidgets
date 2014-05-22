@@ -230,6 +230,19 @@ fi
 ]) dnl AC_DEFUN
 
 
+dnl Add handling of sysroot option.
+AC_DEFUN([_AC_BAKEFILE_SYSROOT],
+[
+    AC_ARG_WITH(sysroot,       [  --with-sysroot=PATH     use the given sysroot], [bakefile_sysroot="$withval"])
+
+    if test "$bakefile_sysroot" != ""; then
+        bakefile_sysroot_arg="--sysroot=$bakefile_sysroot"
+        CFLAGS="$bakefile_sysroot_arg $CFLAGS"
+        CXXFLAGS="$bakefile_sysroot_arg $CXXFLAGS"
+        LDFLAGS="$bakefile_sysroot_arg $LDFLAGS"
+    fi
+]) dnl _AC_BAKEFILE_SYSROOT
+
 dnl ===========================================================================
 dnl Macros to do all of the compiler detections as one macro
 dnl ===========================================================================
@@ -304,11 +317,13 @@ AC_DEFUN([_AC_BAKEFILE_PROG_COMPILER],
 
 AC_DEFUN([AC_BAKEFILE_PROG_CC],
 [
+    AC_REQUIRE([_AC_BAKEFILE_SYSROOT])
     _AC_BAKEFILE_PROG_COMPILER(CC)
 ])
 
 AC_DEFUN([AC_BAKEFILE_PROG_CXX],
 [
+    AC_REQUIRE([_AC_BAKEFILE_SYSROOT])
     _AC_BAKEFILE_PROG_COMPILER(CXX)
 ])
 

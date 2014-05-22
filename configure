@@ -1349,6 +1349,7 @@ enable_uxtheme
 enable_wxdib
 enable_webviewie
 enable_autoidman
+with_sysroot
 enable_largefile
 enable_gtktest
 with_gtk_prefix
@@ -2331,6 +2332,7 @@ Optional Packages:
   --with-expat            enable XML support using expat parser
   --with-macosx-sdk=PATH  use an OS X SDK at PATH
   --with-macosx-version-min=VER   build binaries which require at least this OS X version
+  --with-sysroot=PATH     use the given sysroot
   --with-gtk-prefix=PFX   Prefix where GTK is installed (optional)
   --with-gtk-exec-prefix=PFX Exec prefix where GTK is installed (optional)
   --with-x                use the X Window System
@@ -16234,6 +16236,21 @@ fi
 rm -f confcache
 
 CFLAGS=${CFLAGS:=}
+
+
+# Check whether --with-sysroot was given.
+if test "${with_sysroot+set}" = set; then :
+  withval=$with_sysroot; bakefile_sysroot="$withval"
+fi
+
+
+    if test "$bakefile_sysroot" != ""; then
+        bakefile_sysroot_arg="--sysroot=$bakefile_sysroot"
+        CFLAGS="$bakefile_sysroot_arg $CFLAGS"
+        CXXFLAGS="$bakefile_sysroot_arg $CXXFLAGS"
+        LDFLAGS="$bakefile_sysroot_arg $LDFLAGS"
+    fi
+
 ac_ext=c
 ac_cpp='$CPP $CPPFLAGS'
 ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
@@ -17022,6 +17039,7 @@ ac_cpp='$CPP $CPPFLAGS'
 ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
 ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
 ac_compiler_gnu=$ac_cv_c_compiler_gnu
+
 
 
 
@@ -18352,6 +18370,7 @@ ac_cpp='$CPP $CPPFLAGS'
 ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
 ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
 ac_compiler_gnu=$ac_cv_c_compiler_gnu
+
 
 
 
