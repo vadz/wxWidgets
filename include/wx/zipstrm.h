@@ -47,6 +47,7 @@ enum wxZipMethod
     wxZIP_METHOD_DEFLATE,
     wxZIP_METHOD_DEFLATE64,
     wxZIP_METHOD_BZIP2 = 12,
+    wxZIP_METHOD_AES = 99,
     wxZIP_METHOD_DEFAULT = 0xffff
 };
 
@@ -354,6 +355,8 @@ private:
 /////////////////////////////////////////////////////////////////////////////
 // wxZipInputStream
 
+typedef wxString (*PasswordProvider)();
+
 class WXDLLIMPEXP_BASE wxZipInputStream : public wxArchiveInputStream
 {
 public:
@@ -373,6 +376,8 @@ public:
     int WXZIPFIX GetTotalEntries();
 
     virtual wxFileOffset GetLength() const wxOVERRIDE { return m_entry.GetSize(); }
+
+    void SetPasswordProvider(PasswordProvider provider);
 
 protected:
     size_t WXZIPFIX OnSysRead(void *buffer, size_t size) wxOVERRIDE;
@@ -409,6 +414,9 @@ private:
     class wxStoredInputStream *m_store;
     class wxZlibInputStream2 *m_inflate;
     class wxRawInputStream *m_rawin;
+    class wxAesInputStream *m_aesin;
+    class wxHmacInputStream *m_hmacin;
+    PasswordProvider m_passwordProvider;
     wxZipEntry m_entry;
     bool m_raw;
     size_t m_headerSize;
