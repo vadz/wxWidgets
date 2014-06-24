@@ -355,7 +355,7 @@ private:
 /////////////////////////////////////////////////////////////////////////////
 // wxZipInputStream
 
-typedef wxString (*PasswordProvider)();
+typedef wxString (*wxZipPasswordProvider)(const wxString& zip);
 
 class WXDLLIMPEXP_BASE wxZipInputStream : public wxArchiveInputStream
 {
@@ -377,7 +377,10 @@ public:
 
     virtual wxFileOffset GetLength() const wxOVERRIDE { return m_entry.GetSize(); }
 
-    void SetPasswordProvider(PasswordProvider provider);
+    void SetPasswordProvider(wxZipPasswordProvider provider, const wxString& zip)
+    {
+        m_passwordProvider = provider; m_passwordZip = zip;
+    }
 
 protected:
     size_t WXZIPFIX OnSysRead(void *buffer, size_t size) wxOVERRIDE;
@@ -405,6 +408,7 @@ private:
     bool AtHeader() const       { return m_headerSize == 0; }
     bool AfterHeader() const    { return m_headerSize > 0 && !m_decomp; }
     bool IsOpened() const       { return m_decomp != NULL; }
+    bool IsHmacAuthentication() const { return m_aesVersion == 2; }
 
     wxZipStreamLink *MakeLink(wxZipOutputStream *out);
 
@@ -416,7 +420,9 @@ private:
     class wxRawInputStream *m_rawin;
     class wxAesInputStream *m_aesin;
     class wxHmacInputStream *m_hmacin;
-    PasswordProvider m_passwordProvider;
+    wxZipPasswordProvider m_passwordProvider;
+    wxString m_passwordZip;
+    wxWord m_aesVersion;
     wxZipEntry m_entry;
     bool m_raw;
     size_t m_headerSize;

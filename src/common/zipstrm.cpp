@@ -168,7 +168,7 @@ private:
     // Current position of next unread byte
     size_t m_bufferPos;
     // Amount of bytes started at m_buffer + m_bufferSize position
-    // which is less then AES block size
+    // which is less than AES block size
     size_t m_unusedBufferSize;
     wxByte m_buffer[m_bufferCapacity];
     symmetric_CTR m_aesContext;
@@ -176,12 +176,18 @@ private:
 };
 
 wxAesInputStream::wxAesInputStream(wxInputStream& stream) :
-    wxFilterInputStream(stream)
+    wxFilterInputStream(stream),
+    m_bufferSize(0),
+    m_bufferPos(0),
+    m_unusedBufferSize(0)
 {
 }
 
 wxAesInputStream::wxAesInputStream(wxInputStream* stream) :
-    wxFilterInputStream(stream)
+    wxFilterInputStream(stream),
+    m_bufferSize(0),
+    m_bufferPos(0),
+    m_unusedBufferSize(0)
 {
 }
 
@@ -198,7 +204,7 @@ size_t wxAesInputStream::OnSysRead(void *buffer, size_t size)
     size_t bytesAvailable = m_bufferSize - m_bufferPos;
     if (bytesAvailable == 0)
         bytesAvailable = FeelBuffer();
-    const size_t bytesToBeRead = MIN(size, bytesAvailable);
+    const size_t bytesToBeRead = wxMin(size, bytesAvailable);
     memcpy(buffer, m_buffer + m_bufferPos, bytesToBeRead);
     m_bufferPos += bytesToBeRead;
     return bytesToBeRead;
@@ -206,7 +212,7 @@ size_t wxAesInputStream::OnSysRead(void *buffer, size_t size)
 
 size_t wxAesInputStream::FeelBuffer()
 {
-    static const size_t blockSize = (size_t)m_aesContext.blocklen;
+    const size_t blockSize = (size_t)aes_desc.block_length;
     m_bufferPos = 0;
 
     memcpy(m_buffer, m_buffer + m_bufferSize, m_unusedBufferSize);
@@ -247,7 +253,7 @@ class wxHmacInputStream : public wxFilterInputStream
 public:
     wxHmacInputStream(wxInputStream& stream);
     wxHmacInputStream(wxInputStream *stream);
-    void Init(const wxByte* key, const wxByte* salt, size_t keyLength);
+    void Init(const wxByte* key, size_t keyLength);
     bool CheckHmac(wxByte* hmac, size_t size) const;
 
 protected:
@@ -269,7 +275,7 @@ wxHmacInputStream::wxHmacInputStream(wxInputStream* stream) :
 {
 }
 
-void wxHmacInputStream::Init(const wxByte* key, const wxByte* salt, size_t keyLength)
+void wxHmacInputStream::Init(const wxByte* key, size_t keyLength)
 {
     const int hash = register_hash(&sha1_desc);
     wxCHECK_RET(CRYPT_OK == hmac_init(&m_hmacContext, hash, key, keyLength),
@@ -285,13 +291,19 @@ size_t wxHmacInputStream::OnSysRead(void *buffer, size_t size)
     {
         hmac_result = hmac_process(&m_hmacContext, (unsigned char*)buffer,
                                     sizeRead);
+        wxCHECK2(CRYPT_OK == hmac_result, m_lasterror = wxSTREAM_READ_ERROR);
     }
-    else
+    else if (m_lasterror == wxSTREAM_NO_ERROR)
     {
-        unsigned long hmacBufferSize = sizeof(m_hmac);
-        hmac_result = hmac_done(&m_hmacContext, m_hmac, &hmacBufferSize);
+        m_lasterror = m_parent_i_stream->GetLastError();
+        if (m_lasterror == wxSTREAM_EOF)
+        {
+            unsigned long hmacBufferSize = sizeof(m_hmac);
+            hmac_result = hmac_done(&m_hmacContext, m_hmac, &hmacBufferSize);
+            wxCHECK2(CRYPT_OK == hmac_result && hmacBufferSize == sha1_desc.hashsize,
+                m_lasterror = wxSTREAM_READ_ERROR);
+        }
     }
-    wxCHECK2(CRYPT_OK == hmac_result, m_lasterror = wxSTREAM_READ_ERROR);
     return sizeRead;
 }
 
@@ -1499,6 +1511,7 @@ void wxZipInputStream::Init()
     m_aesin = NULL;
     m_hmacin = NULL;
     m_passwordProvider = NULL;
+    m_aesVersion = 0;
     m_raw = false;
     m_headerSize = 0;
     m_decomp = NULL;
@@ -1928,12 +1941,45 @@ wxInputStream *wxZipInputStream::OpenDecompressor(wxInputStream& stream)
 
         case wxZIP_METHOD_AES:
         {
-            // All AES related constants got at http://www.winzip.com/aes_info.htm
-            wxCHECK(m_passwordProvider != NULL, NULL);
-            wxCHECK(m_entry.GetSize() != wxInvalidOffset, NULL);
+            // All AES related constants obtained from http://www.winzip.com/aes_info.htm
+            if (!m_passwordProvider)
+            {
+               wxLogError(_("This ZIP file is AES-encrypted but no password for "
+                   "decrypting it was specified."));
+               return NULL;
+            }
+            if (m_entry.GetSize() == wxInvalidOffset)
+            {
+                wxLogError(_("stored file length not in Zip header"));
+                return NULL;
+            }
+            if (m_entry.GetLocalExtraLen() != 11)
+            {
+                wxLogError(_("Invalid extra block size for this AES-encrypted "
+                    "zip entry"));
+                return NULL;
+            }
 
+            const char* extra = m_entry.GetLocalExtra();
+
+            if (*(wxWord*)extra != 0x9901 || memcmp(extra + 6, "AE", 2) != 0)
+            {
+                wxLogError(_("Invalid extra block header for this AES-encrypted "
+                    "zip entry"));
+                return NULL;
+            }
+
+            switch (wxWord vendorVersion = *(wxWord*)(extra + 4))
+            {
+            case 1:
+            case 2:
+                m_aesVersion = vendorVersion;
+                break;
+            default:
+                wxLogError(_("Invalid AES vendor version"));
+                return NULL;
+            }
             size_t keySize;
-            const char* extra = m_entry.GetExtra();
             // Integer mode value indicating AES encryption strength
             switch (*(extra + 8))
             {
@@ -1948,42 +1994,69 @@ wxInputStream *wxZipInputStream::OpenDecompressor(wxInputStream& stream)
             case 3:
                 keySize = 32;
                 break;
+
+            default:
+                wxLogError(_("Invalid AES key length"));
+                return NULL;
             }
+
+            // MAXBLOCKSIZE - a libtom constant to define buffers with proper
+            // size to keep a cipher/hash block or symmetric key
             wxByte salt[MAXBLOCKSIZE];
             size_t saltSize = keySize / 2;
-            stream.ReadAll(salt, saltSize);
             wxByte passwordVerifier[2];
+
+            const size_t encryptionOverheadSize = saltSize +
+                            sizeof(passwordVerifier) + sha1_desc.hashsize / 2;
+            if (m_entry.GetSize() < encryptionOverheadSize)
+            {
+                wxLogError(_("Invalid encrypted archive size"));
+                return NULL;
+            }
+            stream.ReadAll(salt, saltSize);
             stream.Read(passwordVerifier, sizeof(passwordVerifier));
 
-            const wxString password = m_passwordProvider();
-            unsigned long deriveKeyLength = keySize * 2 + 2;
+            const wxString password = m_passwordProvider(m_passwordZip);
+            unsigned long deriveKeyLength = keySize * 2 + sizeof(passwordVerifier);
             const int sha1 = register_hash(&sha1_desc);
             wxByte key[MAXBLOCKSIZE];
+            wxScopedCharBuffer passwordBuffer = password.ToAscii();
             int passwordDerivationResult =
-                pkcs_5_alg2(password.c_str().AsUnsignedChar(), password.size(),
-                            salt, saltSize, 1000, sha1, key, &deriveKeyLength);
+                pkcs_5_alg2((const unsigned char*)passwordBuffer.data(),
+                            passwordBuffer.length(), salt, saltSize, 1000,
+                            sha1, key, &deriveKeyLength);
+            wxCHECK(passwordDerivationResult == CRYPT_OK, NULL);
             bool isPasswordCorrect = memcmp(passwordVerifier, key + keySize * 2,
                                             sizeof(passwordVerifier)) == 0;
-            wxCHECK(passwordDerivationResult == CRYPT_OK && isPasswordCorrect, NULL);
+            if (!isPasswordCorrect)
+            {
+                wxLogError(_("Incorrect password was specified"));
+                return NULL;
+            }
 
             wxStoredInputStream* realStream = new wxStoredInputStream(stream);
-            realStream->Open(m_entry.GetSize() - saltSize - sizeof(passwordVerifier));
-            m_aesin = new wxAesInputStream(realStream);
+            realStream->Open(m_entry.GetCompressedSize() - encryptionOverheadSize);
+            wxInputStream* streamForDecoding = realStream;
+            if (m_aesVersion == 2)
+            {
+                m_hmacin = new wxHmacInputStream(realStream);
+                m_hmacin->Init(key + keySize, keySize);
+                streamForDecoding = m_hmacin;
+            }
+            m_aesin = new wxAesInputStream(*streamForDecoding);
             m_aesin->Init(key, salt, keySize);
-            m_hmacin = new wxHmacInputStream(*m_aesin);
-            m_hmacin->Init(key + keySize, salt, keySize);
 
             // The actual compression method used to compress the file
             switch (*(wxWord*)(extra + 9))
             {
             case wxZIP_METHOD_STORE:
-                return m_hmacin;
+                return m_aesin;
 
             case wxZIP_METHOD_DEFLATE:
                 if (!m_inflate)
-                    m_inflate = new wxZlibInputStream2(*m_hmacin);
+                    m_inflate = new wxZlibInputStream2(*m_aesin);
                 else
-                    m_inflate->Open(*m_hmacin);
+                    m_inflate->Open(*m_aesin);
                 return m_inflate;
             default:
                 wxLogError(_("unsupported Zip compression method"));
@@ -2050,13 +2123,25 @@ size_t wxZipInputStream::OnSysRead(void *buffer, size_t size)
         return 0;
 
     size_t count = m_decomp->Read(buffer, size).LastRead();
-    if (!m_raw)
+    if (!m_raw && !IsHmacAuthentication())
         m_crcAccumulator = crc32(m_crcAccumulator, (Byte*)buffer, count);
     if (count < size)
         m_lasterror = m_decomp->GetLastError();
 
     if (Eof()) {
-        if ((m_entry.GetFlags() & wxZIP_SUMS_FOLLOW) != 0) {
+        wxByte hmac[MAXBLOCKSIZE];
+        size_t hmacSize = sha1_desc.hashsize / 2;
+        if (IsHmacAuthentication())
+        {
+            if (!m_parent_i_stream->ReadAll(hmac, hmacSize))
+            {
+                wxLogError(_("reading zip stream (entry %s): bad length"),
+                           m_entry.GetName().c_str());
+                m_lasterror = wxSTREAM_READ_ERROR;
+                return 0;
+            }
+        }
+        else if ((m_entry.GetFlags() & wxZIP_SUMS_FOLLOW) != 0) {
             m_headerSize += m_entry.ReadDescriptor(*m_parent_i_stream);
             wxZipEntry *entry = m_weaklinks->GetEntry(m_entry.GetKey());
 
@@ -2076,7 +2161,8 @@ size_t wxZipInputStream::OnSysRead(void *buffer, size_t size)
                 wxLogError(_("reading zip stream (entry %s): bad length"),
                            m_entry.GetName().c_str());
             }
-            else if (m_crcAccumulator != m_entry.GetCrc())
+            else if (IsHmacAuthentication() && !m_hmacin->CheckHmac(hmac, hmacSize) ||
+                m_crcAccumulator != m_entry.GetCrc())
             {
                 wxLogError(_("reading zip stream (entry %s): bad crc"),
                            m_entry.GetName().c_str());
