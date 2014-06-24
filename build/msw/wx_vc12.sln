@@ -1,5 +1,7 @@
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 2013
+# Visual Studio Express 2013 for Windows Desktop
+VisualStudioVersion = 12.0.30110.0
+MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "_custom_build", "wx_vc12_custom_build.vcxproj", "{01F4CE10-2CFB-41A8-B41F-E54337868A1D}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "wxregex", "wx_vc12_wxregex.vcxproj", "{56A4B526-BB81-5D01-AAA9-16D23BBB169D}"
@@ -25,6 +27,7 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "base", "wx_vc12_base.vcxpro
 		{56A4B526-BB81-5D01-AAA9-16D23BBB169D} = {56A4B526-BB81-5D01-AAA9-16D23BBB169D}
 		{A1A8355B-0988-528E-9CC2-B971D6266669} = {A1A8355B-0988-528E-9CC2-B971D6266669}
 		{8B867186-A0B5-5479-B824-E176EDD27C40} = {8B867186-A0B5-5479-B824-E176EDD27C40}
+		{19DD23F7-25C6-49F6-968C-02AA27FEAACE} = {19DD23F7-25C6-49F6-968C-02AA27FEAACE}
 	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "net", "wx_vc12_net.vcxproj", "{69F2EDE4-7D21-5738-9BC0-F66F61C9AE00}"
@@ -109,6 +112,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "gl", "wx_vc12_gl.vcxproj", 
 	ProjectSection(ProjectDependencies) = postProject
 		{6744DAD8-9C70-574A-BFF2-9F8DDDB24A75} = {6744DAD8-9C70-574A-BFF2-9F8DDDB24A75}
 	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "tomcrypt", "..\tomcrypt\tomcrypt.vcxproj", "{19DD23F7-25C6-49F6-968C-02AA27FEAACE}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -506,6 +511,18 @@ Global
 		{DA8B15EF-6750-5928-BC0E-C748213CF9B2}.Release|Win32.Build.0 = Release|Win32
 		{DA8B15EF-6750-5928-BC0E-C748213CF9B2}.Release|x64.ActiveCfg = Release|x64
 		{DA8B15EF-6750-5928-BC0E-C748213CF9B2}.Release|x64.Build.0 = Release|x64
+		{19DD23F7-25C6-49F6-968C-02AA27FEAACE}.Debug|Win32.ActiveCfg = Debug|Win32
+		{19DD23F7-25C6-49F6-968C-02AA27FEAACE}.Debug|Win32.Build.0 = Debug|Win32
+		{19DD23F7-25C6-49F6-968C-02AA27FEAACE}.Debug|x64.ActiveCfg = Debug|Win32
+		{19DD23F7-25C6-49F6-968C-02AA27FEAACE}.DLL Debug|Win32.ActiveCfg = Debug|Win32
+		{19DD23F7-25C6-49F6-968C-02AA27FEAACE}.DLL Debug|Win32.Build.0 = Debug|Win32
+		{19DD23F7-25C6-49F6-968C-02AA27FEAACE}.DLL Debug|x64.ActiveCfg = Debug|Win32
+		{19DD23F7-25C6-49F6-968C-02AA27FEAACE}.DLL Release|Win32.ActiveCfg = Release|Win32
+		{19DD23F7-25C6-49F6-968C-02AA27FEAACE}.DLL Release|Win32.Build.0 = Release|Win32
+		{19DD23F7-25C6-49F6-968C-02AA27FEAACE}.DLL Release|x64.ActiveCfg = Release|Win32
+		{19DD23F7-25C6-49F6-968C-02AA27FEAACE}.Release|Win32.ActiveCfg = Release|Win32
+		{19DD23F7-25C6-49F6-968C-02AA27FEAACE}.Release|Win32.Build.0 = Release|Win32
+		{19DD23F7-25C6-49F6-968C-02AA27FEAACE}.Release|x64.ActiveCfg = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
