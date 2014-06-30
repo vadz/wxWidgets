@@ -156,6 +156,7 @@ public:
 
 protected:
     virtual size_t OnSysRead(void *buffer, size_t size);
+    virtual wxFileOffset OnSysTell() const;
 
 private:
     size_t FeelBuffer();
@@ -194,9 +195,11 @@ wxAesInputStream::wxAesInputStream(wxInputStream* stream) :
 void wxAesInputStream::Init(const wxByte* key, const wxByte* salt, size_t keyLength)
 {
     const int aes_cipher = register_cipher(&aes_desc);
-    int ctrContextInitializationResiult = ctr_start(aes_cipher, salt, key,
-                    keyLength, 0,CTR_COUNTER_LITTLE_ENDIAN, &m_aesContext);
-    wxASSERT(CRYPT_OK == ctrContextInitializationResiult);
+    wxByte nullSalt[MAXBLOCKSIZE];
+    std::memset(nullSalt, 0, sizeof(nullSalt));
+    int ctrContextInitializationResult = ctr_start(aes_cipher, nullSalt, key,
+            keyLength, 0, LTC_CTR_RFC3686 | CTR_COUNTER_LITTLE_ENDIAN, &m_aesContext);
+    wxASSERT(CRYPT_OK == ctrContextInitializationResult);
 }
 
 size_t wxAesInputStream::OnSysRead(void *buffer, size_t size)
@@ -208,6 +211,11 @@ size_t wxAesInputStream::OnSysRead(void *buffer, size_t size)
     memcpy(buffer, m_buffer + m_bufferPos, bytesToBeRead);
     m_bufferPos += bytesToBeRead;
     return bytesToBeRead;
+}
+
+wxFileOffset wxAesInputStream::OnSysTell() const
+{
+    return m_parent_i_stream->TellI();
 }
 
 size_t wxAesInputStream::FeelBuffer()
@@ -258,6 +266,7 @@ public:
 
 protected:
     virtual size_t OnSysRead(void *buffer, size_t size);
+    virtual wxFileOffset OnSysTell() const;
 
 private:
     wxByte m_hmac[MAXBLOCKSIZE];
@@ -305,6 +314,11 @@ size_t wxHmacInputStream::OnSysRead(void *buffer, size_t size)
         }
     }
     return sizeRead;
+}
+
+wxFileOffset wxHmacInputStream::OnSysTell() const
+{
+    return m_parent_i_stream->TellI();
 }
 
 bool wxHmacInputStream::CheckHmac(wxByte* hmac, size_t size) const
@@ -1531,9 +1545,8 @@ wxZipInputStream::~wxZipInputStream()
 
     delete m_store;
     delete m_inflate;
-    delete m_rawin;
     delete m_aesin;
-    delete m_hmacin;
+    delete m_rawin;
 
     m_weaklinks->Release(this);
 
@@ -2043,7 +2056,7 @@ wxInputStream *wxZipInputStream::OpenDecompressor(wxInputStream& stream)
                 m_hmacin->Init(key + keySize, keySize);
                 streamForDecoding = m_hmacin;
             }
-            m_aesin = new wxAesInputStream(*streamForDecoding);
+            m_aesin = new wxAesInputStream(streamForDecoding);
             m_aesin->Init(key, salt, keySize);
 
             // The actual compression method used to compress the file
@@ -2075,7 +2088,7 @@ bool wxZipInputStream::CloseDecompressor(wxInputStream *decomp)
 {
     if (decomp && decomp == m_rawin)
         return CloseDecompressor(m_rawin->GetFilterInputStream());
-    if (decomp != m_store && decomp != m_inflate)
+    if (decomp != m_store && decomp != m_inflate && decomp != m_aesin)
         delete decomp;
     return true;
 }
