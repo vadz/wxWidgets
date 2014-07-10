@@ -491,6 +491,7 @@ $(TAB)$(VC_COMPILER) /EP /nologo "$(DOLLAR)(InputPath)" > "$(SETUPHDIR)\wx\msw\r
     <include file="tiff.bkl"/>
     <include file="expat.bkl"/>
     <include file="scintilla.bkl"/>
+    <include file="tomcrypt.bkl"/>
 
 
     <!-- =============================================================== -->
