@@ -1,39 +1,37 @@
 /////////////////////////////////////////////////////////////////////////////
-// Name:        tabdocmdi.h
-// Purpose:     Frame classes for Aui MDI document/view applications
-// Author:      Julian Smart
-// Modified by: Kinaou Hervé
-// Created:     01/02/97
-// RCS-ID:      $Id:$
-// Copyright:   (c) Julian Smart
+// Name:        aui/tabdocmdi.h
+// Purpose:     interface of wxAuiDocMDIParentFrame, wxAuiDocMDIChildFrame
+// Author:      wxWidgets team
 // Licence:     wxWindows licence
 /////////////////////////////////////////////////////////////////////////////
 
-#ifndef _WX_AUITABDOCMDI_H_
-#define _WX_AUITABDOCMDI_H_
+/**
+    @class wxAuiDocMDIParentFrame
 
-#if wxUSE_AUI
+    wxAuiDocMDIParentFrame inherits from wxAuiDocMDIParentFrameBase which is a typedef of
+    wxDocParentFrameAny<wxAuiMDIParentFrame>.
 
-#include "wx/docmdi.h"
-#include "wx/aui/tabmdi.h"
+    The wxAuiDocMDIParentFrame class is part of the wxAUI class framework.
+    It provides a default top-level frame for applications using the document/view
+    framework. This class can only be used for wxAUI MDI parent frames.
 
-//-----------------------------------------------------------------------------
-// classes
-//-----------------------------------------------------------------------------
+    It cooperates with the the wxView, wxDocument, wxDocManager and wxDocTemplate
+    classes.
 
+    @library{wxaui}
+    @category{docview}
 
-// ----------------------------------------------------------------------------
-// An MDI document parent frame for AUI framework
-// ----------------------------------------------------------------------------
-
-typedef wxDocParentFrameAny<wxAuiMDIParentFrame> wxAuiDocMDIParentFrameBase;
-template class WXDLLIMPEXP_AUI wxDocParentFrameAny<wxAuiMDIParentFrame>;
+    @see @ref wxauioverview @ref overview_docview, @ref page_samples_auidocview, wxAuiMDIParentFrame
+*/
 
 class WXDLLIMPEXP_AUI wxAuiDocMDIParentFrame : public wxAuiDocMDIParentFrameBase
 {
 public:
-    wxAuiDocMDIParentFrame() : wxAuiDocMDIParentFrameBase() { }
-
+    //@{
+    /**
+        Constructor.
+    */
+    wxAuiDocMDIParentFrame();
     wxAuiDocMDIParentFrame(wxDocManager *manager,
                            wxFrame *parent,
                            wxWindowID id,
@@ -42,7 +40,11 @@ public:
                            const wxSize& size = wxDefaultSize,
                            long style = wxDEFAULT_FRAME_STYLE,
                            const wxString& name = wxFrameNameStr);
+    //@}
 
+    /**
+        Creates the window.
+    */
     bool Create(wxDocManager *manager,
                 wxFrame *frame,
                 wxWindowID id,
@@ -52,37 +54,48 @@ public:
                 long style = wxDEFAULT_FRAME_STYLE,
                 const wxString& name = wxFrameNameStr);
 
-    // Extend event processing to search the document manager's event table
+    /**
+        Extend event processing to search the document manager's event table.
+    */
     virtual bool TryBefore(wxEvent& event);
 
-    wxDocManager *GetDocumentManager(void) const { return m_docManager; }
+    wxDocManager *GetDocumentManager(void) const;
 
 protected:
     void OnCloseWindow(wxCloseEvent& event);
-
-#if wxUSE_MENUS
+    /// Defined if wxUSE_MENUS is set to 1.
     virtual void DoHandleMenu(wxCommandEvent &event);
-#endif // wxUSE_MENUS
-
-private:
-    DECLARE_CLASS(wxAuiDocMDIParentFrame)
-    wxDECLARE_NO_COPY_CLASS(wxAuiDocMDIParentFrame);
-    DECLARE_EVENT_TABLE()
 };
 
 
-// ----------------------------------------------------------------------------
-// An MDI document child frame for AUI framework
-// ----------------------------------------------------------------------------
+/**
+    @class wxAuiDocMDIChildFrame
 
-typedef wxDocChildFrameAny<wxAuiMDIChildFrame, wxAuiMDIParentFrame> wxAuiDocMDIChildFrameBase;
-template class WXDLLIMPEXP_AUI wxDocChildFrameAny<wxAuiMDIChildFrame, wxAuiMDIParentFrame>;
+    wxAuiDocMDIChildFrame inherits from wxAuiDocMDIChildFrameBase which is a typedef of
+    wxDocChildFrameAny<wxAuiMDIChildFrame, wxAuiMDIParentFrame>.
+
+    The wxAuiDocMDIChildFrame class is part of the wxAUI class framework.
+    It provides a default frame for displaying documents on separate windows.
+    This class can only be used for wxAUI MDI child frames.
+
+    The class is part of the document/view framework supported by wxWidgets,
+    and cooperates with the the wxView, wxDocument, wxDocManager and wxDocTemplate
+    classes.
+
+    @library{wxaui}
+    @category{docview}
+
+    @see @ref wxauioverview @ref overview_docview, @ref page_samples_auidocview, wxAuiMDIChildFrame
+*/
 
 class WXDLLIMPEXP_AUI wxAuiDocMDIChildFrame : public wxAuiDocMDIChildFrameBase
 {
 public:
-    wxAuiDocMDIChildFrame() { }
-
+    //@{
+    /**
+        Constructor.
+    */
+    wxAuiDocMDIChildFrame();
     wxAuiDocMDIChildFrame(wxDocument *doc,
                           wxView *view,
                           wxAuiMDIParentFrame *parent,
@@ -92,7 +105,11 @@ public:
                           const wxSize& size = wxDefaultSize,
                           long style = wxDEFAULT_FRAME_STYLE,
                           const wxString& name = wxFrameNameStr);
+    //@}
 
+    /**
+        Creates the window.
+    */
     bool Create(wxDocument *doc,
                 wxView *view,
                 wxAuiMDIParentFrame *parent,
@@ -105,15 +122,4 @@ public:
 
 protected:
     virtual void DoActivate(wxActivateEvent& evt) { evt.Skip(false); }
-
-private:
-    DECLARE_CLASS(wxAuiDocMDIChildFrame)
-    wxDECLARE_NO_COPY_CLASS(wxAuiDocMDIChildFrame);
 };
-
-
-#endif
-    // wxUSE_AUI
-
-#endif
-    // _WX_AUITABDOCMDI_H_

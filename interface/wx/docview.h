@@ -1064,10 +1064,173 @@ public:
     wxString m_viewTypeName;
 };
 
+/**
+    @class wxDocChildFrameAnyBase
 
+    Base class for child frames -- this is what wxView renders itself into.
+
+    @remarks
+    This is a mix-in class so it doesn't derive from wxWindow,
+    only wxDocChildFrameAny does.
+
+    
+    @library{wxcore}
+    @category{docview}
+
+    @see @ref overview_docview_wxview, wxDocChildFrameAny,
+    wxDocParentFrameAny, wxDocParentFrameAnyBase
+*/
+class WXDLLIMPEXP_CORE wxDocChildFrameAnyBase
+{
+public:
+    /**
+        Default ctor, use Create() after it.
+    */
+    wxDocChildFrameAnyBase();
+    /**
+        Full ctor equivalent to using the default one and Create()
+    */
+    wxDocChildFrameAnyBase(wxDocument *doc, wxView *view, wxWindow *win);
+
+    /**
+        Must be called for an object created using the default ctor.
+        
+        @remarks
+        It returns bool just for consistency with Create() methods in
+        other classes, we never return false from here.
+    */
+    bool Create(wxDocument *doc, wxView *view, wxWindow *win);
+
+    /**
+        Destructor doesn't need to be virtual, an object should never be destroyed via
+        a pointer to this class.
+    */
+    ~wxDocChildFrameAnyBase();
+
+    /**
+        Returns the document associated with this frame.
+    */
+    wxDocument *GetDocument() const;
+
+    /**
+        Returns the view associated with this frame.
+    */
+    wxView *GetView() const;
+
+    /**
+        Sets the document for this frame.
+    */
+    void SetDocument(wxDocument *doc);
+
+    /**
+        Sets the view for this frame.
+    */
+    void SetView(wxView *view);
+
+    /**
+        Returns the window associated with this frame.
+    */
+    wxWindow *GetWindow() const;
+
+protected:
+    /**
+        wxEvtHandler-like function which is called from TryBefore() of the derived
+        classes to give our view a chance to process the message before the frame
+        event handlers are used.
+    */
+    bool TryProcessEvent(wxEvent& event);
+    
+    /**
+        Called from EVT_CLOSE handler in the frame: check if we can close and do
+        cleanup if so; veto the event otherwise
+    */
+    bool CloseView(wxCloseEvent& event);
+
+
+    /**
+        The document associated with the frame.
+    */
+    wxDocument*       m_childDocument;
+
+    /**
+        The view associated with the frame.
+    */
+    wxView*           m_childView;
+
+    /**
+        The associated window (allows to avoid having any virtual functions
+        in this class)
+    */
+    wxWindow* m_win;
+};
+
+/**
+    @class wxDocChildFrameAny
+
+    Template implementing child frame concept using the given wxFrame-like class
+
+    This is used to define wxDocChildFrame and wxDocMDIChildFrame: ChildFrame is
+    a wxFrame or wxMDIChildFrame (although in theory it could be any wxWindow-
+    derived class as long as it provided a ctor with the same signature as
+    wxFrame and OnActivate() method) and ParentFrame is either wxFrame or
+    wxMDIParentFrame.
+*/
+template <class ChildFrame, class ParentFrame>
+class WXDLLIMPEXP_CORE wxDocChildFrameAny : public ChildFrame,
+                                            public wxDocChildFrameAnyBase
+{
+public:
+    typedef ChildFrame BaseClass;
+
+    /**
+        Default constructor, use Create after it.
+    */
+    wxDocChildFrameAny();
+
+    /**
+        Constructor for a frame showing the given view of the specified document.
+    */
+    wxDocChildFrameAny(wxDocument *doc,
+                       wxView *view,
+                       ParentFrame *parent,
+                       wxWindowID id,
+                       const wxString& title,
+                       const wxPoint& pos = wxDefaultPosition,
+                       const wxSize& size = wxDefaultSize,
+                       long style = wxDEFAULT_FRAME_STYLE,
+                       const wxString& name = wxFrameNameStr);
+
+    bool Create(wxDocument *doc,
+                wxView *view,
+                ParentFrame *parent,
+                wxWindowID id,
+                const wxString& title,
+                const wxPoint& pos = wxDefaultPosition,
+                const wxSize& size = wxDefaultSize,
+                long style = wxDEFAULT_FRAME_STYLE,
+                const wxString& name = wxFrameNameStr);
+
+    virtual bool Destroy();
+
+protected:
+    /**
+        Hook the child view into event handlers chain.
+    */
+    virtual bool TryBefore(wxEvent& event);
+
+private:
+    void OnActivate(wxActivateEvent& event);
+    void OnCloseWindow(wxCloseEvent& event);
+};
 
 /**
     @class wxDocChildFrame
+    
+    A default child frame: we need to define it as a class just for wxRTTI,
+    otherwise we could simply typedef it.
+
+    wxDocChildFrame inherits from wxDocChildFrameBase which is a typedef of
+    wxDocChildFrameAny<wxFrame, wxFrame>.
 
     The wxDocChildFrame class provides a default frame for displaying documents
     on separate windows. This class can only be used for SDI (not MDI) child
@@ -1087,9 +1250,9 @@ public:
     @library{wxcore}
     @category{docview}
 
-    @see @ref overview_docview, @ref page_samples_docview, wxFrame
+    @see @ref overview_docview, @ref page_samples_docview, wxDocChildFrameBase
 */
-class wxDocChildFrame : public wxFrame
+class wxDocChildFrame : public wxDocChildFrameBase
 {
 public:
     /**
@@ -1106,42 +1269,93 @@ public:
         Destructor.
     */
     virtual ~wxDocChildFrame();
-
-    /**
-        Returns the document associated with this frame.
-    */
-    wxDocument* GetDocument() const;
-
-    /**
-        Returns the view associated with this frame.
-    */
-    wxView* GetView() const;
-
-    /**
-        Sets the document for this frame.
-    */
-    void SetDocument(wxDocument* doc);
-
-    /**
-        Sets the view for this frame.
-    */
-    void SetView(wxView* view);
-
-    /**
-        The document associated with the frame.
-    */
-    wxDocument* m_childDocument;
-
-    /**
-        The view associated with the frame.
-    */
-    wxView* m_childView;
 };
 
 
 
+
+/**
+    @class wxDocParentFrameAnyBase
+    
+    Base class containing type-independent code of wxDocParentFrameAny
+
+    As with wxDocChildFrame we define a template base class used by both normal
+    and MDI versions
+
+    Similarly to wxDocChildFrameAnyBase, this class is a mix-in and doesn't
+    derive from wxWindow.
+*/
+class WXDLLIMPEXP_CORE wxDocParentFrameAnyBase
+{
+public:
+    wxDocParentFrameAnyBase(wxWindow* frame);
+    /**
+        Returns the associated document manager object.
+    */
+    wxDocManager *GetDocumentManager() const;
+
+protected:
+    /**
+        This is similar to wxDocChildFrameAnyBase method with the same name:
+        while we're not an event handler ourselves and so can't override
+        TryBefore(), we provide a helper that the derived template class can use
+        from its TryBefore() implementation.
+    */
+    bool TryProcessEvent(wxEvent& event);
+
+    wxWindow* const m_frame;
+    wxDocManager *m_docManager;
+};
+
+/**
+    @class wxDocParentFrameAny
+    
+    This is similar to wxDocChildFrameAny and is used to provide common
+    implementation for both wxDocParentFrame and wxDocMDIParentFrame
+*/
+template <class BaseFrame>
+class WXDLLIMPEXP_CORE wxDocParentFrameAny : public BaseFrame,
+                                             public wxDocParentFrameAnyBase
+{
+public:
+    wxDocParentFrameAny();
+    wxDocParentFrameAny(wxDocManager *manager,
+                        wxFrame *frame,
+                        wxWindowID id,
+                        const wxString& title,
+                        const wxPoint& pos = wxDefaultPosition,
+                        const wxSize& size = wxDefaultSize,
+                        long style = wxDEFAULT_FRAME_STYLE,
+                        const wxString& name = wxFrameNameStr);
+
+    bool Create(wxDocManager *manager,
+                wxFrame *frame,
+                wxWindowID id,
+                const wxString& title,
+                const wxPoint& pos = wxDefaultPosition,
+                const wxSize& size = wxDefaultSize,
+                long style = wxDEFAULT_FRAME_STYLE,
+                const wxString& name = wxFrameNameStr);
+
+protected:
+    /**
+        Hook the document manager into event handling chain.
+    */
+    virtual bool TryBefore(wxEvent& event);
+
+private:
+    void OnExit(wxCommandEvent& WXUNUSED(event));
+    void OnCloseWindow(wxCloseEvent& event);
+};
+
 /**
     @class wxDocParentFrame
+    
+    A default parent frame: we need to define it as a class just for wxRTTI,
+    otherwise we could simply typedef it.
+
+    wxDocParentFrame inherits from wxDocParentFrameBase which is a typedef of
+    wxDocParentFrameAny<wxFrame>.
 
     The wxDocParentFrame class provides a default top-level frame for
     applications using the document/view framework. This class can only be used
@@ -1179,22 +1393,12 @@ public:
                      const wxString& name = wxFrameNameStr);
 
     /**
-        Destructor.
-    */
-    virtual ~wxDocParentFrame();
-
-    /**
         Used in two-step construction.
     */
     bool Create(wxDocManager* manager, wxFrame* parent, wxWindowID id,
                 const wxString& title, const wxPoint& pos = wxDefaultPosition,
                 const wxSize& size = wxDefaultSize, long style = 541072960,
                 const wxString& name = wxFrameNameStr);
-
-    /**
-        Returns the associated document manager object.
-    */
-    wxDocManager* GetDocumentManager() const;
 };
 
 
@@ -1698,6 +1902,27 @@ protected:
     wxList m_documentViews;
 };
 
+/**
+    @class wxDocPrintout
+
+    Provide simple default printing facilities if wxUSE_PRINTING_ARCHITECTURE is set to 1.
+*/
+class WXDLLIMPEXP_CORE wxDocPrintout : public wxPrintout
+{
+public:
+    wxDocPrintout(wxView *view = NULL, const wxString& title = wxString());
+
+    virtual bool OnPrintPage(int page);
+    virtual bool HasPage(int page);
+    virtual bool OnBeginDocument(int startPage, int endPage);
+    virtual void GetPageInfo(int *minPage, int *maxPage,
+                             int *selPageFrom, int *selPageTo);
+
+    virtual wxView *GetView()
+
+protected:
+    wxView*       m_printoutView;
+};
 
 // ============================================================================
 // Global functions/macros
