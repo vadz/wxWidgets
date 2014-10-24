@@ -469,14 +469,9 @@ bool wxAuiMDIChildFrame::Create(wxAuiMDIParentFrame* parent,
         cli_size = pClientWindow->GetClientSize();
 
     // create the window off-screen to prevent flicker
-#ifdef __WXGTK__
-    wxWindow::Create(parent,
-                     id,
-#else
     wxAuiMDIChildFrameBase::Create(parent,
                                    id,
                                    title,
-#endif
                                    wxPoint(cli_size.x+1, cli_size.y+1),
                                    size,
                                    wxNO_BORDER,
@@ -707,11 +702,7 @@ void wxAuiMDIChildFrame::ApplyMDIChildFrameRect()
 {
     if (m_mdiCurRect != m_mdiNewRect)
     {
-#ifdef __WXGTK__
-        wxWindow::DoMoveWindow(m_mdiNewRect.x, m_mdiNewRect.y,
-#else
         wxAuiMDIChildFrameBase::DoMoveWindow(m_mdiNewRect.x, m_mdiNewRect.y,
-#endif
                                              m_mdiNewRect.width, m_mdiNewRect.height);
         m_mdiCurRect = m_mdiNewRect;
     }
