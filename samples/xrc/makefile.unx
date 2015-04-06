@@ -57,7 +57,8 @@ XRCDEMO_OBJECTS =  \
 	xrcdemo_myframe.o \
 	xrcdemo_derivdlg.o \
 	xrcdemo_custclas.o \
-	xrcdemo_objrefdlg.o
+	xrcdemo_objrefdlg.o \
+	xrcdemo_openxrc.o
 
 ### Conditionally set variables: ###
 
@@ -107,6 +108,9 @@ xrcdemo_custclas.o: ./custclas.cpp
 	$(CXX) -c -o $@ $(XRCDEMO_CXXFLAGS) $(CPPDEPS) $<
 
 xrcdemo_objrefdlg.o: ./objrefdlg.cpp
+	$(CXX) -c -o $@ $(XRCDEMO_CXXFLAGS) $(CPPDEPS) $<
+
+xrcdemo_openxrc.o: ./openxrc.cpp
 	$(CXX) -c -o $@ $(XRCDEMO_CXXFLAGS) $(CPPDEPS) $<
 
 .PHONY: all install uninstall clean

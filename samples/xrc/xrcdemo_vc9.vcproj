@@ -795,6 +795,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\openxrc.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\xrcdemo.cpp"
 				>
 			</File>

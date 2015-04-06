@@ -34,7 +34,8 @@ XRCDEMO_OBJECTS =  \
 	$(OBJS)\xrcdemo_myframe.o \
 	$(OBJS)\xrcdemo_derivdlg.o \
 	$(OBJS)\xrcdemo_custclas.o \
-	$(OBJS)\xrcdemo_objrefdlg.o
+	$(OBJS)\xrcdemo_objrefdlg.o \
+	$(OBJS)\xrcdemo_openxrc.o
 
 ### Conditionally set variables: ###
 
@@ -268,6 +269,9 @@ $(OBJS)\xrcdemo_custclas.o: ./custclas.cpp
 	$(CXX) -c -o $@ $(XRCDEMO_CXXFLAGS) $(CPPDEPS) $<
 
 $(OBJS)\xrcdemo_objrefdlg.o: ./objrefdlg.cpp
+	$(CXX) -c -o $@ $(XRCDEMO_CXXFLAGS) $(CPPDEPS) $<
+
+$(OBJS)\xrcdemo_openxrc.o: ./openxrc.cpp
 	$(CXX) -c -o $@ $(XRCDEMO_CXXFLAGS) $(CPPDEPS) $<
 
 .PHONY: all clean data

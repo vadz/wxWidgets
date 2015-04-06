@@ -32,11 +32,14 @@
 #include "myframe.h"
 
 //-----------------------------------------------------------------------------
-// Remaining headers: Needed wx headers, then wx/contrib headers, then application headers
+// Remaining headers: Needed wx headers, then application headers
 //-----------------------------------------------------------------------------
 
 // Since setting an icon
 #include "wx/image.h"
+
+// Dialogs used for choosing the file to open.
+#include "wx/filedlg.h"
 
 //-----------------------------------------------------------------------------
 
@@ -78,6 +81,7 @@
 // ID name to help new users emphasize this point which is often overlooked
 // when starting out with wxWidgets.
 wxBEGIN_EVENT_TABLE(MyFrame, wxFrame)
+    EVT_MENU(wxID_OPEN, MyFrame::OnOpenResourceFileMenuCommand)
     EVT_MENU(XRCID("unload_resource_menuitem"), MyFrame::OnUnloadResourceMenuCommand)
     EVT_MENU(XRCID("reload_resource_menuitem"), MyFrame::OnReloadResourceMenuCommand)
     EVT_MENU(wxID_EXIT,  MyFrame::OnExitToolOrMenuCommand)
@@ -138,6 +142,22 @@ MyFrame::MyFrame(wxWindow* parent)
 //-----------------------------------------------------------------------------
 // Private methods
 //-----------------------------------------------------------------------------
+
+void MyFrame::OnOpenResourceFileMenuCommand(wxCommandEvent& WXUNUSED(event))
+{
+    // This function is defined in openxrc.cpp.
+    extern bool OpenXRCFile(wxWindow* parent, const wxString& file);
+
+    static wxString s_lastXRCFile;
+    const wxString
+        xrcFile = wxLoadFileSelector("XRC file", ".xrc", s_lastXRCFile, this);
+
+    if ( !xrcFile.empty() && OpenXRCFile(this, xrcFile) )
+    {
+        // Remember the last opened file for convenience.
+        s_lastXRCFile = xrcFile;
+    }
+}
 
 void MyFrame::OnUnloadResourceMenuCommand(wxCommandEvent& WXUNUSED(event))
 {

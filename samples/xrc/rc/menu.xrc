@@ -7,6 +7,9 @@
     <object class="wxMenu" name="file_tool_or_menuitem">
         <label>_File</label>
         <style>wxMENU_TEAROFF</style>
+        <object class="wxMenuItem" name="wxID_OPEN">
+            <help>Load any XRC file and create a top level window from it</help>
+        </object>
         <object class="wxMenuItem" name="unload_resource_menuitem">
             <label>_Unload resource\tCtrl-U</label>
             <help>Unload basic dialog resource</help>

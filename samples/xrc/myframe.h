@@ -35,6 +35,7 @@ public:
 private:
 
     // Event handlers (these functions should _not_ be virtual)
+    void OnOpenResourceFileMenuCommand(wxCommandEvent& event);
     void OnUnloadResourceMenuCommand(wxCommandEvent& event);
     void OnReloadResourceMenuCommand(wxCommandEvent& event);
     void OnExitToolOrMenuCommand(wxCommandEvent& event);

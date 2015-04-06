@@ -35,7 +35,8 @@ XRCDEMO_OBJECTS =  \
 	$(OBJS)\xrcdemo_myframe.obj \
 	$(OBJS)\xrcdemo_derivdlg.obj \
 	$(OBJS)\xrcdemo_custclas.obj \
-	$(OBJS)\xrcdemo_objrefdlg.obj
+	$(OBJS)\xrcdemo_objrefdlg.obj \
+	$(OBJS)\xrcdemo_openxrc.obj
 XRCDEMO_RESOURCES =  \
 	$(OBJS)\xrcdemo_sample.res
 
@@ -403,4 +404,7 @@ $(OBJS)\xrcdemo_custclas.obj: .\custclas.cpp
 
 $(OBJS)\xrcdemo_objrefdlg.obj: .\objrefdlg.cpp
 	$(CXX) /c /nologo /TP /Fo$@ $(XRCDEMO_CXXFLAGS) .\objrefdlg.cpp
+
+$(OBJS)\xrcdemo_openxrc.obj: .\openxrc.cpp
+	$(CXX) /c /nologo /TP /Fo$@ $(XRCDEMO_CXXFLAGS) .\openxrc.cpp
 

@@ -56,7 +56,8 @@ XRCDEMO_OBJECTS =  \
 	xrcdemo_myframe.o \
 	xrcdemo_derivdlg.o \
 	xrcdemo_custclas.o \
-	xrcdemo_objrefdlg.o
+	xrcdemo_objrefdlg.o \
+	xrcdemo_openxrc.o
 
 ### Conditionally set variables: ###
 
@@ -231,6 +232,9 @@ xrcdemo_custclas.o: $(srcdir)/custclas.cpp
 
 xrcdemo_objrefdlg.o: $(srcdir)/objrefdlg.cpp
 	$(CXXC) -c -o $@ $(XRCDEMO_CXXFLAGS) $(srcdir)/objrefdlg.cpp
+
+xrcdemo_openxrc.o: $(srcdir)/openxrc.cpp
+	$(CXXC) -c -o $@ $(XRCDEMO_CXXFLAGS) $(srcdir)/openxrc.cpp
 
 
 # Include dependency info, if present:
