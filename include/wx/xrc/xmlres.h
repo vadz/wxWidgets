@@ -298,6 +298,11 @@ public:
     const wxXmlNode *GetResourceNode(const wxString& name) const
         { return GetResourceNodeAndLocation(name, wxString(), true); }
 
+    // Return the XML document previously loaded from the given file path.
+    //
+    // The returned pointer is owned by wxXmlResource and must not be deleted.
+    const wxXmlDocument* GetDocument(const wxString& file) const;
+
 protected:
     // reports input error at position 'context'
     void ReportError(const wxXmlNode *context, const wxString& message);

@@ -894,6 +894,21 @@ wxXmlResource::GetResourceNodeAndLocation(const wxString& name,
     return NULL;
 }
 
+const wxXmlDocument* wxXmlResource::GetDocument(const wxString& file) const
+{
+    const wxString url = ConvertFileNameToURL(file);
+
+    for ( wxXmlResourceDataRecords::const_iterator ci = Data().begin();
+          ci != Data().end();
+          ++ci )
+    {
+        if ( (*ci)->File == url )
+            return (*ci)->Doc;
+    }
+
+    return NULL;
+}
+
 static void MergeNodesOver(wxXmlNode& dest, wxXmlNode& overwriteWith,
                            const wxString& overwriteFilename)
 {

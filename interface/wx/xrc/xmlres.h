@@ -144,6 +144,24 @@ public:
     static wxXmlResource* Get();
 
     /**
+        Returns the XML document corresponding to the given XRC file.
+
+        This method can be useful to examine the contents of the loaded XRC
+        file if it is not known in advance. It is not needed if the program
+        only loads its own XRC files with the known and fixed structure.
+
+        The returned pointer will be @NULL if the file with the given name
+        hadn't been previously loaded using Load(). Otherwise it will point to
+        the XML document object corresponding to this file and may be examined
+        but not modified nor deleted by the caller, as the document remains
+        owned by wxXmlResource object itself -- and will remain valid until
+        the corresponding file is unloaded.
+
+        @since 3.1.0
+     */
+    const wxXmlDocument* GetDocument(const wxString& file) const;
+
+    /**
         Returns the domain (message catalog) that will be used to load
         translatable strings in the XRC.
     */
