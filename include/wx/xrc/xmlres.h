@@ -142,6 +142,12 @@ public:
     // Removes all handlers
     void ClearHandlers();
 
+    // Set the handler to use for the objects of unknown types. The previously
+    // set unknown handler is returned. Notice that wxXmlResource doesn't take
+    // ownership of this pointer and the caller is responsible for deleting it,
+    // all while ensuring that it has a great enough lifetime.
+    wxXmlResourceHandler* SetUnknownHandler(wxXmlResourceHandler* handler);
+
     // Registers subclasses factory for use in XRC. This function is not meant
     // for public use, please see the comment above wxXmlSubclassFactory
     // definition.
@@ -396,6 +402,7 @@ private:
 
     int m_flags;
     wxVector<wxXmlResourceHandler*> m_handlers;
+    wxXmlResourceHandler* m_unknownHandler;
     wxXmlResourceDataRecords *m_data;
 #if wxUSE_FILESYSTEM
     wxFileSystem m_curFileSystem;

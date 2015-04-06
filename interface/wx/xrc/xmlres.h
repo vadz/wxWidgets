@@ -398,6 +398,25 @@ public:
     void SetFlags(int flags);
 
     /**
+        Sets the handler to use for the objects of unknown types.
+
+        This method allows to specify a fallback handler used if none of the
+        handlers registered with AddHandler() was able to handle the current
+        object. This handler can either just return @NULL (presumably after
+        giving some error message) or try to create the object corresponding to
+        the current node contents in some generic way.
+
+        Notice that wxXmlResource doesn't take ownership of this pointer and
+        the caller is responsible for deleting it, all while ensuring that it
+        has a great enough lifetime.
+
+        @return The previously set unknown handler (possibly @NULL).
+
+        @since 3.1.0
+     */
+    wxXmlResourceHandler* SetUnknownHandler(wxXmlResourceHandler* handler);
+
+    /**
         This function unloads a resource previously loaded by Load().
 
         Returns @true if the resource was successfully unloaded and @false if it

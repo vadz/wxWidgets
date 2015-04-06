@@ -245,6 +245,7 @@ wxXmlResource::wxXmlResource(int flags, const wxString& domain)
 {
     m_flags = flags;
     m_version = -1;
+    m_unknownHandler = NULL;
     m_data = new wxXmlResourceDataRecords;
     SetDomain(domain);
 }
@@ -253,6 +254,7 @@ wxXmlResource::wxXmlResource(const wxString& filemask, int flags, const wxString
 {
     m_flags = flags;
     m_version = -1;
+    m_unknownHandler = NULL;
     m_data = new wxXmlResourceDataRecords;
     SetDomain(domain);
     Load(filemask);
@@ -454,6 +456,15 @@ void wxXmlResource::ClearHandlers()
           i != m_handlers.end(); ++i )
         delete *i;
     m_handlers.clear();
+}
+
+
+wxXmlResourceHandler*
+wxXmlResource::SetUnknownHandler(wxXmlResourceHandler* handler)
+{
+    wxXmlResourceHandler* const unknownHandlerOld = m_unknownHandler;
+    m_unknownHandler = handler;
+    return unknownHandlerOld;
 }
 
 
@@ -1043,6 +1054,9 @@ wxXmlResource::DoCreateResFromNode(wxXmlNode& node,
             if (handler->CanHandle(&node))
                 return handler->CreateResource(&node, parent, instance);
         }
+
+        if ( m_unknownHandler )
+            return m_unknownHandler->CreateResource(&node, parent, instance);
     }
 
     ReportError
