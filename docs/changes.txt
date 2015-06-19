@@ -159,6 +159,7 @@ wxMSW:
 - wxListCtrl::GetItemCount() in wxEVT_LIST_INSERT_ITEM is no longer off by 1.
 - Don't send bogus root selection events when clicking wxTreeCtrl (sbrowne).
 - Fix handling crashes in wxEVT_PAINT event handlers.
+- Fix wxStackWalker to work with Unicode identifiers (Suzumizaki-kimitaka).
 
 wxOSX/Cocoa:
 
