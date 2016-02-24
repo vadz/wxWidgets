@@ -125,12 +125,24 @@ void wxFont::SetNativeInfoFromNSFont(WX_NSFont theFont, wxNativeFontInfo* info)
 
         int size = (int) ([theFont pointSize]+0.5);
  
-        if ( theFontWeight >= 9 )
-            fontweight = wxFONTWEIGHT_BOLD ;
-        else if ( theFontWeight < 5 )
+        if ( theFontWeight == 1 || theFontWeight == 2 )
+            fontweight = wxFONTWEIGHT_THIN;
+        if ( theFontWeight == 3 )
+            fontweight = wxFONTWEIGHT_EXTRALIGHT;
+        if ( theFontWeight == 4 )
             fontweight = wxFONTWEIGHT_LIGHT;
-        else
-            fontweight = wxFONTWEIGHT_NORMAL ;
+        if ( theFontWeight == 5 )
+            fontweight = wxFONTWEIGHT_NORMAL;
+        if ( theFontWeight == 6 )
+            fontweight = wxFONTWEIGHT_MEDIUM;
+        if ( theFontWeight == 7 || theFontWeight == 8 )
+            fontweight = wxFONTWEIGHT_SEMIBOLD;
+        if ( theFontWeight == 9 )
+            fontweight = wxFONTWEIGHT_BOLD;
+        if ( theFontWeight == 10 )
+            fontweight = wxFONTWEIGHT_EXTRABOLD;
+        if ( theFontWeight > 11 )
+            fontweight = wxFONTWEIGHT_HEAVY;
             
         if ( theTraits & NSItalicFontMask )
             fontstyle = wxFONTSTYLE_ITALIC ;
@@ -191,6 +203,31 @@ WX_NSFont wxFont::OSXCreateNSFont(const wxNativeFontInfo* info)
     {
         traits |= NSBoldFontMask;
         weight = 9;
+    }
+    else if ( info->m_weight == wxFONTWEIGHT_THIN )
+    {
+        weight = 2;
+    }
+    else if ( info->m_weight == wxFONTWEIGHT_EXTRALIGHT )
+    {
+        weight = 3;
+    }
+    else if ( info->m_weight == wxFONTWEIGHT_MEDIUM )
+        weight = 6;
+    else if ( info->m_weight == wxFONTWEIGHT_SEMIBOLD )
+    {
+        traits |= NSBoldFontMask;
+        weight = 8;
+    }
+    else if ( info->m_weight == wxFONTWEIGHT_EXTRABOLD )
+    {
+        traits |= NSBoldFontMask;
+        weight = 10;
+    }
+    else if ( info->m_weight == wxFONTWEIGHT_HEAVY )
+    {
+        traits |= NSBoldFontMask;
+        weight = 11;
     }
     else if (info->m_weight == wxFONTWEIGHT_LIGHT)
         weight = 3;

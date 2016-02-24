@@ -709,9 +709,35 @@ void MyFrame::DoResizeFont(int diff)
 
 void MyFrame::OnBold(wxCommandEvent& event)
 {
+    wxFontWeight weight;
+    const wxString choices[] =
+    {
+        "THIN",
+        "EXTRALIGHT",
+        "LIGHT",
+        "NORMAL",
+        "MEDIUM",
+        "SEMIBOLD",
+        "BOLD",
+        "EXTRABOLD",
+        "HEAVY",
+    };
+
+    const wxString weightStr = wxGetSingleChoice
+                               (
+                                "Font weight",
+                                "Please select font weight",
+                                WXSIZEOF(choices), choices,
+                                3, // normal
+                                this
+                               );
+    if ( weightStr.empty() )
+        return;
+
     wxFont font = m_canvas->GetTextFont();
 
-    font.SetWeight(event.IsChecked() ? wxFONTWEIGHT_BOLD : wxFONTWEIGHT_NORMAL);
+    // FIXME-VZ: parse weightStr
+
     DoChangeFont(font);
 }
 

@@ -57,18 +57,36 @@ static QFont::Weight ConvertFontWeight(wxFontWeight weight)
 {
     switch (weight)
     {
-        case wxFONTWEIGHT_NORMAL:
-            return QFont::Normal;
+        case wxFONTWEIGHT_THIN:
+            return QFont::Thin;
+
+        case wxFONTWEIGHT_EXTRALIGHT:
+            return QFont::ExtraLight;
 
         case wxFONTWEIGHT_LIGHT:
             return QFont::Light;
 
+        case wxFONTWEIGHT_NORMAL:
+            return QFont::Normal;
+
+        case wxFONTWEIGHT_MEDIUM:
+            return QFont::Medium;
+
+        case wxFONTWEIGHT_SEMIBOLD:
+            return QFont::DemiBold;
+
         case wxFONTWEIGHT_BOLD:
             return QFont::Bold;
 
+        case wxFONTWEIGHT_EXTRABOLD:
+            return QFont::ExtraBold;
+
+        case wxFONTWEIGHT_HEAVY:
+            return QFont::Black
+
         case wxFONTWEIGHT_MAX:
-            wxFAIL_MSG( "Invalid font weight value" );
-            break;
+                wxFAIL_MSG( "Invalid font weight value" );
+                break;
     }
     return QFont::Normal;
 }

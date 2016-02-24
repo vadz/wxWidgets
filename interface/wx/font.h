@@ -67,6 +67,12 @@ enum wxFontWeight
     wxFONTWEIGHT_NORMAL = wxNORMAL,  //!< Normal font.
     wxFONTWEIGHT_LIGHT = wxLIGHT,    //!< Light font.
     wxFONTWEIGHT_BOLD = wxBOLD,      //!< Bold font.
+    wxFONTWEIGHT_THIN,
+    wxFONTWEIGHT_EXTRALIGHT,
+    wxFONTWEIGHT_MEDIUM,
+    wxFONTWEIGHT_SEMIBOLD,
+    wxFONTWEIGHT_EXTRABOLD,
+    wxFONTWEIGHT_HEAVY,
     wxFONTWEIGHT_MAX
 };
 

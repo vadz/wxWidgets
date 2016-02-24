@@ -460,13 +460,36 @@ wxFontStyle wxNativeFontInfo::GetStyle() const
 
 wxFontWeight wxNativeFontInfo::GetWeight() const
 {
-    if ( lf.lfWeight <= 300 )
-        return wxFONTWEIGHT_LIGHT;
+    wxFontWeight weight;
+    if ( lf.lfWeight <= 100 )
+         weight = wxFONTWEIGHT_THIN;
 
-    if ( lf.lfWeight >= 600 )
-        return wxFONTWEIGHT_BOLD;
+    if ( lf.lfWeight > 100 && lf.lfWeight <= 200 )
+         weight = wxFONTWEIGHT_EXTRALIGHT;
 
-    return wxFONTWEIGHT_NORMAL;
+    -    return wxFONTWEIGHT_NORMAL;
+    if ( lf.lfWeight > 200 && lf.lfWeight <= 300 )
+         weight = wxFONTWEIGHT_LIGHT;
+
+    if ( lf.lfWeight > 300 && lf.lfWeight <= 400 )
+         weight = wxFONTWEIGHT_NORMAL;
+
+    if ( lf.lfWeight > 400 && lf.lfWeight <= 500 )
+         weight = wxFONTWEIGHT_MEDIUM;
+
+    if ( lf.lfWeight > 500 && lf.lfWeight <= 600 )
+         weight = wxFONTWEIGHT_SEMIBOLD;
+
+    if ( lf.lfWeight > 600 && lf.lfWeight <= 700 )
+         weight = wxFONTWEIGHT_BOLD;
+
+    if ( lf.lfWeight > 700 && lf.lfWeight <= 800 )
+        weight = wxFONTWEIGHT_EXTRABOLD;
+
+    if ( lf.lfWeight > 800 && lf.lfWeight <= 900 )
+        weight = wxFONTWEIGHT_HEAVY;
+
+    return weight;
 }
 
 bool wxNativeFontInfo::GetUnderlined() const
@@ -580,6 +603,14 @@ void wxNativeFontInfo::SetWeight(wxFontWeight weight)
             wxFAIL_MSG( "unknown font weight" );
             // fall through
 
+        case wxFONTWEIGHT_THIN:
+            lf.lfWeight = FW_LIGHT;
+            break;
+
+        case wxFONTWEIGHT_EXTRALIGHT:
+            lf.lfWeight = FW_EXTRALIGHT;
+            break;
+
         case wxFONTWEIGHT_NORMAL:
             lf.lfWeight = FW_NORMAL;
             break;
@@ -588,8 +619,24 @@ void wxNativeFontInfo::SetWeight(wxFontWeight weight)
             lf.lfWeight = FW_LIGHT;
             break;
 
+        case wxFONTWEIGHT_MEDIUM:
+            lf.lfWeight = FW_MEDIUM;
+            break;
+
+        case wxFONTWEIGHT_SEMIBOLD:
+            lf.lfWeight = FW_SEMIBOLD;
+            break;
+
         case wxFONTWEIGHT_BOLD:
             lf.lfWeight = FW_BOLD;
+            break;
+
+        case wxFONTWEIGHT_EXTRABOLD:
+            lf.lfWeight = FW_EXTRABOLD;
+            break;
+
+        case wxFONTWEIGHT_HEAVY:
+            lf.lfWeight = FW_HEAVY;
             break;
     }
 }

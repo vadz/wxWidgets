@@ -129,12 +129,24 @@ wxFontWeight wxNativeFontInfo::GetWeight() const
     // wxFONTWEIGHT_NORMAL: 350 .. 599 - range of 250
     // wxFONTWEIGHT_BOLD:   600 .. 900 - range of 301 (600 is "semibold" already)
 
-    if (pango_weight >= 600)
-        return wxFONTWEIGHT_BOLD;
-
-    if (pango_weight < 350)
+    if (pango_weight == PANGO_WEIGHT_THIN)
+        return wxFONTWEIGHT_THIN;
+    if (pango_weight == PANGO_WEIGHT_ULTRALIGHT)
+        return wxFONTWEIGHT_EXTRALIGHT;
+    if (pango_weight == PANGO_WEIGHT_LIGHT)
         return wxFONTWEIGHT_LIGHT;
-
+    if (pango_weight == PANGO_WEIGHT_NORMAL)
+        return wxFONTWEIGHT_NORMAL;
+    if (pango_weight == PANGO_WEIGHT_MEDIUM)
+        return wxFONTWEIGHT_MEDIUM;
+    if (pango_weight == PANGO_WEIGHT_SEMIBOLD)
+        return wxFONTWEIGHT_SEMIBOLD;
+    if (pango_weight == PANGO_WEIGHT_BOLD)
+        return wxFONTWEIGHT_BOLD;
+    if (pango_weight == PANGO_WEIGHT_ULTRABOLD)
+        return wxFONTWEIGHT_EXTRABOLD;
+    if (pango_weight == PANGO_WEIGHT_HEAVY)
+        return wxFONTWEIGHT_HEAVY;
     return wxFONTWEIGHT_NORMAL;
 }
 
@@ -254,17 +266,36 @@ void wxNativeFontInfo::SetWeight(wxFontWeight weight)
 {
     switch (weight)
     {
-        case wxFONTWEIGHT_BOLD:
-            pango_font_description_set_weight(description, PANGO_WEIGHT_BOLD);
+        case wxFONTWEIGHT_THIN:
+            pango_font_description_set_weight(description, PANGO_WEIGHT_THIN);
+            break;
+        case wxFONTWEIGHT_EXTRALIGHT:
+            pango_font_description_set_weight(description, PANGO_WEIGHT_ULTRALIGHT);
             break;
         case wxFONTWEIGHT_LIGHT:
             pango_font_description_set_weight(description, PANGO_WEIGHT_LIGHT);
             break;
+        case wxFONTWEIGHT_NORMAL:
+            pango_font_description_set_weight(description, PANGO_WEIGHT_NORMAL);
+            break;
+        case wxFONTWEIGHT_MEDIUM:
+            pango_font_description_set_weight(description, PANGO_WEIGHT_MEDIUM);
+            break;
+        case wxFONTWEIGHT_SEMIBOLD:
+            pango_font_description_set_weight(description, PANGO_WEIGHT_SEMIBOLD);
+            break;
+        case wxFONTWEIGHT_BOLD:
+            pango_font_description_set_weight(description, PANGO_WEIGHT_BOLD);
+            break;
+        case wxFONTWEIGHT_EXTRABOLD:
+            pango_font_description_set_weight(description, PANGO_WEIGHT_ULTRABOLD);
+            break;
+        case wxFONTWEIGHT_HEAVY:
+            pango_font_description_set_weight(description, PANGO_WEIGHT_HEAVY);
+            break;
         default:
             wxFAIL_MSG( "unknown font weight" );
             // fall through
-        case wxFONTWEIGHT_NORMAL:
-            pango_font_description_set_weight(description, PANGO_WEIGHT_NORMAL);
     }
 }
 
@@ -1243,12 +1274,17 @@ static wxNativeFont wxLoadQueryFont(int pointSize,
     int xweight;
     switch (weight)
     {
-         case wxFONTWEIGHT_BOLD:
+         case wxFONTWEIGHT_THIN:
              {
-                 xweight = MWLF_WEIGHT_BOLD;
+                 xweight = MWLF_WEIGHT_THIN;
                  break;
              }
-        case wxFONTWEIGHT_LIGHT:
+         case wxFONTWEIGHT_EXTRALIGHT:
+             {
+                 xweight = MWLF_WEIGHT_EXTRALIGHT;
+                 break;
+             }
+         case wxFONTWEIGHT_LIGHT:
              {
                  xweight = MWLF_WEIGHT_LIGHT;
                  break;
@@ -1256,6 +1292,31 @@ static wxNativeFont wxLoadQueryFont(int pointSize,
          case wxFONTWEIGHT_NORMAL:
              {
                  xweight = MWLF_WEIGHT_NORMAL;
+                 break;
+             }
+         case wxFONTWEIGHT_MEDIUM:
+             {
+                 xweight = MWLF_WEIGHT_MEDIUM;
+                 break;
+             }
+         case wxFONTWEIGHT_SEMIBOLD:
+             {
+                 xweight = MWLF_WEIGHT_DEMIBOLD;
+                 break;
+             }
+         case wxFONTWEIGHT_BOLD:
+             {
+                 xweight = MWLF_WEIGHT_BOLD;
+                 break;
+             }
+         case wxFONTWEIGHT_EXTRABOLD:
+             {
+                 xweight = MWLF_WEIGHT_EXTRABOLD;
+                 break;
+             }
+         case wxFONTWEIGHT_HEAVY:
+             {
+                 xweight = MWLF_WEIGHT_BLACK;
                  break;
              }
 
