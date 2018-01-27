@@ -3302,27 +3302,25 @@ public:
     /**
         Appends an item (=row) and fills it with @a values.
 
-        The values must match the values specifies in the column
-        in number and type. No (default) values are filled in
-        automatically.
+        The @a values vector should normally contain the same number of values
+        as there are columns in this control and their types must match the
+        types of the columns. However it is allowed to contain fewer values
+        than required, in which case the remaining values are considered to be
+        blank.
     */
     void AppendItem( const wxVector<wxVariant> &values, wxUIntPtr data = NULL );
 
     /**
         Prepends an item (=row) and fills it with @a values.
 
-        The values must match the values specifies in the column
-        in number and type. No (default) values are filled in
-        automatically.
+        See AppendItem() for the note about @a values elements.
     */
     void PrependItem( const wxVector<wxVariant> &values, wxUIntPtr data = NULL );
 
     /**
         Inserts an item (=row) and fills it with @a values.
 
-        The values must match the values specifies in the column
-        in number and type. No (default) values are filled in
-        automatically.
+        See AppendItem() for the note about @a values elements.
     */
     void InsertItem(  unsigned int row, const wxVector<wxVariant> &values, wxUIntPtr data = NULL );
 

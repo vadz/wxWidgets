@@ -762,7 +762,10 @@ void MyFrame::BuildDataViewCtrl(wxPanel* parent, unsigned int nPanel, unsigned l
                 data.clear();
                 data.push_back( (i%3) == 0 );
                 data.push_back( wxString::Format("row %d", i) );
-                data.push_back( long(5*i) );
+                // It is possible to specify fewer values then necessary, test
+                // that it works for the last column.
+                if ( i != 9 )
+                    data.push_back( long(5*i) );
 
                 lc->AppendItem( data );
             }
