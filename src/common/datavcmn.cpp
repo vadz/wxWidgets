@@ -1345,6 +1345,24 @@ AppendColumnWithRenderer(wxDataViewCtrlBase* dvc,
                 label, model_column, mode, width, align, flags
             );
 
+    // Check that the column (i.e. renderer) type is consistent with the model
+    // type. Currently this must always be the case, i.e. we don't convert
+    // between them on the fly even if it would, in principle, be possible.
+    if ( dvc->GetModel() )
+    {
+        wxASSERT_MSG
+        (
+            dvc->GetModel()->GetColumnType(model_column)
+            ==
+            col->GetRenderer()->GetVariantType(),
+            wxString::Format
+            (
+                "Inconsistent types for column %u (model column %u)",
+                dvc->GetColumnCount(), model_column
+            )
+        );
+    }
+
     dvc->AppendColumn(col);
     return col;
 }

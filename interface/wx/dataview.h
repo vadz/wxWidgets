@@ -240,7 +240,12 @@ public:
         Override this to indicate what type of data is stored in the
         column specified by @a col.
 
-        This should return a string indicating the type of data as reported by wxVariant.
+        This method should return a string indicating the type of data as
+        reported by wxVariant.
+
+        Notice that this must be the same type as is used by the renderer for
+        this column, i.e. if it uses some @c wxDataViewFooRenderer, this method
+        should return @c wxDataViewFooRenderer::GetDefaultType().
     */
     virtual wxString GetColumnType(unsigned int col) const = 0;
 

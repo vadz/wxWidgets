@@ -42,6 +42,12 @@ Changes in behaviour not resulting in compilation errors
   anymore and GetOrCreateAccessible() may return NULL, indicating that native
   system-provided accessibility should be used.
 
+- wxDataViewCtrl now checks that the model GetColumnType() returns the same
+  value as the corresponding renderer GetVariantType() to help detect
+  mismatches between control and model columns. You may need to correct the
+  value returned from GetColumnType() if the new assert is triggered.
+
+
 Changes in behaviour which may result in build errors
 -----------------------------------------------------
 
