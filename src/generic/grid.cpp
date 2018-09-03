@@ -1600,6 +1600,10 @@ void wxGridStringTable::SetColLabelValue( int col, const wxString& value )
     m_colLabels[col] = value;
 }
 
+void wxGridStringTable::SetCornerLabelValue( const wxString& value )
+{
+    // TODO
+}
 
 //////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////

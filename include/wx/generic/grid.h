@@ -747,6 +747,7 @@ public:
     virtual wxString GetColLabelValue( int col );
     virtual void SetRowLabelValue( int WXUNUSED(row), const wxString& ) {}
     virtual void SetColLabelValue( int WXUNUSED(col), const wxString& ) {}
+    virtual void SetCornerLabelValue( const wxString& ) {}
 
     // Attribute handling
     //
@@ -870,6 +871,7 @@ public:
 
     void SetRowLabelValue( int row, const wxString& ) wxOVERRIDE;
     void SetColLabelValue( int col, const wxString& ) wxOVERRIDE;
+    void SetCornerLabelValue( const wxString& ) wxOVERRIDE;
     wxString GetRowLabelValue( int row ) wxOVERRIDE;
     wxString GetColLabelValue( int col ) wxOVERRIDE;
 
@@ -1250,6 +1252,7 @@ public:
     void     SetColLabelTextOrientation( int textOrientation );
     void     SetRowLabelValue( int row, const wxString& );
     void     SetColLabelValue( int col, const wxString& );
+    void     SetCornerLabelValue( const wxString& );
     void     SetCellHighlightColour( const wxColour& );
     void     SetCellHighlightPenWidth(int width);
     void     SetCellHighlightROPenWidth(int width);
