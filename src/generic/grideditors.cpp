@@ -1729,6 +1729,31 @@ void wxGridCellDateEditor::Create(wxWindow* parent, wxWindowID id,
     wxGridCellEditor::Create(parent, id, evtHandler);
 }
 
+void wxGridCellDateEditor::SetSize(const wxRect& r)
+{
+    wxRect rect = r;
+    wxSize bestSize = m_control->GetBestSize();
+    bool resize = false;
+
+    if( rect.GetHeight() < bestSize.GetHeight() )
+    {
+        rect.SetHeight(bestSize.GetHeight());
+        resize = true;
+    }
+    if( rect.GetWidth() < bestSize.GetWidth() )
+    {
+        rect.SetWidth(bestSize.GetWidth());
+        resize = true;
+    }
+
+    if ( resize )
+    {
+        m_control->SetSize(rect.GetSize());
+    }
+
+    wxGridCellEditor::SetSize(rect);
+}
+
 void wxGridCellDateEditor::BeginEdit(int row, int col, wxGrid* grid)
 {
     wxASSERT_MSG(m_control, wxT("The wxGridCellDateEditor must be created first!"));

@@ -384,7 +384,7 @@ public:
                         wxWindowID id,
                         wxEvtHandler* evtHandler) wxOVERRIDE;
 
-    // virtual void SetSize(const wxRect& rect) wxOVERRIDE;
+    virtual void SetSize(const wxRect& rect) wxOVERRIDE;
 
     // virtual void PaintBackground(wxDC& dc,
     //                              const wxRect& rectCell,
