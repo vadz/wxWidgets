@@ -556,7 +556,12 @@ GridFrame::GridFrame()
     grid->SetCellValue(3, 10, "<- This numeric cell should be centred");
 
     grid->SetColFormatDate(13);
+    grid->SetCellValue(7, 0, "Today");
+    grid->SetCellRenderer(7, 0, new wxGridCellDateTimeRenderer("%x")); // Localized date representation (locale dependent).
     grid->SetCellEditor(7, 0, new wxGridCellDateEditor);
+    grid->SetCellValue(8, 0, "Tomorrow");
+    grid->SetCellRenderer(8, 0, new wxGridCellDateTimeRenderer("%Y-%m-%d")); // ISO 8601 date format.
+    grid->SetCellEditor(8, 0, new wxGridCellDateEditor);
 
     const wxString choices[] =
     {
