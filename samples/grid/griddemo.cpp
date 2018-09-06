@@ -555,6 +555,9 @@ GridFrame::GridFrame()
     grid->SetCellAlignment(3, 9, wxALIGN_CENTRE, wxALIGN_TOP);
     grid->SetCellValue(3, 10, "<- This numeric cell should be centred");
 
+    grid->SetColFormatDate(13);
+    grid->SetCellEditor(7, 0, new wxGridCellDateEditor);
+
     const wxString choices[] =
     {
         "Please select a choice",
