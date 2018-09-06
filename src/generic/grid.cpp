@@ -9369,7 +9369,7 @@ int wxGridTypeRegistry::FindDataType(const wxString& typeName)
         }
         else
 #endif // wxUSE_COMBOBOX
-#if wxUSE_DATETIME
+#if wxUSE_DATEPICKCTRL
         if( typeName == wxGRID_VALUE_DATE)
         {
             RegisterDataType(wxGRID_VALUE_DATE,
@@ -9377,7 +9377,7 @@ int wxGridTypeRegistry::FindDataType(const wxString& typeName)
                              new wxGridCellDateEditor);
         }
         else
-#endif // wxUSE_DATETIME
+#endif // wxUSE_DATEPICKCTRL
         {
             return wxNOT_FOUND;
         }
