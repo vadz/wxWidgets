@@ -38,6 +38,7 @@
 #include "wx/tokenzr.h"
 #include "wx/renderer.h"
 #include "wx/headerctrl.h"
+#include "wx/datectrl.h"
 
 #include "wx/generic/gridsel.h"
 #include "wx/generic/grideditors.h"
@@ -1710,5 +1711,82 @@ wxGridCellAutoWrapStringEditor::Create(wxWindow* parent,
                                     wxTE_MULTILINE | wxTE_RICH);
 }
 
+#if wxUSE_DATEPICKCTRL
+
+// ----------------------------------------------------------------------------
+// wxGridCellDateEditor
+// ----------------------------------------------------------------------------
+
+wxGridCellDateEditor::wxGridCellDateEditor()
+{
+}
+
+void wxGridCellDateEditor::Create(wxWindow* parent, wxWindowID id,
+                                  wxEvtHandler* evtHandler)
+{
+    m_control = new wxDatePickerCtrl(parent, id);
+
+    wxGridCellEditor::Create(parent, id, evtHandler);
+}
+
+void wxGridCellDateEditor::BeginEdit(int row, int col, wxGrid* grid)
+{
+    wxASSERT_MSG(m_control, wxT("The wxGridCellDateEditor must be created first!"));
+
+    wxString dateStr = grid->GetTable()->GetValue(row, col);
+    if( m_value.ParseDate(dateStr) )
+    {
+        static_cast<wxDatePickerCtrl*>(m_control)->SetValue(m_value);
+    }
+
+    m_control->SetFocus();
+}
+
+bool wxGridCellDateEditor::EndEdit(int row, int col, const wxGrid* grid,
+                                   const wxString& oldval, wxString *newval)
+{
+    wxASSERT_MSG(m_control, wxT("The wxGridCellDateEditor must be created first!"));
+
+    wxDateTime date = static_cast<wxDatePickerCtrl*>(m_control)->GetValue();
+    if( date == m_value )
+    {
+        return false;
+    }
+    m_value = date;
+
+    if(newval)
+    {
+        *newval = m_value.FormatISODate();
+    }
+
+    return true;
+}
+
+void wxGridCellDateEditor::ApplyEdit(int row, int col, wxGrid* grid)
+{
+    grid->GetTable()->SetValue(row, col, m_value.FormatISODate());
+}
+
+void wxGridCellDateEditor::Reset()
+{
+    wxASSERT_MSG(m_control, wxT("The wxGridCellDateEditor must be created first!"));
+
+    static_cast<wxDatePickerCtrl*>(m_control)->SetValue(m_value);
+}
+
+wxGridCellEditor *wxGridCellDateEditor::Clone() const
+{
+    return new wxGridCellDateEditor();
+}
+
+wxString wxGridCellDateEditor::GetValue() const
+{
+    wxASSERT_MSG(m_control, wxT("The wxGridCellDateEditor must be created first!"));
+
+    wxDateTime date = static_cast<wxDatePickerCtrl*>(m_control)->GetValue();
+    return date.FormatISODate();
+}
+
+#endif // wxUSE_DATEPICKCTRL
 
 #endif // wxUSE_GRID
