@@ -121,8 +121,7 @@ wxString wxGridCellDateTimeRenderer::GetString(const wxGrid& grid, int row, int 
     if (!hasDatetime )
     {
         text = table->GetValue(row, col);
-        const char * const end = val.ParseFormat(text, m_iformat, m_dateDef);
-        hasDatetime = end && !*end;
+        hasDatetime = Parse(text, val);
     }
 
     if ( hasDatetime )
@@ -130,6 +129,12 @@ wxString wxGridCellDateTimeRenderer::GetString(const wxGrid& grid, int row, int 
 
     // If we failed to parse string just show what we where given?
     return text;
+}
+
+bool wxGridCellDateTimeRenderer::Parse(const wxString& text, wxDateTime& result)
+{
+    const char * const end = result.ParseFormat(text, m_iformat, m_dateDef);
+    return end && !*end;
 }
 
 void wxGridCellDateTimeRenderer::Draw(wxGrid& grid,
@@ -166,6 +171,30 @@ void wxGridCellDateTimeRenderer::SetParameters(const wxString& params)
 {
     if (!params.empty())
         m_oformat=params;
+}
+
+
+wxGridCellDateRenderer::wxGridCellDateRenderer(const wxString& outformat,
+    const wxString& informat)
+: wxGridCellDateTimeRenderer(outformat, informat)
+{
+}
+
+wxGridCellRenderer *wxGridCellDateRenderer::Clone() const
+{
+    wxGridCellDateRenderer *renderer = new wxGridCellDateRenderer;
+    renderer->m_iformat = m_iformat;
+    renderer->m_oformat = m_oformat;
+    renderer->m_dateDef = m_dateDef;
+    renderer->m_tz = m_tz;
+
+    return renderer;
+}
+
+bool wxGridCellDateRenderer::Parse(const wxString& text, wxDateTime& result)
+{
+    wxString::const_iterator *end;
+    return result.ParseDate(text, end);
 }
 
 #endif // wxUSE_DATETIME

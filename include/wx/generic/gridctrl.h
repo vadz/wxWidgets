@@ -180,11 +180,24 @@ public:
 
 protected:
     wxString GetString(const wxGrid& grid, int row, int col);
+    virtual bool Parse(const wxString& text, wxDateTime& result);
 
     wxString m_iformat;
     wxString m_oformat;
     wxDateTime m_dateDef;
     wxDateTime::TimeZone m_tz;
+};
+
+class WXDLLIMPEXP_ADV wxGridCellDateRenderer : public wxGridCellDateTimeRenderer
+{
+public:
+    wxGridCellDateRenderer(const wxString& outformat = wxDefaultDateTimeFormat,
+                           const wxString& informat = wxDefaultDateTimeFormat);
+
+    virtual wxGridCellRenderer *Clone() const wxOVERRIDE;
+
+protected:
+    virtual bool Parse(const wxString& text, wxDateTime& result) wxOVERRIDE;
 };
 
 #endif // wxUSE_DATETIME
