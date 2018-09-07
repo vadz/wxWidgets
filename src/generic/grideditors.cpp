@@ -1729,29 +1729,17 @@ void wxGridCellDateEditor::Create(wxWindow* parent, wxWindowID id,
     wxGridCellEditor::Create(parent, id, evtHandler);
 }
 
-void wxGridCellDateEditor::SetSize(const wxRect& r)
+void wxGridCellDateEditor::SetSize(const wxRect& rect)
 {
-    wxRect rect = r;
-    wxSize bestSize = m_control->GetBestSize();
-    bool resize = false;
+    wxSize rectSize = rect.GetSize();
+    wxSize const bestSize = m_control->GetBestSize();
 
-    if( rect.GetHeight() < bestSize.GetHeight() )
+    if( rectSize.GetHeight() < bestSize.GetHeight()
+        || rectSize.GetWidth() < bestSize.GetWidth())
     {
-        rect.SetHeight(bestSize.GetHeight());
-        resize = true;
+        rectSize.IncTo(bestSize);
+        wxGridCellEditor::SetSize(wxRect(rect.GetTopLeft(), rectSize));
     }
-    if( rect.GetWidth() < bestSize.GetWidth() )
-    {
-        rect.SetWidth(bestSize.GetWidth());
-        resize = true;
-    }
-
-    if ( resize )
-    {
-        m_control->SetSize(rect.GetSize());
-    }
-
-    wxGridCellEditor::SetSize(rect);
 }
 
 void wxGridCellDateEditor::BeginEdit(int row, int col, wxGrid* grid)
