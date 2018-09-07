@@ -9416,7 +9416,8 @@ int wxGridTypeRegistry::FindDataType(const wxString& typeName)
         if( typeName == wxGRID_VALUE_DATE)
         {
             RegisterDataType(wxGRID_VALUE_DATE,
-                             new wxGridCellDateRenderer,
+                             // Draw dates localized by default.
+                             new wxGridCellDateRenderer("%x"),
                              new wxGridCellDateEditor);
         }
         else
