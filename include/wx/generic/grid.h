@@ -1355,14 +1355,14 @@ public:
     void     SetColFormatBool(int col);
     void     SetColFormatNumber(int col);
     void     SetColFormatFloat(int col, int width = -1, int precision = -1);
-    void     SetColFormatDate(int col);
+    void     SetColFormatDate(int col, const wxString& format = wxString());
     void     SetColFormatCustom(int col, const wxString& typeName);
 
     // same for individual cells
     void     SetCellFormatBool(int row, int col);
     void     SetCellFormatNumber(int row, int col);
     void     SetCellFormatFloat(int row, int col, int width = -1, int precision = -1);
-    void     SetCellFormatDate(int row, int col);
+    void     SetCellFormatDate(int row, int col, const wxString& format = wxString());
     void     SetCellFormatCustom(int row, int col, const wxString& typeName);
 
     // ------ row and col formatting

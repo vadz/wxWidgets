@@ -7865,9 +7865,15 @@ void wxGrid::SetColFormatFloat(int col, int width, int precision)
     SetColFormatCustom(col, typeName);
 }
 
-void wxGrid::SetColFormatDate(int col)
+void wxGrid::SetColFormatDate(int col, const wxString& format)
 {
-    SetColFormatCustom(col, wxGRID_VALUE_DATE);
+    wxString typeName = wxGRID_VALUE_DATE;
+    if(!format.IsEmpty())
+    {
+        typeName.Append(':');
+        typeName.Append(format);
+    }
+    SetColFormatCustom(col, typeName);
 }
 
 void wxGrid::SetColFormatCustom(int col, const wxString& typeName)
@@ -7909,9 +7915,15 @@ void wxGrid::SetCellFormatFloat(int row, int col, int width, int precision)
     SetCellFormatCustom(row, col, typeName);
 }
 
-void wxGrid::SetCellFormatDate(int row, int col)
+void wxGrid::SetCellFormatDate(int row, int col, const wxString& format)
 {
-    SetCellFormatCustom(row, col, wxGRID_VALUE_DATE);
+    wxString typeName = wxGRID_VALUE_DATE;
+    if(!format.IsEmpty())
+    {
+        typeName.Append(':');
+        typeName.Append(format);
+    }
+    SetCellFormatCustom(row, col, typeName);
 }
 
 void wxGrid::SetCellFormatCustom(int row, int col, const wxString& typeName)
