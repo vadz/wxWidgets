@@ -1724,7 +1724,9 @@ wxGridCellDateEditor::wxGridCellDateEditor()
 void wxGridCellDateEditor::Create(wxWindow* parent, wxWindowID id,
                                   wxEvtHandler* evtHandler)
 {
-    m_control = new wxDatePickerCtrl(parent, id);
+    m_control = new wxDatePickerCtrl(parent, id,
+        wxDefaultDateTime, wxDefaultPosition, wxDefaultSize,
+        wxDP_DEFAULT | wxDP_SHOWCENTURY | wxWANTS_CHARS);
 
     wxGridCellEditor::Create(parent, id, evtHandler);
 }
