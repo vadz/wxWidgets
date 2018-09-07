@@ -153,12 +153,11 @@ private:
 
 #include "wx/datetime.h"
 
-// the default renderer for the cells containing times and dates
-class WXDLLIMPEXP_ADV wxGridCellDateTimeRenderer : public wxGridCellStringRenderer
+// the default renderer for the cells containing dates only
+class WXDLLIMPEXP_ADV wxGridCellDateRenderer : public wxGridCellStringRenderer
 {
 public:
-    wxGridCellDateTimeRenderer(const wxString& outformat = wxDefaultDateTimeFormat,
-                               const wxString& informat = wxDefaultDateTimeFormat);
+    wxGridCellDateRenderer(const wxString& outformat = wxDefaultDateTimeFormat);
 
     // draw the string right aligned
     virtual void Draw(wxGrid& grid,
@@ -182,22 +181,24 @@ protected:
     wxString GetString(const wxGrid& grid, int row, int col);
     virtual bool Parse(const wxString& text, wxDateTime& result);
 
-    wxString m_iformat;
     wxString m_oformat;
-    wxDateTime m_dateDef;
     wxDateTime::TimeZone m_tz;
 };
 
-class WXDLLIMPEXP_ADV wxGridCellDateRenderer : public wxGridCellDateTimeRenderer
+// the default renderer for the cells containing times and dates
+class WXDLLIMPEXP_ADV wxGridCellDateTimeRenderer : public wxGridCellDateRenderer
 {
 public:
-    wxGridCellDateRenderer(const wxString& outformat = wxDefaultDateTimeFormat,
-                           const wxString& informat = wxDefaultDateTimeFormat);
+    wxGridCellDateTimeRenderer(const wxString& outformat = wxDefaultDateTimeFormat,
+                               const wxString& informat = wxDefaultDateTimeFormat);
 
     virtual wxGridCellRenderer *Clone() const wxOVERRIDE;
 
 protected:
     virtual bool Parse(const wxString& text, wxDateTime& result) wxOVERRIDE;
+
+    wxString m_iformat;
+    wxDateTime m_dateDef;
 };
 
 #endif // wxUSE_DATETIME
