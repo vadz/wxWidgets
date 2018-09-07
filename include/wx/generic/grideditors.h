@@ -386,25 +386,21 @@ public:
 
     virtual void SetSize(const wxRect& rect) wxOVERRIDE;
 
-    // virtual void PaintBackground(wxDC& dc,
-    //                              const wxRect& rectCell,
-    //                              const wxGridCellAttr& attr) wxOVERRIDE;
-
-    // virtual bool IsAcceptedKey(wxKeyEvent& event) wxOVERRIDE;
     virtual void BeginEdit(int row, int col, wxGrid* grid) wxOVERRIDE;
     virtual bool EndEdit(int row, int col, const wxGrid* grid,
                          const wxString& oldval, wxString *newval) wxOVERRIDE;
     virtual void ApplyEdit(int row, int col, wxGrid* grid) wxOVERRIDE;
 
     virtual void Reset() wxOVERRIDE;
-    // virtual void StartingKey(wxKeyEvent& event) wxOVERRIDE;
-    // virtual void HandleReturn(wxKeyEvent& event) wxOVERRIDE;
 
     virtual wxGridCellEditor *Clone() const wxOVERRIDE;
 
     virtual wxString GetValue() const wxOVERRIDE;
 
-private:
+protected:
+    wxDatePickerCtrl* DatePicker() const;
+
+protected:
     wxDateTime m_value;
 
     wxDECLARE_NO_COPY_CLASS(wxGridCellDateEditor);

@@ -100,6 +100,9 @@ class WXDLLIMPEXP_FWD_CORE wxTextCtrl;
 #if wxUSE_SPINCTRL
 class WXDLLIMPEXP_FWD_CORE wxSpinCtrl;
 #endif
+#if wxUSE_DATEPICKCTRL
+class WXDLLIMPEXP_FWD_CORE wxDatePickerCtrl;
+#endif
 
 class wxGridFixedIndicesSet;
 

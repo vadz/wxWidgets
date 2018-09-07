@@ -7870,8 +7870,7 @@ void wxGrid::SetColFormatDate(int col, const wxString& format)
     wxString typeName = wxGRID_VALUE_DATE;
     if(!format.IsEmpty())
     {
-        typeName.Append(':');
-        typeName.Append(format);
+        typeName << ':' << format;
     }
     SetColFormatCustom(col, typeName);
 }
@@ -7920,8 +7919,7 @@ void wxGrid::SetCellFormatDate(int row, int col, const wxString& format)
     wxString typeName = wxGRID_VALUE_DATE;
     if(!format.IsEmpty())
     {
-        typeName.Append(':');
-        typeName.Append(format);
+        typeName << ':' << format;
     }
     SetCellFormatCustom(row, col, typeName);
 }
@@ -9425,7 +9423,7 @@ int wxGridTypeRegistry::FindDataType(const wxString& typeName)
         else
 #endif // wxUSE_COMBOBOX
 #if wxUSE_DATEPICKCTRL
-        if( typeName == wxGRID_VALUE_DATE)
+        if( typeName == wxGRID_VALUE_DATE )
         {
             RegisterDataType(wxGRID_VALUE_DATE,
                              // Draw dates localized by default.

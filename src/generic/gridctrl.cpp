@@ -105,7 +105,7 @@ wxString wxGridCellDateRenderer::GetString(const wxGrid& grid, int row, int col)
     {
         void * tempval = table->GetValueAsCustom(row, col,wxGRID_VALUE_DATETIME);
 
-        if (tempval)
+        if ( tempval )
         {
             val = *((wxDateTime *)tempval);
             hasDatetime = true;
@@ -114,7 +114,7 @@ wxString wxGridCellDateRenderer::GetString(const wxGrid& grid, int row, int col)
 
     }
 
-    if (!hasDatetime )
+    if ( !hasDatetime )
     {
         text = table->GetValue(row, col);
         hasDatetime = Parse(text, val);
@@ -165,7 +165,7 @@ wxSize wxGridCellDateRenderer::GetBestSize(wxGrid& grid,
 
 void wxGridCellDateRenderer::SetParameters(const wxString& params)
 {
-    if (!params.empty())
+    if ( !params.empty() )
         m_oformat=params;
 }
 
@@ -195,9 +195,6 @@ bool wxGridCellDateTimeRenderer::Parse(const wxString& text, wxDateTime& result)
     const char * const end = result.ParseFormat(text, m_iformat, m_dateDef);
     return end && !*end;
 }
-
-
-//////////////
 
 #endif // wxUSE_DATETIME
 
