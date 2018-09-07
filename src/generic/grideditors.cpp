@@ -1718,6 +1718,7 @@ wxGridCellAutoWrapStringEditor::Create(wxWindow* parent,
 // ----------------------------------------------------------------------------
 
 wxGridCellDateEditor::wxGridCellDateEditor()
+    : m_bestSize(wxDefaultSize)
 {
 }
 
@@ -1733,15 +1734,14 @@ void wxGridCellDateEditor::Create(wxWindow* parent, wxWindowID id,
 
 void wxGridCellDateEditor::SetSize(const wxRect& rect)
 {
-    wxSize rectSize = rect.GetSize();
-    wxSize const bestSize = m_control->GetBestSize();
+    wxASSERT_MSG(m_control, "The wxGridCellDateEditor must be created first!");
 
-    if( rectSize.GetHeight() < bestSize.GetHeight()
-        || rectSize.GetWidth() < bestSize.GetWidth() )
+    if(!m_bestSize.IsFullySpecified())
     {
-        rectSize.IncTo(bestSize);
-        wxGridCellEditor::SetSize(wxRect(rect.GetTopLeft(), rectSize));
+        m_bestSize = DatePicker()->GetBestSize();
     }
+
+    wxGridCellEditor::SetSize(wxRect(rect.GetPosition(), m_bestSize));
 }
 
 void wxGridCellDateEditor::BeginEdit(int row, int col, wxGrid* grid)
