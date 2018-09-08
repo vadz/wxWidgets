@@ -1719,6 +1719,7 @@ wxGridCellAutoWrapStringEditor::Create(wxWindow* parent,
 
 wxGridCellDateEditor::wxGridCellDateEditor()
     : m_bestSize(wxDefaultSize)
+    , m_forceUpdate(false)
 {
 }
 
@@ -1736,7 +1737,7 @@ void wxGridCellDateEditor::SetSize(const wxRect& rect)
 {
     wxASSERT_MSG(m_control, "The wxGridCellDateEditor must be created first!");
 
-    if(!m_bestSize.IsFullySpecified())
+    if ( !m_bestSize.IsFullySpecified() )
     {
         m_bestSize = DatePicker()->GetBestSize();
     }
@@ -1749,10 +1750,9 @@ void wxGridCellDateEditor::BeginEdit(int row, int col, wxGrid* grid)
     wxASSERT_MSG(m_control, "The wxGridCellDateEditor must be created first!");
 
     wxString dateStr = grid->GetTable()->GetValue(row, col);
-    if( m_value.ParseDate(dateStr) )
-    {
-        DatePicker()->SetValue(m_value);
-    }
+    m_value = wxDateTime::Today();
+    m_forceUpdate = !m_value.ParseDate(dateStr);
+    DatePicker()->SetValue(m_value);
 
     m_control->SetFocus();
 }
@@ -1763,13 +1763,17 @@ bool wxGridCellDateEditor::EndEdit(int row, int col, const wxGrid* grid,
     wxASSERT_MSG(m_control, "The wxGridCellDateEditor must be created first!");
 
     wxDateTime date = DatePicker()->GetValue();
-    if( date == m_value )
+
+    if ( m_value != date )
+    {
+        m_value = date;
+    }
+    else if ( !m_forceUpdate )
     {
         return false;
     }
-    m_value = date;
 
-    if( newval )
+    if ( newval )
     {
         *newval = m_value.FormatISODate();
     }
@@ -1787,6 +1791,7 @@ void wxGridCellDateEditor::Reset()
     wxASSERT_MSG(m_control, "The wxGridCellDateEditor must be created first!");
 
     DatePicker()->SetValue(m_value);
+    m_forceUpdate = false;
 }
 
 wxGridCellEditor *wxGridCellDateEditor::Clone() const

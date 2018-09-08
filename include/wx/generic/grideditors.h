@@ -403,6 +403,7 @@ protected:
 protected:
     wxDateTime m_value;
     wxSize m_bestSize;
+    bool m_forceUpdate;
 
     wxDECLARE_NO_COPY_CLASS(wxGridCellDateEditor);
 };
