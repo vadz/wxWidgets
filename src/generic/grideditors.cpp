@@ -1717,6 +1717,56 @@ wxGridCellAutoWrapStringEditor::Create(wxWindow* parent,
 // wxGridCellDateEditor
 // ----------------------------------------------------------------------------
 
+#if defined ( __WXGTK__ )
+// Desired behavior is to close the editor control on ESC without updating the
+// table, and to close with update on ENTER. On wxMSW wxWANTS_CHARS is enough
+// for that, but on wxGTK a bit of special processing is required.
+struct wxGridCellDateEditorKeyHandler
+{
+    wxControl* m_control;
+
+    explicit wxGridCellDateEditorKeyHandler(wxControl* control)
+        : m_control(control)
+    {}
+
+    void operator()(wxKeyEvent& event) const
+    {
+        switch ( event.GetKeyCode() )
+        {
+            case WXK_ESCAPE:
+                {
+                    wxGridCellEditorEvtHandler* handler =
+                        wxDynamicCast(m_control->GetEventHandler(),
+                                      wxGridCellEditorEvtHandler);
+                    if( handler )
+                    {
+                        handler->OnKeyDown(event);
+                    }
+                }
+                break;
+
+            case WXK_RETURN:
+            case WXK_NUMPAD_ENTER:
+                {
+                    wxEvtHandler* handler =
+                        m_control->GetParent()->GetEventHandler();
+                    if( handler )
+                    {
+                        handler->AddPendingEvent(
+                            wxCommandEvent(wxEVT_GRID_HIDE_EDITOR));
+                        event.Skip();
+                    }
+                }
+                break;
+
+            default:
+                event.Skip();
+                break;
+        }
+    }
+};
+#endif // __WXGTK__
+
 wxGridCellDateEditor::wxGridCellDateEditor()
     : m_bestSize(wxDefaultSize)
     , m_forceUpdate(false)
@@ -1731,6 +1781,16 @@ void wxGridCellDateEditor::Create(wxWindow* parent, wxWindowID id,
         wxDP_DEFAULT | wxDP_SHOWCENTURY | wxWANTS_CHARS);
 
     wxGridCellEditor::Create(parent, id, evtHandler);
+
+#if defined ( __WXGTK__ )
+    // Install a handler for ESC and ENTER keys.
+    wxGridCellEditorEvtHandler* handler =
+        wxDynamicCast(evtHandler, wxGridCellEditorEvtHandler);
+    if( handler )
+    {
+        handler->Bind(wxEVT_CHAR, wxGridCellDateEditorKeyHandler(m_control));
+    }
+#endif
 }
 
 void wxGridCellDateEditor::SetSize(const wxRect& rect)
