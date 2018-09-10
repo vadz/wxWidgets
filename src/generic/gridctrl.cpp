@@ -81,7 +81,14 @@ void wxGridCellRenderer::Draw(wxGrid& grid,
 
 wxGridCellDateRenderer::wxGridCellDateRenderer(const wxString& outformat)
 {
-    m_oformat = outformat;
+    if ( outformat.IsEmpty() )
+    {
+        m_oformat = "%x"; // Localized date representation.
+    }
+    else
+    {
+        m_oformat = outformat;
+    }
     m_tz = wxDateTime::Local;
 }
 
@@ -111,7 +118,6 @@ wxString wxGridCellDateRenderer::GetString(const wxGrid& grid, int row, int col)
             hasDatetime = true;
             delete (wxDateTime *)tempval;
         }
-
     }
 
     if ( !hasDatetime )
