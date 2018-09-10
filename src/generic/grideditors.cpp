@@ -1814,6 +1814,15 @@ void wxGridCellDateEditor::SetSize(const wxRect& r)
     wxGridCellEditor::SetSize(rect);
 }
 
+void wxGridCellDateEditor::PaintBackground(wxDC& dc,
+                                           const wxRect& rectCell,
+                                           const wxGridCellAttr& attr)
+{
+    dc.SetPen(*wxTRANSPARENT_PEN);
+    dc.SetBrush(*wxLIGHT_GREY_BRUSH);
+    dc.DrawRectangle(rectCell);
+}
+
 void wxGridCellDateEditor::BeginEdit(int row, int col, wxGrid* grid)
 {
     wxASSERT_MSG(m_control, "The wxGridCellDateEditor must be created first!");
