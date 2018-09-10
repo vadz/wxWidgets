@@ -1805,7 +1805,7 @@ void wxGridCellDateEditor::SetSize(const wxRect& r)
     wxRect rect(r.GetPosition(), m_bestSize);
 
     // Allow edit picker to become a bit wider, if necessary,
-    // but no more than twice.
+    // but no more than twice as cached best width.
     if ( r.GetWidth() > m_bestSize.GetWidth() )
     {
         rect.SetWidth(wxMin(r.GetWidth(), 2*m_bestSize.GetWidth()));

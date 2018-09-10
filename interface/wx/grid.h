@@ -143,6 +143,47 @@ public:
 };
 
 /**
+    @class wxGridCellDateRenderer
+
+    This class may be used to format a date-only data in a cell. See
+    @ref wxGridCellDateTimeRenderer for a date/time version.
+    The class wxDateTime is used internally to display the local date
+    representation. @ref wxDateTime::ParseData used to parse the string
+    date entered in the cell.
+
+    @library{wxcore}
+    @category{grid}
+
+    @see wxGridCellRenderer, wxGridCellAutoWrapStringRenderer,
+         wxGridCellBoolRenderer, wxGridCellEnumRenderer,
+         wxGridCellFloatRenderer, wxGridCellNumberRenderer,
+         wxGridCellStringRenderer, wxGridCellDateTimeRenderer
+*/
+class wxGridCellDateRenderer : public wxGridCellStringRenderer
+{
+public:
+    /**
+        Date renderer constructor.
+
+        @param outformat
+            strftime()-like format string used to render the output date.
+            By default (or if provided format string is empty) localized
+            date representation ("%x") is used.
+    */
+    wxGridCellDateRenderer(const wxString& outformat = wxString());
+
+
+    /**
+        Sets the strftime()-like format string which will be used to render
+        the date.
+
+        @param params
+            strftime()-like format string used to render the date.
+    */
+    virtual void SetParameters(const wxString& params);
+};
+
+/**
     @class wxGridCellDateTimeRenderer
 
     This class may be used to format a date/time data in a cell.
@@ -155,9 +196,9 @@ public:
     @see wxGridCellRenderer, wxGridCellAutoWrapStringRenderer,
          wxGridCellBoolRenderer, wxGridCellEnumRenderer,
          wxGridCellFloatRenderer, wxGridCellNumberRenderer,
-         wxGridCellStringRenderer
+         wxGridCellStringRenderer, wxGridCellDateRenderer
 */
-class wxGridCellDateTimeRenderer : public wxGridCellStringRenderer
+class wxGridCellDateTimeRenderer : public wxGridCellDateRenderer
 {
 public:
     /**
@@ -384,7 +425,7 @@ public:
     @see wxGridCellAutoWrapStringEditor, wxGridCellBoolEditor,
          wxGridCellChoiceEditor, wxGridCellEnumEditor,
          wxGridCellFloatEditor, wxGridCellNumberEditor,
-         wxGridCellTextEditor
+         wxGridCellTextEditor, wxGridCellDateEditor
 */
 class wxGridCellEditor : public wxClientDataContainer, public wxRefCounter
 {
@@ -532,7 +573,8 @@ protected:
 
     @see wxGridCellEditor, wxGridCellBoolEditor, wxGridCellChoiceEditor,
          wxGridCellEnumEditor, wxGridCellFloatEditor,
-         wxGridCellNumberEditor, wxGridCellTextEditor
+         wxGridCellNumberEditor, wxGridCellTextEditor,
+         wxGridCellDateEditor
 */
 class wxGridCellAutoWrapStringEditor : public wxGridCellTextEditor
 {
@@ -551,7 +593,7 @@ public:
     @see wxGridCellEditor, wxGridCellAutoWrapStringEditor,
          wxGridCellChoiceEditor, wxGridCellEnumEditor,
          wxGridCellFloatEditor, wxGridCellNumberEditor,
-         wxGridCellTextEditor
+         wxGridCellTextEditor, wxGridCellDateEditor
 */
 class wxGridCellBoolEditor : public wxGridCellEditor
 {
@@ -590,7 +632,7 @@ public:
     @see wxGridCellEditor, wxGridCellAutoWrapStringEditor,
          wxGridCellBoolEditor, wxGridCellEnumEditor,
          wxGridCellFloatEditor, wxGridCellNumberEditor,
-         wxGridCellTextEditor
+         wxGridCellTextEditor, wxGridCellDateEditor
 */
 class wxGridCellChoiceEditor : public wxGridCellEditor
 {
@@ -641,7 +683,7 @@ public:
     @see wxGridCellEditor, wxGridCellAutoWrapStringEditor,
          wxGridCellBoolEditor, wxGridCellChoiceEditor,
          wxGridCellTextEditor, wxGridCellFloatEditor,
-         wxGridCellNumberEditor
+         wxGridCellNumberEditor, wxGridCellDateEditor
 */
 class wxGridCellEnumEditor : public wxGridCellChoiceEditor
 {
@@ -666,7 +708,7 @@ public:
     @see wxGridCellEditor, wxGridCellAutoWrapStringEditor,
          wxGridCellBoolEditor, wxGridCellChoiceEditor,
          wxGridCellEnumEditor, wxGridCellFloatEditor,
-         wxGridCellNumberEditor
+         wxGridCellNumberEditor, wxGridCellDateEditor
 */
 class wxGridCellTextEditor : public wxGridCellEditor
 {
@@ -705,7 +747,7 @@ public:
     @see wxGridCellEditor, wxGridCellAutoWrapStringEditor,
          wxGridCellBoolEditor, wxGridCellChoiceEditor,
          wxGridCellEnumEditor, wxGridCellNumberEditor,
-         wxGridCellTextEditor
+         wxGridCellTextEditor, wxGridCellDateEditor
 */
 class wxGridCellFloatEditor : public wxGridCellTextEditor
 {
@@ -743,7 +785,7 @@ public:
     @see wxGridCellEditor, wxGridCellAutoWrapStringEditor,
          wxGridCellBoolEditor, wxGridCellChoiceEditor,
          wxGridCellEnumEditor, wxGridCellFloatEditor,
-         wxGridCellTextEditor
+         wxGridCellTextEditor, wxGridCellDateEditor
 */
 class wxGridCellNumberEditor : public wxGridCellTextEditor
 {
@@ -773,6 +815,29 @@ protected:
         String representation of the value.
     */
     wxString GetString() const;
+};
+
+/**
+    @class wxGridCellDateEditor
+
+    Grid cell editor for dates. Uses @ref wxDatePickerCtrl
+    as actual edit control.
+
+    @library{wxcore}
+    @category{grid}
+
+    @see wxGridCellEditor, wxGridCellAutoWrapStringEditor,
+         wxGridCellBoolEditor, wxGridCellChoiceEditor,
+         wxGridCellEnumEditor, wxGridCellFloatEditor,
+         wxGridCellTextEditor
+*/
+class wxGridCellDateEditor : public wxGridCellEditor
+{
+public:
+    /**
+        Date editor constructor.
+    */
+    wxGridCellDateEditor();
 };
 
 
@@ -2961,9 +3026,10 @@ public:
             Name of the new type. May be any string, but if the type name is
             the same as the name of an already registered type, including one
             of the standard ones (which are @c wxGRID_VALUE_STRING, @c
-            wxGRID_VALUE_BOOL, @c wxGRID_VALUE_NUMBER, @c wxGRID_VALUE_FLOAT
-            and @c wxGRID_VALUE_CHOICE), then the new registration information
-            replaces the previously used renderer and editor.
+            wxGRID_VALUE_BOOL, @c wxGRID_VALUE_NUMBER, @c wxGRID_VALUE_FLOAT,
+            @c wxGRID_VALUE_CHOICE and @c wxGRID_VALUE_DATE), then the new
+            registration information replaces the previously used renderer and
+            editor.
         @param renderer
             The renderer to use for the cells of this type. Its ownership is
             taken by the grid, i.e. it will call DecRef() on this pointer when
@@ -3089,6 +3155,51 @@ public:
         @see SetColFormatCustom()
     */
     void SetColFormatNumber(int col);
+
+    /**
+        Sets the specified column to display date values.
+
+        @see SetColFormatCustom()
+    */
+    void SetColFormatDate(int col);
+
+    /**
+        Sets the specified cell to display boolean values.
+
+        @see SetColFormatCustom()
+    */
+    void SetCellFormatBool(int row, int col);
+
+    /**
+        Sets the specified cell to display integer values.
+
+        @see SetColFormatCustom()
+    */
+    void SetCellFormatNumber(int row, int col);
+
+    /**
+        Sets the specified cell to display floating point values with the
+        given width and precision.
+
+        @see SetColFormatCustom()
+    */
+    void SetCellFormatFloat(int row, int col, int width = -1, int precision = -1);
+
+    /**
+        Sets the specified cell to display date values.
+
+        @see SetColFormatCustom()
+    */
+    void SetCellFormatDate(int row, int col, const wxString& format = wxString());
+
+    /**
+        Sets the specified cell to display data in a custom format.
+
+        Same as @ref SetColFormatCustom() but for individual cells.
+
+        @see SetColFormatCustom()
+    */
+    void SetCellFormatCustom(int row, int col, const wxString& typeName);
 
     /**
         Sets the default editor for grid cells.
