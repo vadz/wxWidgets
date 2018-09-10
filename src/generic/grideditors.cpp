@@ -1793,7 +1793,7 @@ void wxGridCellDateEditor::Create(wxWindow* parent, wxWindowID id,
 #endif
 }
 
-void wxGridCellDateEditor::SetSize(const wxRect& rect)
+void wxGridCellDateEditor::SetSize(const wxRect& r)
 {
     wxASSERT_MSG(m_control, "The wxGridCellDateEditor must be created first!");
 
@@ -1802,7 +1802,16 @@ void wxGridCellDateEditor::SetSize(const wxRect& rect)
         m_bestSize = DatePicker()->GetBestSize();
     }
 
-    wxGridCellEditor::SetSize(wxRect(rect.GetPosition(), m_bestSize));
+    wxRect rect(r.GetPosition(), m_bestSize);
+
+    // Allow edit picker to become a bit wider, if necessary,
+    // but no more than twice.
+    if ( r.GetWidth() > m_bestSize.GetWidth() )
+    {
+        rect.SetWidth(wxMin(r.GetWidth(), 2*m_bestSize.GetWidth()));
+    }
+
+    wxGridCellEditor::SetSize(rect);
 }
 
 void wxGridCellDateEditor::BeginEdit(int row, int col, wxGrid* grid)
