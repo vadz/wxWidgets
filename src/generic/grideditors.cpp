@@ -1832,19 +1832,6 @@ void wxGridCellDateEditor::BeginEdit(int row, int col, wxGrid* grid)
     DatePicker()->SetFocus();
 }
 
-bool wxGridCellDateEditor::IsAcceptedKey(wxKeyEvent& event)
-{
-    switch ( event.GetKeyCode() )
-    {
-        case WXK_DELETE:
-        case WXK_BACK:
-            return true;
-
-        default:
-            return wxGridCellEditor::IsAcceptedKey(event);
-    }
-}
-
 bool wxGridCellDateEditor::EndEdit(int row, int col, const wxGrid* grid,
                                    const wxString& oldval, wxString *newval)
 {

@@ -386,7 +386,6 @@ public:
 
     virtual void SetSize(const wxRect& rect) wxOVERRIDE;
 
-    virtual bool IsAcceptedKey(wxKeyEvent& event) wxOVERRIDE;
     virtual void BeginEdit(int row, int col, wxGrid* grid) wxOVERRIDE;
     virtual bool EndEdit(int row, int col, const wxGrid* grid,
                          const wxString& oldval, wxString *newval) wxOVERRIDE;
