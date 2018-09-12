@@ -1768,7 +1768,7 @@ struct wxGridCellDateEditorKeyHandler
 #endif // __WXGTK__
 
 wxGridCellDateEditor::wxGridCellDateEditor()
-    : m_bestSize(wxDefaultSize), m_forceUpdate(false)
+    : m_bestSize(wxDefaultSize)
 {
 }
 
@@ -1827,11 +1827,18 @@ void wxGridCellDateEditor::BeginEdit(int row, int col, wxGrid* grid)
     wxASSERT_MSG(m_control, "The wxGridCellDateEditor must be created first!");
 
     const wxString dateStr = grid->GetTable()->GetValue(row, col);
-    m_value = wxDateTime::Today();
-    m_forceUpdate = !m_value.ParseDate(dateStr);
-    DatePicker()->SetValue(m_value);
+    if ( !m_value.ParseDate(dateStr) )
+    {
+        // Invalidate m_value, so that it always compare different
+        // to any value returned from DatePicker()->GetValue().
+        m_value = wxDefaultDateTime;
+    }
+    else
+    {
+        DatePicker()->SetValue(m_value);
+    }
 
-    m_control->SetFocus();
+    DatePicker()->SetFocus();
 }
 
 bool wxGridCellDateEditor::IsAcceptedKey(wxKeyEvent& event)
@@ -1854,14 +1861,12 @@ bool wxGridCellDateEditor::EndEdit(int row, int col, const wxGrid* grid,
 
     const wxDateTime date = DatePicker()->GetValue();
 
-    if ( m_value != date )
-    {
-        m_value = date;
-    }
-    else if ( !m_forceUpdate )
+    if ( m_value == date )
     {
         return false;
     }
+
+    m_value = date;
 
     if ( newval )
     {
@@ -1880,8 +1885,7 @@ void wxGridCellDateEditor::Reset()
 {
     wxASSERT_MSG(m_control, "The wxGridCellDateEditor must be created first!");
 
-    DatePicker()->SetValue(m_value);
-    m_forceUpdate = false;
+    m_value = DatePicker()->GetValue();
 }
 
 wxGridCellEditor *wxGridCellDateEditor::Clone() const
