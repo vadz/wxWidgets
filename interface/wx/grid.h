@@ -3166,44 +3166,6 @@ public:
     void SetColFormatDate(int col);
 
     /**
-        Sets the specified cell to display boolean values.
-
-        @see SetColFormatCustom()
-    */
-    void SetCellFormatBool(int row, int col);
-
-    /**
-        Sets the specified cell to display integer values.
-
-        @see SetColFormatCustom()
-    */
-    void SetCellFormatNumber(int row, int col);
-
-    /**
-        Sets the specified cell to display floating point values with the
-        given width and precision.
-
-        @see SetColFormatCustom()
-    */
-    void SetCellFormatFloat(int row, int col, int width = -1, int precision = -1);
-
-    /**
-        Sets the specified cell to display date values.
-
-        @see SetColFormatCustom()
-    */
-    void SetCellFormatDate(int row, int col, const wxString& format = wxString());
-
-    /**
-        Sets the specified cell to display data in a custom format.
-
-        Same as @ref SetColFormatCustom() but for individual cells.
-
-        @see SetColFormatCustom()
-    */
-    void SetCellFormatCustom(int row, int col, const wxString& typeName);
-
-    /**
         Sets the default editor for grid cells.
 
         The grid will take ownership of the pointer.

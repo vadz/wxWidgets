@@ -7890,54 +7890,6 @@ void wxGrid::SetColFormatCustom(int col, const wxString& typeName)
 }
 
 // ----------------------------------------------------------------------------
-// setting cell data type (wrappers around SetAttr)
-// ----------------------------------------------------------------------------
-
-void wxGrid::SetCellFormatBool(int row, int col)
-{
-    SetCellFormatCustom(row, col, wxGRID_VALUE_BOOL);
-}
-
-void wxGrid::SetCellFormatNumber(int row, int col)
-{
-    SetCellFormatCustom(row, col, wxGRID_VALUE_NUMBER);
-}
-
-void wxGrid::SetCellFormatFloat(int row, int col, int width, int precision)
-{
-    wxString typeName = wxGRID_VALUE_FLOAT;
-    if ( (width != -1) || (precision != -1) )
-    {
-        typeName << wxT(':') << width << wxT(',') << precision;
-    }
-
-    SetCellFormatCustom(row, col, typeName);
-}
-
-void wxGrid::SetCellFormatDate(int row, int col, const wxString& format)
-{
-    wxString typeName = wxGRID_VALUE_DATE;
-    if(!format.IsEmpty())
-    {
-        typeName << ':' << format;
-    }
-    SetCellFormatCustom(row, col, typeName);
-}
-
-void wxGrid::SetCellFormatCustom(int row, int col, const wxString& typeName)
-{
-    wxGridCellAttr *attr = m_table->GetAttr(row, col, wxGridCellAttr::Cell);
-    if (!attr)
-        attr = new wxGridCellAttr;
-    wxGridCellRenderer *renderer = GetDefaultRendererForType(typeName);
-    attr->SetRenderer(renderer);
-    wxGridCellEditor *editor = GetDefaultEditorForType(typeName);
-    attr->SetEditor(editor);
-
-    SetAttr(row, col, attr);
-}
-
-// ----------------------------------------------------------------------------
 // setting cell attributes: this is forwarded to the table
 // ----------------------------------------------------------------------------
 
