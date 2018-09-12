@@ -378,7 +378,7 @@ public:
 class WXDLLIMPEXP_ADV wxGridCellDateEditor : public wxGridCellEditor
 {
 public:
-    explicit wxGridCellDateEditor();
+    wxGridCellDateEditor();
 
     virtual void Create(wxWindow* parent,
                         wxWindowID id,

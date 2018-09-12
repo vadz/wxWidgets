@@ -7868,7 +7868,7 @@ void wxGrid::SetColFormatFloat(int col, int width, int precision)
 void wxGrid::SetColFormatDate(int col, const wxString& format)
 {
     wxString typeName = wxGRID_VALUE_DATE;
-    if(!format.IsEmpty())
+    if ( !format.empty() )
     {
         typeName << ':' << format;
     }
@@ -9423,7 +9423,7 @@ int wxGridTypeRegistry::FindDataType(const wxString& typeName)
         else
 #endif // wxUSE_COMBOBOX
 #if wxUSE_DATEPICKCTRL
-        if( typeName == wxGRID_VALUE_DATE )
+        if ( typeName == wxGRID_VALUE_DATE )
         {
             RegisterDataType(wxGRID_VALUE_DATE,
                              new wxGridCellDateRenderer,

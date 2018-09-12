@@ -147,9 +147,9 @@ public:
 
     This class may be used to format a date-only data in a cell. See
     @ref wxGridCellDateTimeRenderer for a date/time version.
-    The class wxDateTime is used internally to display the local date
-    representation. @ref wxDateTime::ParseData used to parse the string
-    date entered in the cell.
+    wxDateTime::Format() is used internally to render the date
+    representation. wxDateTime::ParseDate() is used to parse the string
+    data entered in the cell.
 
     @library{wxcore}
     @category{grid}
@@ -158,6 +158,8 @@ public:
          wxGridCellBoolRenderer, wxGridCellEnumRenderer,
          wxGridCellFloatRenderer, wxGridCellNumberRenderer,
          wxGridCellStringRenderer, wxGridCellDateTimeRenderer
+
+    @since 3.1.2
 */
 class wxGridCellDateRenderer : public wxGridCellStringRenderer
 {

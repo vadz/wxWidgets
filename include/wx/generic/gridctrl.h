@@ -157,7 +157,7 @@ private:
 class WXDLLIMPEXP_ADV wxGridCellDateRenderer : public wxGridCellStringRenderer
 {
 public:
-    wxGridCellDateRenderer(const wxString& outformat = wxString());
+    explicit wxGridCellDateRenderer(const wxString& outformat = wxString());
 
     // draw the string right aligned
     virtual void Draw(wxGrid& grid,
