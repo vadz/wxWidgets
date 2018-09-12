@@ -136,7 +136,7 @@ wxString wxGridCellDateRenderer::GetString(const wxGrid& grid, int row, int col)
 bool wxGridCellDateRenderer::Parse(const wxString& text, wxDateTime& result)
 {
     wxString::const_iterator end;
-    return result.ParseDate(text, &end);
+    return result.ParseDate(text, &end) && end == text.end();
 }
 
 void wxGridCellDateRenderer::Draw(wxGrid& grid,
