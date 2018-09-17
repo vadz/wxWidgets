@@ -2147,6 +2147,8 @@ enum wxGridRenderStyle
     - wxGridCellFloatRenderer
     - wxGridCellNumberRenderer
     - wxGridCellStringRenderer
+    - wxGridCellDateRenderer
+    - wxGridCellDateTimeRenderer
 
     The look of a cell can be further defined using wxGridCellAttr. An object
     of this type may be returned by wxGridTableBase::GetAttr().
@@ -2159,6 +2161,7 @@ enum wxGridRenderStyle
     - wxGridCellFloatEditor
     - wxGridCellNumberEditor
     - wxGridCellTextEditor
+    - wxGridCellDateEditor
 
     Please see wxGridEvent, wxGridSizeEvent, wxGridRangeSelectEvent, and
     wxGridEditorCreatedEvent for the documentation of all event types you can

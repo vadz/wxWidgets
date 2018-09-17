@@ -153,7 +153,7 @@ private:
 
 #include "wx/datetime.h"
 
-// the default renderer for the cells containing dates only
+// renderer for the cells containing dates only, without time component
 class WXDLLIMPEXP_ADV wxGridCellDateRenderer : public wxGridCellStringRenderer
 {
 public:
