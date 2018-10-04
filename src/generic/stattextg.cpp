@@ -62,7 +62,7 @@ void wxGenericStaticText::DoDrawLabel(wxDC& dc, const wxRect& rect)
         m_markupText->Render(dc, rect, wxMarkupText::Render_ShowAccels);
     else
 #endif // wxUSE_MARKUP
-        dc.DrawLabel(m_label, rect, GetAlignment(), m_mnemonic);
+        dc.DrawLabel(GetEffectiveLabel(), rect, GetAlignment(), m_mnemonic);
 }
 
 void wxGenericStaticText::OnPaint(wxPaintEvent& WXUNUSED(event))
@@ -84,6 +84,42 @@ void wxGenericStaticText::OnPaint(wxPaintEvent& WXUNUSED(event))
     DoDrawLabel(dc, rect);
 }
 
+bool
+wxGenericStaticText::InformFirstDirection(int direction,
+                                          int size,
+                                          int WXUNUSED(availableOtherDir))
+{
+    switch ( direction )
+    {
+        case wxHORIZONTAL:
+            {
+                const wxString labelWrapped = GetWrappedLabel(size);
+                if ( labelWrapped != m_labelWrapped )
+                {
+                    m_labelWrapped = labelWrapped;
+                    InvalidateBestSize();
+                    Refresh();
+                    return true;
+                }
+            }
+            break;
+
+        case wxVERTICAL:
+            // Computing best size from best height is not implemented yet.
+            if ( !m_labelWrapped.empty() )
+            {
+                m_labelWrapped.clear();
+                InvalidateBestSize();
+                Refresh();
+            }
+            break;
+
+        default:
+            wxFAIL_MSG("Unexpected direction");
+    }
+
+    return false;
+}
 
 wxSize wxGenericStaticText::DoGetBestClientSize() const
 {
@@ -94,7 +130,7 @@ wxSize wxGenericStaticText::DoGetBestClientSize() const
         return m_markupText->Measure(dc);
 #endif // wxUSE_MARKUP
 
-    return dc.GetMultiLineTextExtent(GetLabel());
+    return dc.GetMultiLineTextExtent(GetEffectiveLabel());
 }
 
 void wxGenericStaticText::SetLabel(const wxString& label)

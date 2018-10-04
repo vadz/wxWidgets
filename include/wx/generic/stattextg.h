@@ -51,6 +51,10 @@ public:
     virtual void SetLabel(const wxString& label) wxOVERRIDE;
     virtual bool SetFont(const wxFont &font) wxOVERRIDE;
 
+    virtual bool InformFirstDirection(int direction,
+                                      int size,
+                                      int availableOtherDir) wxOVERRIDE;
+
 protected:
     virtual wxSize DoGetBestClientSize() const wxOVERRIDE;
 
@@ -75,9 +79,17 @@ private:
 
     void DoDrawLabel(wxDC& dc, const wxRect& rect);
 
+    const wxString& GetEffectiveLabel() const
+    {
+        return m_labelWrapped.empty() ? m_label : m_labelWrapped;
+    }
+
     // These fields are only used if m_markupText == NULL.
     wxString m_label;
     int m_mnemonic;
+
+    // The real label wrapped to current width or empty if not used.
+    wxString m_labelWrapped;
 
 #if wxUSE_MARKUP
     class wxMarkupText *m_markupText;
