@@ -171,11 +171,11 @@ void wxTextWrapper::Wrap(const wxWindow *win, const wxString& text, int widthMax
 class wxLabelWrapper : public wxTextWrapper
 {
 public:
-    void WrapLabel(wxWindow *text, int widthMax)
+    wxString WrapLabel(const wxWindow *text, int widthMax)
     {
         m_text.clear();
         Wrap(text, text->GetLabel(), widthMax);
-        text->SetLabel(m_text);
+        return m_text;
     }
 
 protected:
@@ -198,10 +198,15 @@ private:
 // wxStaticTextBase
 // ----------------------------------------------------------------------------
 
-void wxStaticTextBase::Wrap(int width)
+wxString wxStaticTextBase::GetWrappedLabel(int width) const
 {
     wxLabelWrapper wrapper;
-    wrapper.WrapLabel(this, width);
+    return wrapper.WrapLabel(this, width);
+}
+
+void wxStaticTextBase::Wrap(int width)
+{
+    SetLabel(GetWrappedLabel(width));
 }
 
 void wxStaticTextBase::AutoResizeIfNecessary()

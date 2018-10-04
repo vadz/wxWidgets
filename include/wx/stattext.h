@@ -83,6 +83,10 @@ protected:      // functions required for wxST_ELLIPSIZE_* support
     // style is explicitly used.
     void AutoResizeIfNecessary();
 
+    // Get label wrapped to the specified width without actually changing the
+    // label of this control, unlike the public Wrap().
+    wxString GetWrappedLabel(int width) const;
+
 private:
     wxDECLARE_NO_COPY_CLASS(wxStaticTextBase);
 };
