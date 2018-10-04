@@ -103,9 +103,10 @@ wxCONSTRUCTOR_6( wxStaticText, wxWindow*, Parent, wxWindowID, Id, \
 // wxTextWrapper
 // ----------------------------------------------------------------------------
 
-void wxTextWrapper::Wrap(wxWindow *win, const wxString& text, int widthMax)
+void wxTextWrapper::Wrap(const wxWindow *win, const wxString& text, int widthMax)
 {
-    const wxClientDC dc(win);
+    // Cast is fine because we only use this DC for querying, not drawing.
+    const wxClientDC dc(const_cast<wxWindow*>(win));
 
     const wxArrayString ls = wxSplit(text, '\n', '\0');
     for ( wxArrayString::const_iterator i = ls.begin(); i != ls.end(); ++i )

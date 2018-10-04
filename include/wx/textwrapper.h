@@ -25,7 +25,7 @@ public:
 
     // win is used for getting the font, text is the text to wrap, width is the
     // max line width or -1 to disable wrapping
-    void Wrap(wxWindow *win, const wxString& text, int widthMax);
+    void Wrap(const wxWindow *win, const wxString& text, int widthMax);
 
     // we don't need it, but just to avoid compiler warnings
     virtual ~wxTextWrapper() { }
