@@ -710,7 +710,9 @@ public:
     bool Cleared();
     void Resort()
     {
-        m_rowHeightCache->Clear();
+        if (GetOwner()->HasFlag(wxDV_VARIABLE_LINE_HEIGHT))
+            m_rowHeightCache->Clear();
+
         if (!IsVirtualList())
         {
             m_root->Resort(this);
@@ -3018,7 +3020,9 @@ bool wxDataViewMainWindow::Cleared()
     DestroyTree();
     m_selection.Clear();
     m_currentRow = (unsigned)-1;
-    m_rowHeightCache->Clear();
+
+    if (GetOwner()->HasFlag(wxDV_VARIABLE_LINE_HEIGHT))
+        m_rowHeightCache->Clear();
 
     if (GetModel())
     {
