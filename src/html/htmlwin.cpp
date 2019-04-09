@@ -1184,7 +1184,30 @@ void wxHtmlWindow::OnPaint(wxPaintEvent& WXUNUSED(event))
     }
 }
 
+void wxHtmlWindow::OnFocusEvent(wxFocusEvent& event)
+{
+    event.Skip();
 
+    // Redraw selection, because its background colour depends on
+    // whether the window has keyboard focus or not.
+
+    if ( !m_selection || m_selection->IsEmpty() )
+        return;
+
+    wxHtmlCell const* fromCell = m_selection->GetFromCell();
+    wxHtmlCell const* toCell = m_selection->GetToCell();
+    wxCHECK_RET(fromCell || toCell,
+                "Unexpected: selection is set but cells are not");
+    if ( !fromCell )
+        fromCell = toCell;
+    if ( !toCell )
+        toCell = fromCell;
+
+    wxPoint const tl = fromCell->GetAbsPos();
+    wxPoint const br = toCell->GetAbsPos() +
+                        wxPoint(toCell->GetWidth(), toCell->GetHeight());
+    RefreshRect(wxRect(CalcScrolledPosition(tl), CalcScrolledPosition(br)));
+}
 
 
 void wxHtmlWindow::OnSize(wxSizeEvent& event)
@@ -1656,6 +1679,8 @@ wxBEGIN_EVENT_TABLE(wxHtmlWindow, wxScrolledWindow)
     EVT_MOTION(wxHtmlWindow::OnMouseMove)
     EVT_PAINT(wxHtmlWindow::OnPaint)
     EVT_ERASE_BACKGROUND(wxHtmlWindow::OnEraseBackground)
+    EVT_SET_FOCUS(wxHtmlWindow::OnFocusEvent)
+    EVT_KILL_FOCUS(wxHtmlWindow::OnFocusEvent)
 #if wxUSE_CLIPBOARD
     EVT_LEFT_DCLICK(wxHtmlWindow::OnDoubleClick)
     EVT_ENTER_WINDOW(wxHtmlWindow::OnMouseEnter)
