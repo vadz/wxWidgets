@@ -65,7 +65,10 @@ wxColour
 wxDefaultHtmlRenderingStyle::
 GetSelectedTextBgColour(const wxColour& WXUNUSED(clr))
 {
-    return wxSystemSettings::GetColour(wxSYS_COLOUR_HIGHLIGHT);
+    wxSystemColour colourIndex = wxSYS_COLOUR_HIGHLIGHT;
+    if ( m_wnd && !m_wnd->HasFocus() )
+        colourIndex = wxSYS_COLOUR_BTNSHADOW;
+    return wxSystemSettings::GetColour(colourIndex);
 }
 
 
