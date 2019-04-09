@@ -115,7 +115,7 @@ public:
 class WXDLLIMPEXP_HTML wxDefaultHtmlRenderingStyle : public wxHtmlRenderingStyle
 {
 public:
-    explicit wxDefaultHtmlRenderingStyle(wxWindowBase const* wnd = 0)
+    explicit wxDefaultHtmlRenderingStyle(const wxWindowBase* wnd = NULL)
         : m_wnd(wnd)
     {}
 
@@ -123,7 +123,9 @@ public:
     virtual wxColour GetSelectedTextBgColour(const wxColour& clr) wxOVERRIDE;
 
 private:
-    wxWindowBase const* const m_wnd;
+    const wxWindowBase* const m_wnd;
+
+    wxDECLARE_NO_COPY_CLASS(wxDefaultHtmlRenderingStyle);
 };
 
 

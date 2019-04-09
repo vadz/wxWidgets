@@ -65,10 +65,12 @@ wxColour
 wxDefaultHtmlRenderingStyle::
 GetSelectedTextBgColour(const wxColour& WXUNUSED(clr))
 {
-    wxSystemColour colourIndex = wxSYS_COLOUR_HIGHLIGHT;
-    if ( m_wnd && !m_wnd->HasFocus() )
-        colourIndex = wxSYS_COLOUR_BTNSHADOW;
-    return wxSystemSettings::GetColour(colourIndex);
+    // By default we use the fixed standard selection colour, but if we're
+    // associated with a window use the colour appropriate for the window
+    // state, i.e. grey out selection when it's not in focus.
+
+    return wxSystemSettings::GetColour(!m_wnd || m_wnd->HasFocus() ?
+        wxSYS_COLOUR_HIGHLIGHT : wxSYS_COLOUR_BTNSHADOW);
 }
 
 

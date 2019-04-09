@@ -1194,8 +1194,8 @@ void wxHtmlWindow::OnFocusEvent(wxFocusEvent& event)
     if ( !m_selection || m_selection->IsEmpty() )
         return;
 
-    wxHtmlCell const* fromCell = m_selection->GetFromCell();
-    wxHtmlCell const* toCell = m_selection->GetToCell();
+    const wxHtmlCell* fromCell = m_selection->GetFromCell();
+    const wxHtmlCell* toCell = m_selection->GetToCell();
     wxCHECK_RET(fromCell || toCell,
                 "Unexpected: selection is set but cells are not");
     if ( !fromCell )
@@ -1203,10 +1203,11 @@ void wxHtmlWindow::OnFocusEvent(wxFocusEvent& event)
     if ( !toCell )
         toCell = fromCell;
 
-    wxPoint const tl = fromCell->GetAbsPos();
-    wxPoint const br = toCell->GetAbsPos() +
-                        wxPoint(toCell->GetWidth(), toCell->GetHeight());
-    RefreshRect(wxRect(CalcScrolledPosition(tl), CalcScrolledPosition(br)));
+    const wxPoint topLeft = fromCell->GetAbsPos();
+    const wxPoint bottomRight = toCell->GetAbsPos() +
+        wxSize(toCell->GetWidth(), toCell->GetHeight());
+    RefreshRect(wxRect(CalcScrolledPosition(topLeft),
+        CalcScrolledPosition(bottomRight)));
 }
 
 
