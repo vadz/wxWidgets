@@ -65,10 +65,7 @@ wxFSWatcherImplMSW::~wxFSWatcherImplMSW()
 {
     // order the worker thread to finish & wait
     m_workerThread.Finish();
-    if (m_workerThread.Wait() != 0)
-    {
-        wxLogError(_("Ungraceful worker thread termination"));
-    }
+    (void)m_workerThread.Wait();
 
     // remove all watches
     (void) RemoveAll();
