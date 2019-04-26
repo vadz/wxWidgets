@@ -79,13 +79,6 @@ bool wxFSWatcherImplMSW::Init()
     wxCHECK_MSG( !m_workerThread.IsAlive(), false,
                  "Watcher service is already initialized" );
 
-    if (m_workerThread.Create() != wxTHREAD_NO_ERROR)
-    {
-        wxLogError(_("Unable to create IOCP worker thread"));
-        return false;
-    }
-
-    // we have valid iocp service and thread
     if (m_workerThread.Run() != wxTHREAD_NO_ERROR)
     {
         wxLogError(_("Unable to start IOCP worker thread"));
