@@ -81,7 +81,7 @@ bool wxFSWatcherImplMSW::Init()
 
     if (m_workerThread.Run() != wxTHREAD_NO_ERROR)
     {
-        wxLogError(_("Unable to start IOCP worker thread"));
+        wxLogError(_("Unable to start thread for monitoring file changes."));
         return false;
     }
 
