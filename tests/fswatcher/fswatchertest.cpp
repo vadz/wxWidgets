@@ -906,4 +906,41 @@ TEST_CASE_METHOD(FileSystemWatcherTestCase,
     tester.Run();
 }
 
+TEST_CASE_METHOD(FileSystemWatcherTestCase,
+                 "wxFileSystemWatcher::SingleFile", "[fsw]")
+{
+#ifdef __WXMSW__
+    WARN("Skipping test broken under MSW.");
+    return;
+#endif
+
+    class SingleFileTester : public FSWTesterBase
+    {
+    public:
+        virtual void Init() wxOVERRIDE
+        {
+            REQUIRE( eg.CreateFile() );
+
+            REQUIRE( m_watcher->Add(eg.m_file, wxFSW_EVENT_MODIFY) );
+        }
+
+        virtual void GenerateEvent() wxOVERRIDE
+        {
+            CHECK(eg.ModifyFile());
+        }
+
+        virtual wxFileSystemWatcherEvent ExpectedEvent() wxOVERRIDE
+        {
+            wxFileSystemWatcherEvent event(wxFSW_EVENT_MODIFY);
+            event.SetPath(eg.m_file);
+            event.SetNewPath(eg.m_file);
+            return event;
+        }
+    };
+
+    SingleFileTester tester;
+
+    tester.Run();
+}
+
 #endif // wxUSE_FSWATCHER
