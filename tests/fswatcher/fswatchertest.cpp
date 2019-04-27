@@ -995,4 +995,89 @@ TEST_CASE_METHOD(FileSystemWatcherTestCase,
     };
 }
 
+TEST_CASE_METHOD(FileSystemWatcherTestCase,
+                 "wxFileSystemWatcher::TwoFiles", "[fsw]")
+{
+    class TwoFilesTesterBase : public FSWTesterBase
+    {
+    public:
+        virtual void Init() wxOVERRIDE
+        {
+            m_file2 = eg.RandomName();
+
+            REQUIRE( eg.CreateFile() );
+            REQUIRE( eg.CreateFile(m_file2) );
+
+            REQUIRE( m_watcher->Add(eg.m_file, wxFSW_EVENT_MODIFY) );
+            REQUIRE( m_watcher->Add(m_file2, wxFSW_EVENT_MODIFY) );
+        }
+
+    protected:
+        wxFileName m_file2;
+    };
+
+    // Check that modifying the file in place results in the expected event.
+    SECTION("Modify")
+    {
+        class FileModifyTester : public TwoFilesTesterBase
+        {
+        public:
+            virtual void GenerateEvent() wxOVERRIDE
+            {
+                CHECK(eg.ModifyFile());
+            }
+
+            virtual wxFileSystemWatcherEvent ExpectedEvent() wxOVERRIDE
+            {
+                wxFileSystemWatcherEvent event(wxFSW_EVENT_MODIFY);
+                event.SetPath(eg.m_file);
+                event.SetNewPath(eg.m_file);
+                return event;
+            }
+        } tester;
+
+        tester.Run();
+    };
+
+    // Check that modifying the other file results in the expected event.
+    SECTION("Modify2")
+    {
+        class File2ModifyTester : public TwoFilesTesterBase
+        {
+        public:
+            virtual void GenerateEvent() wxOVERRIDE
+            {
+                CHECK(eg.ModifyFile(m_file2));
+            }
+
+            virtual wxFileSystemWatcherEvent ExpectedEvent() wxOVERRIDE
+            {
+                wxFileSystemWatcherEvent event(wxFSW_EVENT_MODIFY);
+                event.SetPath(m_file2);
+                event.SetNewPath(m_file2);
+                return event;
+            }
+        } tester;
+
+        tester.Run();
+    };
+
+    // Check that modifying another file in the same directory does not result
+    // in any events for the file being watched.
+    SECTION("Another")
+    {
+        class OtherModifyTester : public FSWNoEventTester<TwoFilesTesterBase>
+        {
+        public:
+            virtual void GenerateEvent() wxOVERRIDE
+            {
+                const wxFileName other = eg.RandomName();
+                REQUIRE(eg.CreateFile(other));
+                CHECK(eg.ModifyFile(other));
+            }
+        } tester;
+
+        tester.Run();
+    };
+}
 #endif // wxUSE_FSWATCHER
