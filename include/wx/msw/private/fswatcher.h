@@ -29,10 +29,9 @@ public:
     };
 
     wxFSWatchEntryMSW(const wxFSWatchInfo& winfo) :
-        wxFSWatchInfo(winfo)
+        wxFSWatchInfo(winfo),
+        m_handle(OpenDir(GetPath()))
     {
-        // get handle for this path
-        m_handle = OpenDir(GetPath());
         m_overlapped = (OVERLAPPED*)calloc(1, sizeof(OVERLAPPED));
         wxZeroMemory(m_buffer);
     }
@@ -96,7 +95,7 @@ private:
         return handle;
     }
 
-    HANDLE m_handle;             // handle to opened directory
+    const HANDLE m_handle;       // handle to opened directory
     char m_buffer[BUFFER_SIZE];  // buffer for fs events
     OVERLAPPED* m_overlapped;
 
