@@ -358,7 +358,7 @@ public:
         // system events in this test, so we consider that the test is
         // finished when this 1s timeout expires instead of, as usual,
         // stopping after getting the file system events.
-        Start(1000, true);
+        StartOnce(200);
     }
 
     virtual void CheckResult() wxOVERRIDE
