@@ -51,10 +51,10 @@ public:
     wxFSWatchEntryKq(const wxFSWatchInfo& winfo) :
         wxFSWatchInfo(winfo), m_lastState(winfo)
     {
-        m_fd = wxOpen(m_path, O_RDONLY, 0);
+        m_fd = wxOpen(GetPath(), O_RDONLY, 0);
         if (m_fd == -1)
         {
-            wxLogSysError(_("Unable to open path '%s'"), m_path);
+            wxLogSysError(_("Unable to open path '%s'"), GetPath());
         }
     }
 
@@ -71,7 +71,7 @@ public:
         int ret = close(m_fd);
         if (ret == -1)
         {
-            wxLogSysError(_("Unable to close path '%s'"), m_path);
+            wxLogSysError(_("Unable to close path '%s'"), GetPath());
         }
         m_fd = -1;
 

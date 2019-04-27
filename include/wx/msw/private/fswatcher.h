@@ -32,21 +32,21 @@ public:
         wxFSWatchInfo(winfo)
     {
         // get handle for this path
-        m_handle = OpenDir(m_path);
+        m_handle = OpenDir(GetPath());
         m_overlapped = (OVERLAPPED*)calloc(1, sizeof(OVERLAPPED));
         wxZeroMemory(m_buffer);
     }
 
     virtual ~wxFSWatchEntryMSW()
     {
-        wxLogTrace(wxTRACE_FSWATCHER, "Deleting entry '%s'", m_path);
+        wxLogTrace(wxTRACE_FSWATCHER, "Deleting entry '%s'", GetPath());
 
         if (m_handle != INVALID_HANDLE_VALUE)
         {
             if (!CloseHandle(m_handle))
             {
                 wxLogSysError(_("Unable to close the handle for '%s'"),
-                                m_path);
+                                GetPath());
             }
         }
         free(m_overlapped);

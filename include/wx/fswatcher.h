@@ -239,9 +239,14 @@ public:
     {
     }
 
-    const wxString& GetPath() const
+    const wxFileName& GetFileName() const
     {
         return m_path;
+    }
+
+    wxString GetPath() const
+    {
+        return m_path.GetFullPath();
     }
 
     const wxString& GetFilespec() const { return m_filespec; }
@@ -272,7 +277,7 @@ public:
     }
 
 protected:
-    wxString m_path;
+    wxFileName m_path;        // This can be a file or a directory path.
     wxString m_filespec;      // For tree watches, holds any filespec to apply
     int m_events;
     wxFSWPathType m_type;
