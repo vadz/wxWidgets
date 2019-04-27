@@ -62,16 +62,17 @@ public:
     /**
         Adds @a path to currently watched files.
 
-        The @a path argument can currently only be a directory and any changes
-        to this directory itself or its immediate children will generate the
-        events. Use AddTree() to monitor the directory recursively.
+        The @a path argument can be either a file or a directory and in the
+        latter case both the directory itself and all the files in the
+        directory will be watched for changes. Note that you can also use
+        AddTree() to monitor the directory recursively.
 
         Note that on platforms that use symbolic links, you should consider the
         possibility that @a path is a symlink. To watch the symlink itself and
         not its target you may call wxFileName::DontFollowLink() on @a path.
 
         @param path
-            The name of the path to watch.
+            The name of the file or directory to watch.
         @param events
             An optional filter to receive only events of particular types.
             This is currently implemented only for GTK.

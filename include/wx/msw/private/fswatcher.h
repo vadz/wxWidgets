@@ -30,7 +30,7 @@ public:
 
     wxFSWatchEntryMSW(const wxFSWatchInfo& winfo) :
         wxFSWatchInfo(winfo),
-        m_handle(OpenDir(GetPath()))
+        m_handle(OpenDir(GetDirPath()))
     {
         m_overlapped = (OVERLAPPED*)calloc(1, sizeof(OVERLAPPED));
         wxZeroMemory(m_buffer);
@@ -69,6 +69,13 @@ public:
     OVERLAPPED* GetOverlapped() const
     {
         return m_overlapped;
+    }
+
+    // Return the path of the watched directory, which is different from
+    // wxFSWatchInfo::GetPath() for file watches.
+    wxString GetDirPath() const
+    {
+        return m_path.GetPath();
     }
 
 private:

@@ -145,10 +145,6 @@ bool wxFSWatcherImplMSW::DoSetUpWatch(wxFSWatchEntryMSW& watch)
     switch ( watch.GetType() )
     {
         case wxFSWPath_File:
-            wxLogError(_("Monitoring individual files for changes is not "
-                         "supported currently."));
-            return false;
-
         case wxFSWPath_Dir:
             bWatchSubtree = FALSE;
             break;
@@ -284,7 +280,7 @@ bool wxIOCPThread::ReadEvents()
         return true;
 
     wxLogTrace( wxTRACE_FSWATCHER, "[iocp] Read entry: path='%s'",
-                watch->GetPath());
+                watch->GetDirPath());
 
     // First check if we're still interested in this watch, we could have
     // removed it in the meanwhile.
@@ -366,8 +362,29 @@ void wxIOCPThread::ProcessNativeEvents(wxVector<wxEventProcessingData>& events)
             // CHECK I heard that returned path can be either in short on long
             // form...need to account for that!
             wxFileName path = GetEventPath(*watch, e);
-            // For files, check that it matches any filespec
-            if ( m_service->MatchesFilespec(path, watch->GetFilespec()) )
+
+            // Check if we're interested in the file affected by this event.
+            bool matches = false;
+            switch ( watch->GetType() )
+            {
+                case wxFSWPath_File:
+                    // For files the event must be about the exact path we're
+                    // watching.
+                    matches = path == watch->GetFileName();
+                    break;
+
+                case wxFSWPath_Dir:
+                case wxFSWPath_Tree:
+                    // For directories it must match the file spec, if any.
+                    matches = m_service->MatchesFilespec(path, watch->GetFilespec());
+                    break;
+
+                case wxFSWPath_None:
+                    wxFAIL_MSG("unreachable");
+                    break;
+            }
+
+            if ( matches )
             {
                 wxFileSystemWatcherEvent event(flags, path, path);
                 SendEvent(event);
@@ -410,13 +427,7 @@ int wxIOCPThread::Native2WatcherFlags(int flags)
 wxFileName wxIOCPThread::GetEventPath(const wxFSWatchEntryMSW& watch,
                                       const FILE_NOTIFY_INFORMATION& e)
 {
-    wxFileName path = watch.GetPath();
-    if (path.IsDir())
-    {
-        int pathFlags = wxPATH_GET_VOLUME | wxPATH_GET_SEPARATOR;
-        path = wxFileName(path.GetPath(pathFlags) + GetFileNameFromEvent(e));
-    }
-    return path;
+    return wxFileName(watch.GetDirPath(), GetFileNameFromEvent(e));
 }
 
 

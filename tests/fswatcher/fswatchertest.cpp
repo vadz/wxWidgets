@@ -58,8 +58,13 @@ public:
     // operations
     bool CreateFile()
     {
-        wxFile file(m_file.GetFullPath(), wxFile::write);
-        return file.IsOpened() && m_file.FileExists();
+        return CreateFile(m_file);
+    }
+
+    bool CreateFile(const wxFileName& filename)
+    {
+        wxFile file(filename.GetFullPath(), wxFile::write);
+        return file.IsOpened() && filename.FileExists();
     }
 
     bool RenameFile()
@@ -113,9 +118,14 @@ public:
 
     bool ModifyFile()
     {
-        REQUIRE(m_file.FileExists());
+        return ModifyFile(m_file);
+    }
 
-        wxFile file(m_file.GetFullPath(), wxFile::write_append);
+    bool ModifyFile(const wxFileName& filename)
+    {
+        REQUIRE(filename.FileExists());
+
+        wxFile file(filename.GetFullPath(), wxFile::write_append);
         REQUIRE(file.IsOpened());
 
         CHECK(file.Write("Words of Wisdom, Lloyd. Words of wisdom\n"));
@@ -906,12 +916,7 @@ TEST_CASE_METHOD(FileSystemWatcherTestCase,
 TEST_CASE_METHOD(FileSystemWatcherTestCase,
                  "wxFileSystemWatcher::SingleFile", "[fsw]")
 {
-#ifdef __WXMSW__
-    WARN("Skipping test broken under MSW.");
-    return;
-#endif
-
-    class SingleFileTester : public FSWTesterBase
+    class SingleFileTesterBase : public FSWTesterBase
     {
     public:
         virtual void Init() wxOVERRIDE
@@ -920,24 +925,48 @@ TEST_CASE_METHOD(FileSystemWatcherTestCase,
 
             REQUIRE( m_watcher->Add(eg.m_file, wxFSW_EVENT_MODIFY) );
         }
-
-        virtual void GenerateEvent() wxOVERRIDE
-        {
-            CHECK(eg.ModifyFile());
-        }
-
-        virtual wxFileSystemWatcherEvent ExpectedEvent() wxOVERRIDE
-        {
-            wxFileSystemWatcherEvent event(wxFSW_EVENT_MODIFY);
-            event.SetPath(eg.m_file);
-            event.SetNewPath(eg.m_file);
-            return event;
-        }
     };
 
-    SingleFileTester tester;
+    // Check that modifying the file in place results in the expected event.
+    SECTION("Modify")
+    {
+        class FileModifyTester : public SingleFileTesterBase
+        {
+        public:
+            virtual void GenerateEvent() wxOVERRIDE
+            {
+                CHECK(eg.ModifyFile());
+            }
 
-    tester.Run();
+            virtual wxFileSystemWatcherEvent ExpectedEvent() wxOVERRIDE
+            {
+                wxFileSystemWatcherEvent event(wxFSW_EVENT_MODIFY);
+                event.SetPath(eg.m_file);
+                event.SetNewPath(eg.m_file);
+                return event;
+            }
+        } tester;
+
+        tester.Run();
+    };
+
+    // Check that modifying another file in the same directory does not result
+    // in any events for the file being watched.
+    SECTION("Another")
+    {
+        class OtherModifyTester : public FSWNoEventTester<SingleFileTesterBase>
+        {
+        public:
+            virtual void GenerateEvent() wxOVERRIDE
+            {
+                const wxFileName other = eg.RandomName();
+                REQUIRE(eg.CreateFile(other));
+                CHECK(eg.ModifyFile(other));
+            }
+        } tester;
+
+        tester.Run();
+    };
 }
 
 #endif // wxUSE_FSWATCHER
