@@ -339,6 +339,45 @@ private:
     }
 };
 
+// FSWTesterBase assumes that some events will actually be generated, however
+// it's also useful to have test cases checking that the events are not
+// generated and this class is used for them. The derived class should just
+// override GenerateEvent() to perform whatever actions which, contrary to the
+// name of the method, should be checked to not generate any events.
+//
+// The template parameter T here is a FSWTesterBase-derived class to inherit
+// from, i.e. this class uses CRTP.
+template <class T>
+class FSWNoEventTester : public T,
+                         private wxTimer
+{
+public:
+    FSWNoEventTester()
+    {
+        // We need to use an inactivity timer as we never get any file
+        // system events in this test, so we consider that the test is
+        // finished when this 1s timeout expires instead of, as usual,
+        // stopping after getting the file system events.
+        Start(1000, true);
+    }
+
+    virtual void CheckResult() wxOVERRIDE
+    {
+        REQUIRE( this->m_events.empty() );
+    }
+
+    virtual wxFileSystemWatcherEvent ExpectedEvent() wxOVERRIDE
+    {
+        FAIL( "Shouldn't be called" );
+
+        return wxFileSystemWatcherEvent(wxFSW_EVENT_ERROR);
+    }
+
+    virtual void Notify() wxOVERRIDE
+    {
+        this->SendIdle();
+    }
+};
 
 // ----------------------------------------------------------------------------
 // test fixture
@@ -847,61 +886,19 @@ TEST_CASE_METHOD(FileSystemWatcherTestCase,
     tester.Run();
 }
 
-
-namespace
-{
-
-// We can't define this class locally inside TestNoEventsAfterRemove() for some
-// reason with g++ 4.0 under OS X 10.5, it results in the following mysterious
-// error:
-//
-// /var/tmp//ccTkNCkc.s:unknown:Non-global symbol:
-// __ZThn80_ZN25FileSystemWatcherTestCase23TestNoEventsAfterRemoveEvEN11EventTester6NotifyEv.eh
-// can't be a weak_definition
-//
-// So define this class outside the function instead.
-class NoEventsAfterRemoveEventTester : public FSWTesterBase,
-                                       public wxTimer
-{
-public:
-    NoEventsAfterRemoveEventTester()
-    {
-        // We need to use an inactivity timer as we never get any file
-        // system events in this test, so we consider that the test is
-        // finished when this 1s timeout expires instead of, as usual,
-        // stopping after getting the file system events.
-        Start(1000, true);
-    }
-
-    virtual void GenerateEvent() wxOVERRIDE
-    {
-        m_watcher->Remove(EventGenerator::GetWatchDir());
-        CHECK(eg.CreateFile());
-    }
-
-    virtual void CheckResult() wxOVERRIDE
-    {
-        REQUIRE( m_events.empty() );
-    }
-
-    virtual wxFileSystemWatcherEvent ExpectedEvent() wxOVERRIDE
-    {
-        FAIL( "Shouldn't be called" );
-
-        return wxFileSystemWatcherEvent(wxFSW_EVENT_ERROR);
-    }
-
-    virtual void Notify() wxOVERRIDE
-    {
-        SendIdle();
-    }
-};
-
-} // anonymous namespace
-
 TEST_CASE_METHOD(FileSystemWatcherTestCase,
                  "wxFileSystemWatcher::NoEventsAfterRemove", "[fsw]")
 {
+    class NoEventsAfterRemoveEventTester : public FSWNoEventTester<FSWTesterBase>
+    {
+    public:
+        virtual void GenerateEvent() wxOVERRIDE
+        {
+            m_watcher->Remove(EventGenerator::GetWatchDir());
+            CHECK(eg.CreateFile());
+        }
+    };
+
     NoEventsAfterRemoveEventTester tester;
     tester.Run();
 }
