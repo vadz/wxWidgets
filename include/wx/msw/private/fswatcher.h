@@ -321,9 +321,6 @@ protected:
 
     static int Native2WatcherFlags(int flags);
 
-    static wxString FileNotifyInformationToString(
-                                            const FILE_NOTIFY_INFORMATION& e);
-
     static wxFileName GetEventPath(const wxFSWatchEntryMSW& watch,
                                    const FILE_NOTIFY_INFORMATION& e);
 

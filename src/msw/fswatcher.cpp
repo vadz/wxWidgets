@@ -23,6 +23,21 @@
 #include "wx/msw/private.h"
 #include "wx/private/fswatcher.h"
 
+// ----------------------------------------------------------------------------
+// Local helper functions
+// ----------------------------------------------------------------------------
+
+namespace
+{
+
+// Return the name of the file from FILE_NOTIFY_INFORMATION as a wxString.
+wxString GetFileNameFromEvent(const FILE_NOTIFY_INFORMATION& e)
+{
+    return wxString(e.FileName, e.FileNameLength / sizeof(e.FileName[0]));
+}
+
+} // anonymous namespace
+
 // ============================================================================
 // wxFSWatcherImplMSW implementation
 // ============================================================================
@@ -309,8 +324,10 @@ void wxIOCPThread::ProcessNativeEvents(wxVector<wxEventProcessingData>& events)
         const FILE_NOTIFY_INFORMATION& e = *(it->nativeEvent);
         const wxFSWatchEntryMSW* watch = it->watch;
 
-        wxLogTrace( wxTRACE_FSWATCHER, "[iocp] %s",
-                    FileNotifyInformationToString(e));
+        wxLogTrace(wxTRACE_FSWATCHER,
+                   "[iocp] Event: offset=%d, action=%d, name=\"%s\" (len=%lu)",
+                   e.NextEntryOffset, e.Action,
+                   GetFileNameFromEvent(e), e.FileNameLength);
 
         int nativeFlags = e.Action;
         int flags = Native2WatcherFlags(nativeFlags);
@@ -390,24 +407,14 @@ int wxIOCPThread::Native2WatcherFlags(int flags)
     return -1;
 }
 
-wxString wxIOCPThread::FileNotifyInformationToString(
-                                              const FILE_NOTIFY_INFORMATION& e)
-{
-    wxString fname(e.FileName, e.FileNameLength / sizeof(e.FileName[0]));
-    return wxString::Format("Event: offset=%d, action=%d, len=%d, "
-                            "name(approx)='%s'", e.NextEntryOffset, e.Action,
-                            e.FileNameLength, fname);
-}
-
 wxFileName wxIOCPThread::GetEventPath(const wxFSWatchEntryMSW& watch,
                                       const FILE_NOTIFY_INFORMATION& e)
 {
     wxFileName path = watch.GetPath();
     if (path.IsDir())
     {
-        wxString rel(e.FileName, e.FileNameLength / sizeof(e.FileName[0]));
         int pathFlags = wxPATH_GET_VOLUME | wxPATH_GET_SEPARATOR;
-        path = wxFileName(path.GetPath(pathFlags) + rel);
+        path = wxFileName(path.GetPath(pathFlags) + GetFileNameFromEvent(e));
     }
     return path;
 }
