@@ -950,6 +950,32 @@ TEST_CASE_METHOD(FileSystemWatcherTestCase,
         tester.Run();
     };
 
+    // Check that modifying the file by overwriting it with a new version also
+    // results in events.
+    SECTION("Overwrite")
+    {
+        class FileOverwriteTester : public SingleFileTesterBase
+        {
+        public:
+            virtual void GenerateEvent() wxOVERRIDE
+            {
+                wxTempFile temp(eg.m_file.GetFullPath());
+                temp.Write("And now for something completely different.\n");
+                REQUIRE(temp.Commit());
+            }
+
+            virtual wxFileSystemWatcherEvent ExpectedEvent() wxOVERRIDE
+            {
+                wxFileSystemWatcherEvent event(wxFSW_EVENT_MODIFY);
+                event.SetPath(eg.m_file);
+                event.SetNewPath(eg.m_file);
+                return event;
+            }
+        } tester;
+
+        tester.Run();
+    }
+
     // Check that modifying another file in the same directory does not result
     // in any events for the file being watched.
     SECTION("Another")
