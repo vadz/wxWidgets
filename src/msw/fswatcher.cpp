@@ -339,7 +339,7 @@ void wxIOCPThread::ProcessNativeEvents(wxVector<wxEventProcessingData>& events)
         // we never filter out warnings or exceptions
         else if ((flags == 0) || !(flags & watch->GetFlags()))
         {
-            return;
+            continue;
         }
         // rename case
         else if (nativeFlags == FILE_ACTION_RENAMED_OLD_NAME)
