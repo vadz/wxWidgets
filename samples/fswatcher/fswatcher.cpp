@@ -48,7 +48,8 @@ private:
     void OnFollowLinks(wxCommandEvent& event);
     void OnAbout(wxCommandEvent& event);
 
-    void OnAdd(wxCommandEvent& event);
+    void OnAddDir(wxCommandEvent& event);
+    void OnAddFile(wxCommandEvent& event);
     void OnAddTree(wxCommandEvent& event);
     void OnRemove(wxCommandEvent& event);
     void OnRemoveAll(wxCommandEvent& WXUNUSED(event));
@@ -93,15 +94,36 @@ public:
     {
         if ( m_frame->CreateWatcherIfNecessary() )
         {
-            if ( !m_dirToWatch.empty() )
-                m_frame->AddEntry(wxFSWPath_Dir, m_dirToWatch);
+            if ( !m_pathToWatch.empty() )
+            {
+                wxFileName fn(m_pathToWatch);
+                fn.Normalize();
+
+                wxFSWPathType pathType;
+                if ( fn.FileExists() )
+                    pathType = wxFSWPath_File;
+                else if ( fn.DirExists() )
+                    pathType = wxFSWPath_Dir;
+                else
+                    pathType = wxFSWPath_None;
+
+                if ( pathType == wxFSWPath_None )
+                {
+                    wxLogWarning("Path \"%s\" doesn't exist and "
+                                 "can't be watched.", m_pathToWatch);
+                }
+                else
+                {
+                    m_frame->AddEntry(pathType, fn.GetFullPath());
+                }
+            }
         }
     }
 
     virtual void OnInitCmdLine(wxCmdLineParser& parser) wxOVERRIDE
     {
         wxApp::OnInitCmdLine(parser);
-        parser.AddParam("directory to watch",
+        parser.AddParam("path to watch",
                         wxCMD_LINE_VAL_STRING,
                         wxCMD_LINE_PARAM_OPTIONAL);
     }
@@ -112,7 +134,7 @@ public:
             return false;
 
         if ( parser.GetParamCount() )
-            m_dirToWatch = parser.GetParam();
+            m_pathToWatch = parser.GetParam();
 
         return true;
     }
@@ -120,8 +142,8 @@ public:
 private:
     MyFrame *m_frame;
 
-    // The directory to watch if specified on the command line.
-    wxString m_dirToWatch;
+    // The path to watch if specified on the command line.
+    wxString m_pathToWatch;
 };
 
 // Create a new application object: this macro will allow wxWidgets to create
@@ -151,7 +173,8 @@ MyFrame::MyFrame(const wxString& title)
         MENU_ID_WATCH = 101,
         MENU_ID_DEREFERENCE,
 
-        BTN_ID_ADD = 200,
+        BTN_ID_ADD_DIR = 200,
+        BTN_ID_ADD_FILE,
         BTN_ID_ADD_TREE,
         BTN_ID_REMOVE,
         BTN_ID_REMOVE_ALL
@@ -214,14 +237,17 @@ MyFrame::MyFrame(const wxString& title)
     leftSizer->Add(m_filesList, wxSizerFlags(1).Expand());
 
     // buttons
-    wxButton* buttonAdd = new wxButton(panel, BTN_ID_ADD, "&Add");
+    wxButton* buttonAddDir = new wxButton(panel, BTN_ID_ADD_DIR, "Add &directory");
+    wxButton* buttonAddFile = new wxButton(panel, BTN_ID_ADD_FILE, "Add &file");
     wxButton* buttonAddTree = new wxButton(panel, BTN_ID_ADD_TREE, "Add &tree");
     wxButton* buttonRemove = new wxButton(panel, BTN_ID_REMOVE, "&Remove");
     wxButton* buttonRemoveAll = new wxButton(panel, BTN_ID_REMOVE_ALL, "Remove a&ll");
-    wxSizer *btnSizer = new wxGridSizer(2);
-    btnSizer->Add(buttonAdd, wxSizerFlags().Center().Border(wxALL));
+    wxSizer *btnSizer = new wxGridSizer(3);
+    btnSizer->Add(buttonAddDir, wxSizerFlags().Center().Border(wxALL));
+    btnSizer->Add(buttonAddFile, wxSizerFlags().Center().Border(wxALL));
     btnSizer->Add(buttonAddTree, wxSizerFlags().Center().Border(wxALL));
     btnSizer->Add(buttonRemove, wxSizerFlags().Center().Border(wxALL));
+    btnSizer->AddSpacer(0);
     btnSizer->Add(buttonRemoveAll, wxSizerFlags().Center().Border(wxALL));
 
     // and put it all together
@@ -271,7 +297,8 @@ MyFrame::MyFrame(const wxString& title)
     Bind(wxEVT_MENU, &MyFrame::OnAbout, this, wxID_ABOUT);
 
     // buttons
-    Bind(wxEVT_BUTTON, &MyFrame::OnAdd, this, BTN_ID_ADD);
+    Bind(wxEVT_BUTTON, &MyFrame::OnAddDir, this, BTN_ID_ADD_DIR);
+    Bind(wxEVT_BUTTON, &MyFrame::OnAddFile, this, BTN_ID_ADD_FILE);
     Bind(wxEVT_BUTTON, &MyFrame::OnAddTree, this, BTN_ID_ADD_TREE);
     Bind(wxEVT_BUTTON, &MyFrame::OnRemove, this, BTN_ID_REMOVE);
     Bind(wxEVT_UPDATE_UI, &MyFrame::OnRemoveUpdateUI, this, BTN_ID_REMOVE);
@@ -342,9 +369,14 @@ void MyFrame::OnFollowLinks(wxCommandEvent& event)
     m_followLinks = event.IsChecked();
 }
 
-void MyFrame::OnAdd(wxCommandEvent& WXUNUSED(event))
+void MyFrame::OnAddDir(wxCommandEvent& WXUNUSED(event))
 {
     AddEntry(wxFSWPath_Dir);
+}
+
+void MyFrame::OnAddFile(wxCommandEvent& WXUNUSED(event))
+{
+    AddEntry(wxFSWPath_File);
 }
 
 void MyFrame::OnAddTree(wxCommandEvent& WXUNUSED(event))
@@ -356,24 +388,37 @@ void MyFrame::AddEntry(wxFSWPathType type, wxString filename)
 {
     if ( filename.empty() )
     {
-        // TODO account for adding the files as well
-        filename = wxDirSelector("Choose a folder to watch", "",
-                                 wxDD_DEFAULT_STYLE | wxDD_DIR_MUST_EXIST);
+        switch ( type )
+        {
+            case wxFSWPath_File:
+                filename = wxFileSelector("Choose a file to watch",
+                                          "", "", "", "",
+                                          wxFD_FILE_MUST_EXIST,
+                                          this);
+                break;
+
+            case wxFSWPath_Dir:
+            case wxFSWPath_Tree:
+                filename = wxDirSelector("Choose a folder to watch", "",
+                                         wxDD_DEFAULT_STYLE | wxDD_DIR_MUST_EXIST);
+                break;
+
+            case wxFSWPath_None:
+                wxFAIL_MSG("invalid type");
+                break;
+        }
+
         if ( filename.empty() )
             return;
     }
 
     wxCHECK_RET(m_watcher, "Watcher not initialized");
 
-    wxLogDebug("Adding %s: '%s'",
-               filename,
-               type == wxFSWPath_Dir ? "directory" : "directory tree");
-
     wxString prefix;
     bool ok = false;
 
     // This will tell wxFileSystemWatcher whether to dereference symlinks
-    wxFileName fn = wxFileName::DirName(filename);
+    wxFileName fn(filename);
     if (!m_followLinks)
     {
         fn.DontFollowLink();
@@ -381,6 +426,11 @@ void MyFrame::AddEntry(wxFSWPathType type, wxString filename)
 
     switch ( type )
     {
+        case wxFSWPath_File:
+            ok = m_watcher->Add(fn);
+            prefix = "File: ";
+            break;
+
         case wxFSWPath_Dir:
             ok = m_watcher->Add(fn);
             prefix = "Dir:  ";
@@ -391,7 +441,6 @@ void MyFrame::AddEntry(wxFSWPathType type, wxString filename)
             prefix = "Tree: ";
             break;
 
-        case wxFSWPath_File:
         case wxFSWPath_None:
             wxFAIL_MSG( "Unexpected path type." );
     }
@@ -405,7 +454,7 @@ void MyFrame::AddEntry(wxFSWPathType type, wxString filename)
     // Prepend 'prefix' to the filepath, partly for display
     // but mostly so that OnRemove() can work out the correct way to remove it
     m_filesList->InsertItem(m_filesList->GetItemCount(),
-                            prefix + wxFileName::DirName(filename).GetFullPath());
+                            prefix + fn.GetFullPath());
 }
 
 void MyFrame::OnRemove(wxCommandEvent& WXUNUSED(event))
@@ -478,7 +527,7 @@ void MyFrame::OnFileSystemEvent(wxFileSystemWatcherEvent& event)
     int type = event.GetChangeType();
     if ((type == wxFSW_EVENT_DELETE) || (type == wxFSW_EVENT_RENAME))
     {
-        // If path is one of our watched dirs, we need to react to this
+        // If path is one of those we're watching, we need to react to this
         // otherwise there'll be asserts if later we try to remove it
         wxString eventpath = event.GetPath().GetFullPath();
         bool found(false);
@@ -486,6 +535,7 @@ void MyFrame::OnFileSystemEvent(wxFileSystemWatcherEvent& event)
         {
             wxString path, foo = m_filesList->GetItemText(n-1);
             if ((!m_filesList->GetItemText(n-1).StartsWith("Dir:  ", &path)) &&
+                (!m_filesList->GetItemText(n-1).StartsWith("File: ", &path)) &&
                 (!m_filesList->GetItemText(n-1).StartsWith("Tree: ", &path)))
             {
                 wxFAIL_MSG("Unexpected item in wxListView.");
