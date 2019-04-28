@@ -178,6 +178,14 @@ bool wxConsoleEventLoop::Dispatch()
 
 int wxConsoleEventLoop::DispatchTimeout(unsigned long timeout)
 {
+#ifdef __WXOSX__
+    // We need to dispatch events in CFRunLoop, if any, to allow FS events
+    // notifications used by wxFileSystemWatcher to work in the console
+    // applications too.
+    if ( m_runLoop )
+        wxCFEventLoop::DoDispatchTimeout(timeout);
+#endif // __WXOSX__
+
 #if wxUSE_TIMER
     // check if we need to decrease the timeout to account for a timer
     wxUsecClock_t nextTimer;
