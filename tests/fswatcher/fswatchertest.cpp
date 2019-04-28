@@ -657,6 +657,54 @@ TEST_CASE_METHOD(FileSystemWatcherTestCase,
 // ----------------------------------------------------------------------------
 
 TEST_CASE_METHOD(FileSystemWatcherTestCase,
+                 "wxFileSystemWatcher::Tree", "[fsw]")
+{
+    class TreeEventTester : public FSWTesterBase
+    {
+    public:
+        virtual void Init() wxOVERRIDE
+        {
+            wxFileName dir = EventGenerator::GetWatchDir();
+            REQUIRE( m_watcher->AddTree(dir, m_eventTypes) );
+        }
+
+        virtual void GenerateEvent() wxOVERRIDE
+        {
+            CHECK(eg.CreateFile());
+        }
+
+        virtual wxFileSystemWatcherEvent ExpectedEvent() wxOVERRIDE
+        {
+            wxFileSystemWatcherEvent event(wxFSW_EVENT_CREATE);
+            event.SetPath(eg.m_file);
+            event.SetNewPath(eg.m_file);
+            return event;
+        }
+
+#ifdef __WXOSX__
+        virtual void CheckResult() wxOVERRIDE
+        {
+            // Monitoring trees is buggy under macOS and the generated events
+            // don't use correct paths currently, so just check that an event
+            // was generated, without checking anything else.
+            REQUIRE( !m_events.empty() );
+
+            const wxFileSystemWatcherEvent * const e = m_events.front();
+
+            const wxFileSystemWatcherEvent expected = ExpectedEvent();
+
+            CHECK( e->GetChangeType() == expected.GetChangeType() );
+            CHECK( e->GetEventType() == wxEVT_FSWATCHER );
+
+            delete e;
+        }
+#endif // __WXOSX__
+    } tester;
+
+    tester.Run();
+}
+
+TEST_CASE_METHOD(FileSystemWatcherTestCase,
                  "wxFileSystemWatcher::Trees", "[fsw]")
 {
     class TreeTester : public FSWTesterBase
