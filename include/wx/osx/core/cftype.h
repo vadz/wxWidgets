@@ -21,6 +21,8 @@
 #include "wx/string.h"
 #endif
 
+#include <CoreFoundation/CFNumber.h>
+
 class wxCFTypeRef : public wxCFRef<CFTypeRef>
 {
 public:
