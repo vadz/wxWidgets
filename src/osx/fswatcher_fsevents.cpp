@@ -331,11 +331,11 @@ bool wxFsEventsFileSystemWatcher::AddTree(const wxFileName& path, int events,
     wxFSEventWatcherContext* watcherContext = new wxFSEventWatcherContext(
         this, events, filespec.Clone()
     );
-    ctx.version = 0;
+    ctx.version = 0; // The only currently supported version.
     ctx.info = watcherContext;
     ctx.retain = NULL;
     ctx.release = &wxDeleteContext;
-    ctx.copyDescription = NULL;
+    ctx.copyDescription = NULL; // Only used for debugging purposes.
     CFTimeInterval latency = 0.2;
 
     wxMacUniCharBuffer pathChars(path.GetPath());
