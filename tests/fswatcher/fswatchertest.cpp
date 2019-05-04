@@ -219,6 +219,9 @@ public:
     {
         if (m_loop.IsRunning())
             m_loop.Exit();
+
+        for ( size_t n = 0; n < m_events.size(); ++n )
+            delete m_events[n];
     }
 
     void Exit()
@@ -277,7 +280,7 @@ public:
     {
         REQUIRE( !m_events.empty() );
 
-        const wxFileSystemWatcherEvent * const e = m_events.front();
+        const wxFileSystemWatcherEvent* const e = m_events.front();
 
         // this is our "reference event"
         const wxFileSystemWatcherEvent expected = ExpectedEvent();
@@ -319,8 +322,6 @@ public:
             ),
             1, m_events.size()
         );
-
-        delete e;
     }
 
     virtual void GenerateEvent() = 0;
@@ -695,8 +696,6 @@ TEST_CASE_METHOD(FileSystemWatcherTestCase,
 
             CHECK( e->GetChangeType() == expected.GetChangeType() );
             CHECK( e->GetEventType() == wxEVT_FSWATCHER );
-
-            delete e;
         }
 #endif // __WXOSX__
     } tester;
