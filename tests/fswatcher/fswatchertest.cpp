@@ -295,33 +295,44 @@ public:
         CHECK( e->GetPath() == expected.GetPath() );
         CHECK( e->GetNewPath() == expected.GetNewPath() );
 
-        // Under MSW extra modification events are sometimes reported after a
-        // rename and we just can't get rid of them, so ignore them in this
-        // test if they do happen.
-        if ( e->GetChangeType() == wxFSW_EVENT_RENAME &&
-                m_events.size() == 2 )
+
+        // In addition to checking that we got the event we expected, also
+        // check that we didn't get any extraneous events.
+        wxString desc;
+        size_t ignored = 0;
+        for ( size_t n = 1; n < m_events.size(); ++n )
         {
-            const wxFileSystemWatcherEvent* const e2 = m_events.back();
-            if ( e2->GetChangeType() == wxFSW_EVENT_MODIFY &&
-                    e2->GetPath() == e->GetNewPath() )
+            const wxFileSystemWatcherEvent* const e2 = m_events[n];
+
+            // Under MSW extra modification events are sometimes reported after a
+            // rename and we just can't get rid of them, so ignore them in this
+            // test if they do happen.
+            if ( e->GetChangeType() == wxFSW_EVENT_RENAME )
             {
-                // This is a modify event for the new file, ignore it.
-                return;
+                if ( e2->GetChangeType() == wxFSW_EVENT_MODIFY &&
+                        e2->GetPath() == e->GetNewPath() )
+                {
+                    // This is a modify event for the new file, ignore it.
+                    ignored++;
+                    continue;
+                }
             }
+
+            desc += wxString::Format("Extra event %zu: type=%#04x, path=\"%s\"",
+                                     n - ignored,
+                                     e2->GetChangeType(),
+                                     e2->GetPath().GetFullPath());
+            if ( e2->GetNewPath() != e2->GetPath() )
+            {
+                desc += wxString::Format(" -> \"%s\"",
+                                         e2->GetNewPath().GetFullPath());
+            }
+
+            desc += "\n";
         }
 
-        WX_ASSERT_EQUAL_MESSAGE
-        (
-            (
-                "Extra events received, last one is of type %x, path=\"%s\" "
-                "(the original event was for \"%s\" (\"%s\")",
-                m_events.back()->GetChangeType(),
-                m_events.back()->GetPath().GetFullPath(),
-                e->GetPath().GetFullPath(),
-                e->GetNewPath().GetFullPath()
-            ),
-            1, m_events.size()
-        );
+        INFO(desc);
+        CHECK( m_events.size() - ignored == 1 );
     }
 
     virtual void GenerateEvent() = 0;
