@@ -18,6 +18,7 @@
 #if wxUSE_FSWATCHER && defined(wxHAVE_FSEVENTS_FILE_NOTIFICATIONS)
 
 #include "wx/fswatcher.h"
+#include "wx/osx/core/cfarray.h"
 #include "wx/osx/core/cfstring.h"
 #include <CoreFoundation/CoreFoundation.h>
 
@@ -340,7 +341,7 @@ bool wxFsEventsFileSystemWatcher::AddTree(const wxFileName& path, int events,
 
     wxCFStringRef pathRefObj(path.GetPath());
     const CFStringRef pathRef = pathRefObj.get();
-    CFArrayRef pathRefs = CFArrayCreate(
+    wxCFArrayRef<CFStringRef> pathRefs = CFArrayCreate(
         kCFAllocatorDefault, (const void**)&pathRef, 1, NULL
     );
     FSEventStreamCreateFlags flags = kFSEventStreamCreateFlagWatchRoot
@@ -362,9 +363,6 @@ bool wxFsEventsFileSystemWatcher::AddTree(const wxFileName& path, int events,
             m_streams[canonical] = stream;
         }
     }
-
-    // cleanup the paths, as we own the pointer
-    CFRelease(pathRefs);
 
     wxASSERT_MSG(stream, "could not create FS stream");
     return started;
