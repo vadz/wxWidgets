@@ -400,8 +400,7 @@ protected:
 #ifdef wxHAS_INOTIFY
     #include "wx/unix/fswatcher_inotify.h"
     #define wxFileSystemWatcher wxInotifyFileSystemWatcher
-#elif  defined(wxHAS_KQUEUE) && defined(wxHAVE_FSEVENTS_FILE_NOTIFICATIONS)
-    #include "wx/unix/fswatcher_kqueue.h"
+#elif defined(wxHAVE_FSEVENTS_FILE_NOTIFICATIONS)
     #include "wx/osx/fswatcher_fsevents.h"
     #define wxFileSystemWatcher wxFsEventsFileSystemWatcher
 #elif defined(wxHAS_KQUEUE)
