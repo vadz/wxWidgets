@@ -304,6 +304,7 @@ public:
         {
             const wxFileSystemWatcherEvent* const e2 = m_events[n];
 
+#ifdef __WXMSW__
             // Under MSW extra modification events are sometimes reported after a
             // rename and we just can't get rid of them, so ignore them in this
             // test if they do happen.
@@ -317,6 +318,7 @@ public:
                     continue;
                 }
             }
+#endif // __WXMSW__
 
             desc += wxString::Format("Extra event %zu: type=%#04x, path=\"%s\"",
                                      n - ignored,
