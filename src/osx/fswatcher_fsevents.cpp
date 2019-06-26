@@ -338,12 +338,8 @@ bool wxFsEventsFileSystemWatcher::AddTree(const wxFileName& path, int events,
     ctx.copyDescription = NULL; // Only used for debugging purposes.
     CFTimeInterval latency = 0.2;
 
-    wxMacUniCharBuffer pathChars(path.GetPath());
-    CFStringRef pathRef = CFStringCreateWithCharacters(
-        kCFAllocatorDefault,
-        pathChars.GetBuffer(),
-        pathChars.GetChars()
-    );
+    wxCFStringRef pathRefObj(path.GetPath());
+    const CFStringRef pathRef = pathRefObj.get();
     CFArrayRef pathRefs = CFArrayCreate(
         kCFAllocatorDefault, (const void**)&pathRef, 1, NULL
     );
@@ -367,8 +363,7 @@ bool wxFsEventsFileSystemWatcher::AddTree(const wxFileName& path, int events,
         }
     }
 
-    // cleanup the paths, as we own the pointers
-    CFRelease(pathRef);
+    // cleanup the paths, as we own the pointer
     CFRelease(pathRefs);
 
     wxASSERT_MSG(stream, "could not create FS stream");
