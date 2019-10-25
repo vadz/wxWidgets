@@ -119,11 +119,10 @@ NSRect wxOSXGetFrameForControl( wxWindowMac* window , const wxPoint& pos , const
 
 @interface wxNSView : NSView
 {
-    BOOL _hasToolTip;    
-    NSTrackingRectTag   _lastToolTipTrackTag;
-    id              _lastToolTipOwner;
-    void*           _lastUserData;
-    
+    NSString *toolTipNS;
+    NSToolTipTag lastToolTipTag;
+    id trackingRectOwner;
+    void* trackingRectUserData;
 }
 
 @end // wxNSView
@@ -808,86 +807,132 @@ static void SetDrawingEnabledIfFrozenRecursive(wxWidgetCocoaImpl *impl, bool ena
     }
 }
 
-/* idea taken from webkit sources: overwrite the methods that (private) NSToolTipManager will use to attach its tracking rectangle 
- * then when changing the tooltip send fake view-exit and view-enter methods which will lead to a tooltip refresh
- */
-
-
-- (void)_sendToolTipMouseExited
-{
-    // Nothing matters except window, trackingNumber, and userData.
-    NSEvent *fakeEvent = [NSEvent enterExitEventWithType:NSMouseExited
-                                                location:NSMakePoint(0, 0)
-                                           modifierFlags:0
-                                               timestamp:0
-                                            windowNumber:[[self window] windowNumber]
-                                                 context:NULL
-                                             eventNumber:0
-                                          trackingNumber:_lastToolTipTrackTag
-                                                userData:_lastUserData];
-    [_lastToolTipOwner mouseExited:fakeEvent];
-}
-
-- (void)_sendToolTipMouseEntered
-{
-    // Nothing matters except window, trackingNumber, and userData.
-    NSEvent *fakeEvent = [NSEvent enterExitEventWithType:NSMouseEntered
-                                                location:NSMakePoint(0, 0)
-                                           modifierFlags:0
-                                               timestamp:0
-                                            windowNumber:[[self window] windowNumber]
-                                                 context:NULL
-                                             eventNumber:0
-                                          trackingNumber:_lastToolTipTrackTag
-                                                userData:_lastUserData];
-    [_lastToolTipOwner mouseEntered:fakeEvent];
-}
-
-- (void)setToolTip:(NSString *)string
-{
-    if (string)
-    {
-        if ( _hasToolTip )
-        {
-            [self _sendToolTipMouseExited];
-        }
-
-        [super setToolTip:string];
-        _hasToolTip = YES;
-        [self _sendToolTipMouseEntered];
-    }
-    else 
-    {
-        if ( _hasToolTip )
-        {
-            [self _sendToolTipMouseExited];
-            [super setToolTip:nil];
-            _hasToolTip = NO;
-        }
-    }
-}
+// Any non-zero value will do, but using something recognizable might help us debug some day.
+#define TRACKING_RECT_TAG 0xBADFACE
 
 - (NSTrackingRectTag)addTrackingRect:(NSRect)rect owner:(id)owner userData:(void *)data assumeInside:(BOOL)assumeInside
 {
-    NSTrackingRectTag tag = [super addTrackingRect:rect owner:owner userData:data assumeInside:assumeInside];
-    if ( owner != self )
-    {
-        _lastUserData = data;
-        _lastToolTipOwner = owner;
-        _lastToolTipTrackTag = tag;
-    }
-    return tag;
+    wxLogTrace("tooltip", "addTrackingRect:");
+    wxASSERT(trackingRectOwner == nil);
+    trackingRectOwner = owner;
+    trackingRectUserData = data;
+    return TRACKING_RECT_TAG;
+}
+
+- (NSTrackingRectTag)_addTrackingRect:(NSRect)rect owner:(id)owner userData:(void *)data assumeInside:(BOOL)assumeInside useTrackingNum:(int)tag
+{
+    wxLogTrace("tooltip", "_addTrackingRect:");
+    wxASSERT(tag == 0 || tag == TRACKING_RECT_TAG);
+    wxASSERT(trackingRectOwner == nil);
+    trackingRectOwner = owner;
+    trackingRectUserData = data;
+    return TRACKING_RECT_TAG;
+}
+
+- (void)_addTrackingRects:(NSRect *)rects owner:(id)owner userDataList:(void **)userDataList assumeInsideList:(BOOL *)assumeInsideList trackingNums:(NSTrackingRectTag *)trackingNums count:(int)count
+{
+    wxLogTrace("tooltip", "_addTrackingRects:");
+    wxASSERT(count == 1);
+    wxASSERT(trackingNums[0] == 0 || trackingNums[0] == TRACKING_RECT_TAG);
+    wxASSERT(trackingRectOwner == nil);
+    trackingRectOwner = owner;
+    trackingRectUserData = userDataList[0];
+    trackingNums[0] = TRACKING_RECT_TAG;
 }
 
 - (void)removeTrackingRect:(NSTrackingRectTag)tag
 {
-    if (tag == _lastToolTipTrackTag) 
-    {
-        _lastUserData = NULL;
-        _lastToolTipOwner = nil;
-        _lastToolTipTrackTag = 0;
+    wxLogTrace("tooltip", "removeTrackingRect:");
+    if (tag == 0)
+        return;
+
+    if (tag == TRACKING_RECT_TAG) {
+        trackingRectOwner = nil;
+        return;
     }
-    [super removeTrackingRect:tag];
+
+    if (tag == lastToolTipTag) {
+        [super removeTrackingRect:tag];
+        lastToolTipTag = 0;
+        return;
+    }
+
+    // If any other tracking rect is being removed, we don't know how it was created
+    // and it's possible there's a leak involved (see 3500217)
+    wxFAIL_MSG("unreachable");
+}
+
+- (void)_removeTrackingRects:(NSTrackingRectTag *)tags count:(int)count
+{
+    wxLogTrace("tooltip", "removeTrackingRects:");
+    int i;
+    for (i = 0; i < count; ++i) {
+        int tag = tags[i];
+        if (tag == 0)
+            continue;
+        wxASSERT(tag == TRACKING_RECT_TAG);
+        trackingRectOwner = nil;
+    }
+}
+
+- (void)_sendToolTipMouseExited
+{
+    wxLogTrace("tooltip", "_sendToolTipMouseExited:");
+    // Nothing matters except window, trackingNumber, and userData.
+    NSEvent *fakeEvent = [NSEvent enterExitEventWithType:NSMouseExited
+        location:NSMakePoint(0, 0)
+        modifierFlags:0
+        timestamp:0
+        windowNumber:[[self window] windowNumber]
+        context:NULL
+        eventNumber:0
+        trackingNumber:TRACKING_RECT_TAG
+        userData:trackingRectUserData];
+    [trackingRectOwner mouseExited:fakeEvent];
+}
+
+- (void)_sendToolTipMouseEntered
+{
+    wxLogTrace("tooltip", "_sendToolTipMouseEntered:");
+    // Nothing matters except window, trackingNumber, and userData.
+    NSEvent *fakeEvent = [NSEvent enterExitEventWithType:NSMouseEntered
+        location:NSMakePoint(0, 0)
+        modifierFlags:0
+        timestamp:0
+        windowNumber:[[self window] windowNumber]
+        context:NULL
+        eventNumber:0
+        trackingNumber:TRACKING_RECT_TAG
+        userData:trackingRectUserData];
+    [trackingRectOwner mouseEntered:fakeEvent];
+}
+
+- (void)_setToolTip:(NSString *)string
+{
+    wxLogTrace("tooltip", "_setToolTip:\"%s\"", wxStringWithNSString(string));
+    NSString *toolTip = [string length] == 0 ? nil : string;
+    NSString *oldToolTip = toolTipNS;
+    if ((toolTip == nil || oldToolTip == nil) ? toolTip == oldToolTip : [toolTip isEqualToString:oldToolTip]) {
+        return;
+    }
+    if (oldToolTip) {
+        [self _sendToolTipMouseExited];
+        [oldToolTip release];
+    }
+    toolTipNS = [toolTip copy];
+    if (toolTip) {
+        // See radar 3500217 for why we remove all tooltips rather than just the single one we created.
+        [self removeAllToolTips];
+        NSRect wideOpenRect = NSMakeRect(-100000, -100000, 200000, 200000);
+        lastToolTipTag = [self addToolTipRect:wideOpenRect owner:self userData:NULL];
+        [self _sendToolTipMouseEntered];
+    }
+}
+
+- (NSString *)view:(NSView *)view stringForToolTip:(NSToolTipTag)tag point:(NSPoint)point userData:(void *)data
+{
+    wxLogTrace("tooltip", "stringForToolTip returning \"%s\"", wxStringWithNSString(toolTipNS));
+    return [[toolTipNS copy] autorelease];
 }
 
 #if wxOSX_USE_NATIVE_FLIPPED
