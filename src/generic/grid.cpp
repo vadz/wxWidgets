@@ -9950,7 +9950,7 @@ wxGridCellCoordsArray wxGrid::GetSelectedCells() const
         return a;
     }
 
-    return m_selection->m_cellSelection;
+    return m_selection->GetCellSelection();
 }
 
 wxGridCellCoordsArray wxGrid::GetSelectionBlockTopLeft() const
@@ -9961,7 +9961,7 @@ wxGridCellCoordsArray wxGrid::GetSelectionBlockTopLeft() const
         return a;
     }
 
-    return m_selection->m_blockSelectionTopLeft;
+    return m_selection->GetBlockSelectionTopLeft();
 }
 
 wxGridCellCoordsArray wxGrid::GetSelectionBlockBottomRight() const
@@ -9972,7 +9972,7 @@ wxGridCellCoordsArray wxGrid::GetSelectionBlockBottomRight() const
         return a;
     }
 
-    return m_selection->m_blockSelectionBottomRight;
+    return m_selection->GetBlockSelectionBottomRight();
 }
 
 wxArrayInt wxGrid::GetSelectedRows() const
@@ -9983,7 +9983,7 @@ wxArrayInt wxGrid::GetSelectedRows() const
         return a;
     }
 
-    return m_selection->m_rowSelection;
+    return m_selection->GetRowSelection();
 }
 
 wxArrayInt wxGrid::GetSelectedCols() const
@@ -9994,7 +9994,7 @@ wxArrayInt wxGrid::GetSelectedCols() const
         return a;
     }
 
-    return m_selection->m_colSelection;
+    return m_selection->GetColSelection();
 }
 
 void wxGrid::ClearSelection()
