@@ -1817,6 +1817,118 @@ public:
 };
 
 /**
+    Represents coordinates of a block of cells in the grid.
+
+    An object of this class is a coordinates of the left top and the bottom right
+    corners of a block.
+ */
+class WXDLLIMPEXP_CORE wxGridBlockCoords
+{
+public:
+    /**
+        Default constructor initializes the object to invalid state.
+
+        Initially the coordinates are invalid (-1) and so operator!() for an
+        uninitialized wxGridBlockCoords returns false.
+     */
+    wxGridBlockCoords();
+
+    /**
+        Constructor taking a coordinates of the left top and the bottom right
+        corners.
+     */
+    wxGridBlockCoords(int topRow, int leftCol, int bottomRow, int rightCol);
+
+    /**
+        Return the row of the left top corner.
+     */
+    int GetTopRow() const;
+
+    /**
+        Set the row of the left top corner.
+     */
+    void SetTopRow(int row);
+
+    /**
+        Return the column of the left top corner.
+     */
+    int GetLeftCol() const;
+
+    /**
+        Set the column of the left top corner.
+     */
+    void SetLeftCol(int col);
+
+    /**
+        Return the row of the bottom right corner.
+     */
+    int GetBottomRow() const;
+
+    /**
+        Set the row of the bottom right corner.
+     */
+    void SetBottomRow(int row);
+
+    /**
+        Return the column of the bottom right corner.
+     */
+    int GetRightCol() const;
+
+    /**
+        Set the column of the bottom right corner.
+     */
+    void SetRightCol(int col);
+
+    /**
+        Set the row and column of the coordinate.
+     */
+    void Set(int topRow, int leftCol, int bottomRow, int rightCol);
+
+    /**
+        Return the coordinates of the top left corner.
+     */
+    wxGridCellCoords GetTopLeft() const
+    {
+        return wxGridCellCoords(m_topRow, m_leftCol);
+    }
+
+    /**
+        Return the coordinates of the bottom right corner.
+     */
+    wxGridCellCoords GetBottomRight() const
+    {
+        return wxGridCellCoords(m_bottomRow, m_rightCol);
+    }
+
+    /**
+        Equality operator.
+     */
+    bool operator==(const wxGridBlockCoords& other) const;
+
+    /**
+        Inequality operator.
+     */
+    bool operator!=(const wxGridBlockCoords& other) const;
+
+    /**
+        Checks whether the cells block is invalid.
+
+        Returns false only if all components are -1. Notice that if one
+        of components (but not all) is -1, this method returns true even if
+        the object is invalid. This is done because objects in such state
+        should actually never exist, i.e. either all components should be -1
+        or none of them should be -1.
+     */
+    bool operator!() const;
+
+private:
+    int m_topRow;
+    int m_leftCol;
+    int m_bottomRow;
+    int m_rightCol;
+};
+
+/**
     @class wxGridTableBase
 
     The almost abstract base class for grid tables.

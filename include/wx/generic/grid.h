@@ -742,10 +742,87 @@ private:
 };
 
 
+// ----------------------------------------------------------------------------
+// wxGridBlockCoords: location of a block of cells in the grid
+// ----------------------------------------------------------------------------
+
+class wxGridBlockCoords
+{
+public:
+    wxGridBlockCoords() :
+        m_topRow(-1),
+        m_leftCol(-1),
+        m_bottomRow(-1),
+        m_rightCol(-1)
+    {
+    }
+
+    wxGridBlockCoords(int topRow, int leftCol, int bottomRow, int rightCol) :
+        m_topRow(topRow),
+        m_leftCol(leftCol),
+        m_bottomRow(bottomRow),
+        m_rightCol(rightCol)
+    {
+    }
+
+    // default copy ctor is ok
+
+    int GetTopRow() const { return m_topRow; }
+    void SetTopRow(int row) { m_topRow = row; }
+    int GetLeftCol() const { return m_leftCol; }
+    void SetLeftCol(int col) { m_leftCol = col; }
+    int GetBottomRow() const { return m_bottomRow; }
+    void SetBottomRow(int row) { m_bottomRow = row; }
+    int GetRightCol() const { return m_rightCol; }
+    void SetRightCol(int col) { m_rightCol = col; }
+    void Set(int topRow, int leftCol, int bottomRow, int rightCol)
+    {
+        m_topRow = topRow;
+        m_leftCol = leftCol;
+        m_bottomRow = bottomRow;
+        m_rightCol = rightCol;
+    }
+
+    wxGridCellCoords GetTopLeft() const
+    {
+        return wxGridCellCoords(m_topRow, m_leftCol);
+    }
+
+    wxGridCellCoords GetBottomRight() const
+    {
+        return wxGridCellCoords(m_bottomRow, m_rightCol);
+    }
+
+    bool operator==(const wxGridBlockCoords& other) const
+    {
+        return m_topRow == other.m_topRow && m_leftCol == other.m_leftCol &&
+               m_bottomRow == other.m_bottomRow && m_rightCol == other.m_rightCol;
+    }
+
+    bool operator!=(const wxGridBlockCoords& other) const
+    {
+        return m_topRow != other.m_topRow || m_leftCol != other.m_leftCol ||
+               m_bottomRow != other.m_bottomRow || m_rightCol != other.m_rightCol;
+    }
+
+    bool operator!() const
+    {
+        return m_topRow == -1 && m_leftCol == -1 &&
+               m_bottomRow == -1 && m_rightCol == -1;
+    }
+
+private:
+    int m_topRow;
+    int m_leftCol;
+    int m_bottomRow;
+    int m_rightCol;
+};
+
 // For comparisons...
 //
-extern WXDLLIMPEXP_CORE wxGridCellCoords wxGridNoCellCoords;
-extern WXDLLIMPEXP_CORE wxRect           wxGridNoCellRect;
+extern WXDLLIMPEXP_CORE wxGridCellCoords  wxGridNoCellCoords;
+extern WXDLLIMPEXP_CORE wxGridBlockCoords wxGridNoBlockCoords;
+extern WXDLLIMPEXP_CORE wxRect            wxGridNoCellRect;
 
 // An array of cell coords...
 //
