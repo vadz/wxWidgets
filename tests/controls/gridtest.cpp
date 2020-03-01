@@ -588,6 +588,74 @@ TEST_CASE_METHOD(GridTestCase, "Grid::ScrollWhenSelect", "[grid]")
     CHECK( m_grid->IsVisible(6, 1) );
 }
 
+TEST_CASE_METHOD(GridTestCase, "Grid::SplitSelectionBlock", "[grid][selection]")
+{
+    m_grid->AppendCols(10);
+
+    // Select the block.
+    m_grid->SelectBlock(0, 0, 4, 4);
+
+    REQUIRE( m_grid->GetSelectionBlockTopLeft().Count() == 1 );
+    REQUIRE( m_grid->GetSelectionBlockBottomRight().Count() == 1 );
+
+    // Deselect the cell at the center of the selection block.
+    m_grid->DeselectCell(2, 2);
+
+    wxGridCellCoordsArray topleft = m_grid->GetSelectionBlockTopLeft();
+    wxGridCellCoordsArray bottomright = m_grid->GetSelectionBlockBottomRight();
+
+    REQUIRE( topleft.Count() == 4 );
+    REQUIRE( bottomright.Count() == 4 );
+
+    CHECK( topleft.Item(0).GetRow() == 0 );
+    CHECK( topleft.Item(0).GetCol() == 0 );
+    CHECK( bottomright.Item(0).GetRow() == 1 );
+    CHECK( bottomright.Item(0).GetCol() == 4 );
+
+    CHECK( topleft.Item(1).GetRow() == 3 );
+    CHECK( topleft.Item(1).GetCol() == 0 );
+    CHECK( bottomright.Item(1).GetRow() == 4 );
+    CHECK( bottomright.Item(1).GetCol() == 4 );
+
+    CHECK( topleft.Item(2).GetRow() == 2 );
+    CHECK( topleft.Item(2).GetCol() == 0 );
+    CHECK( bottomright.Item(2).GetRow() == 2 );
+    CHECK( bottomright.Item(2).GetCol() == 1 );
+
+    CHECK( topleft.Item(3).GetRow() == 2 );
+    CHECK( topleft.Item(3).GetCol() == 3 );
+    CHECK( bottomright.Item(3).GetRow() == 2 );
+    CHECK( bottomright.Item(3).GetCol() == 4 );
+}
+
+TEST_CASE_METHOD(GridTestCase, "Grid::MergeSelectionBlock", "[grid][selection]")
+{
+    m_grid->AppendCols(10);
+
+    SECTION("Merge small with large")
+    {
+        m_grid->SelectBlock(0, 0, 4, 4, true);
+        m_grid->SelectBlock(1, 1, 3, 3, true);
+    }
+
+    SECTION("Merge large with small")
+    {
+        m_grid->SelectBlock(1, 1, 3, 3, true);
+        m_grid->SelectBlock(0, 0, 4, 4, true);
+    }
+
+    wxGridCellCoordsArray topleft = m_grid->GetSelectionBlockTopLeft();
+    wxGridCellCoordsArray bottomright = m_grid->GetSelectionBlockBottomRight();
+
+    REQUIRE( topleft.Count() == 1 );
+    REQUIRE( bottomright.Count() == 1 );
+
+    CHECK( topleft.Item(0).GetRow() == 0 );
+    CHECK( topleft.Item(0).GetCol() == 0 );
+    CHECK( bottomright.Item(0).GetRow() == 4 );
+    CHECK( bottomright.Item(0).GetCol() == 4 );
+}
+
 TEST_CASE_METHOD(GridTestCase, "Grid::MoveGridCursorUsingEndKey", "[grid]")
 {
 #if wxUSE_UIACTIONSIMULATOR
