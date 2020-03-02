@@ -17,6 +17,10 @@
 
 #include "wx/grid.h"
 
+#include "wx/vector.h"
+
+typedef wxVector<wxGridBlockCoords> wxVectorGridBlockCoords;
+
 class WXDLLIMPEXP_CORE wxGridSelection
 {
 public:
@@ -71,30 +75,11 @@ public:
     void UpdateRows( size_t pos, int numRows );
     void UpdateCols( size_t pos, int numCols );
 
-    const wxGridCellCoordsArray& GetCellSelection() const
-    {
-        return m_cellSelection;
-    }
-
-    const wxGridCellCoordsArray& GetBlockSelectionTopLeft() const
-    {
-        return m_blockSelectionTopLeft;
-    }
-
-    const wxGridCellCoordsArray& GetBlockSelectionBottomRight() const
-    {
-        return m_blockSelectionBottomRight;
-    }
-
-    const wxArrayInt& GetRowSelection() const
-    {
-        return m_rowSelection;
-    }
-
-    const wxArrayInt& GetColSelection() const
-    {
-        return m_colSelection;
-    }
+    wxGridCellCoordsArray GetCellSelection() const;
+    wxGridCellCoordsArray GetBlockSelectionTopLeft() const;
+    wxGridCellCoordsArray GetBlockSelectionBottomRight() const;
+    wxArrayInt GetRowSelection() const;
+    wxArrayInt GetColSelection() const;
 
 private:
     int BlockContain( int topRow1, int leftCol1,
@@ -122,11 +107,17 @@ private:
                     wxKeyboardState(), false);
     }
 
-    wxGridCellCoordsArray               m_cellSelection;
-    wxGridCellCoordsArray               m_blockSelectionTopLeft;
-    wxGridCellCoordsArray               m_blockSelectionBottomRight;
-    wxArrayInt                          m_rowSelection;
-    wxArrayInt                          m_colSelection;
+    // Really select the block and don't check for the current selection mode.
+    void Select(int topRow, int leftCol, int bottomRow, int rightCol,
+                const wxKeyboardState& kbd, bool sendEvent);
+
+    // If the new block containing any of the passed blocks, remove them.
+    // if a new block contained in the passed blockc, return.
+    // Otherwise add the new block to the blocks array.
+    void MergeOrAddBlock(wxVectorGridBlockCoords& blocks,
+                         int topRow, int leftCol, int bottomRow, int rightCol);
+
+    wxVectorGridBlockCoords             m_selection;
 
     wxGrid                              *m_grid;
     wxGrid::wxGridSelectionModes        m_selectionMode;
