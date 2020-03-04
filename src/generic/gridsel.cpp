@@ -288,19 +288,8 @@ void wxGridSelection::SelectBlock( int topRow, int leftCol,
             return;
     }
 
-    if ( topRow > bottomRow )
-    {
-        int temp = topRow;
-        topRow = bottomRow;
-        bottomRow = temp;
-    }
-
-    if ( leftCol > rightCol )
-    {
-        int temp = leftCol;
-        leftCol = rightCol;
-        rightCol = temp;
-    }
+    EnsureFirstLessThanSecond(topRow, bottomRow);
+    EnsureFirstLessThanSecond(leftCol, rightCol);
 
     Select(topRow, leftCol, bottomRow, rightCol, kbd, sendEvent);
 }
@@ -656,6 +645,134 @@ void wxGridSelection::UpdateCols( size_t pos, int numCols )
             }
         }
     }
+}
+
+void wxGridSelection::EditCurrentBlock(int startRow, int startCol,
+                                       int endRow, int endCol,
+                                       const wxKeyboardState& kbd)
+{
+    if ( m_selection.empty() )
+    {
+        SelectBlock(startRow, startCol, endRow, endCol);
+        return;
+    }
+
+    wxGridBlockCoords& block = *m_selection.rbegin();
+    int topRow = block.GetTopRow();
+    int leftCol = block.GetLeftCol();
+    int bottomRow = block.GetBottomRow();
+    int rightCol = block.GetRightCol();
+
+    bool editBlock = false;
+
+    if ( endRow != -1 )
+    {
+        if ( topRow == startRow )
+        {
+            bottomRow = endRow;
+            editBlock = true;
+        }
+        else if ( bottomRow == startRow )
+        {
+            topRow = endRow;
+            editBlock = true;
+        }
+    }
+    if ( endCol != -1 )
+    {
+        if ( leftCol == startCol )
+        {
+            rightCol = endCol;
+            editBlock = true;
+        }
+        else if ( rightCol == startCol )
+        {
+            leftCol = endCol;
+            editBlock = true;
+        }
+    }
+
+    EnsureFirstLessThanSecond(topRow, bottomRow);
+    EnsureFirstLessThanSecond(leftCol, rightCol);
+
+    const bool endCoordsSet = endRow != -1 && endCol != -1;
+
+    if ( editBlock )
+    {
+        if ( topRow != block.GetTopRow() || leftCol != block.GetLeftCol() ||
+             bottomRow != block.GetBottomRow() || rightCol != block.GetRightCol() )
+        {
+            // Make the end of the edited block visible.
+            // TODO: Ideally we want two separate functions MakeRowVisible and MakeColVisible
+            // and don't use the current cell coords becouse it can lead to side effects
+            // (unexpected scrolling).
+            const wxGridCellCoords& currentCell = m_grid->m_currentCellCoords;
+            m_grid->MakeCellVisible(endRow != -1 ? endRow : currentCell.GetRow(),
+                                    endCol != -1 ? endCol : currentCell.GetCol());
+
+            // Update View.
+            if ( !m_grid->GetBatchCount() )
+            {
+                wxVectorGridBlockCoords refreshBlocks =
+                    BlocksDifference(block,
+                                     wxGridBlockCoords(topRow, leftCol,
+                                                       bottomRow, rightCol));
+                int count = refreshBlocks.size();
+                for ( int i = 0; i < count; ++i )
+                {
+                    const wxGridBlockCoords& refreshBlock = refreshBlocks[i];
+                    m_grid->RefreshBlock(refreshBlock.GetTopLeft(),
+                                         refreshBlock.GetBottomRight());
+                }
+            }
+
+            // Edit the current block.
+            block.Set(topRow, leftCol, bottomRow, rightCol);
+
+            // Send Event.
+            wxGridRangeSelectEvent gridEvt(m_grid->GetId(),
+                                           wxEVT_GRID_RANGE_SELECT,
+                                           m_grid,
+                                           wxGridCellCoords(topRow, leftCol),
+                                           wxGridCellCoords(bottomRow, rightCol),
+                                           true,
+                                           kbd);
+            m_grid->GetEventHandler()->ProcessEvent(gridEvt);
+        }
+    }
+    else if ( endCoordsSet )
+    {
+        // Select the new one.
+        SelectBlock(startRow, startCol, endRow, endCol, kbd);
+    }
+}
+
+int wxGridSelection::GetCurrentBlockCornerRow() const
+{
+    if ( m_selection.empty() )
+        return -1;
+
+    const wxGridBlockCoords& block = *m_selection.rbegin();
+    if ( block.GetTopRow() == m_grid->m_currentCellCoords.GetRow() )
+        return block.GetBottomRow();
+    if ( block.GetBottomRow() == m_grid->m_currentCellCoords.GetRow() )
+        return block.GetTopRow();
+
+    return -1;
+}
+
+int wxGridSelection::GetCurrentBlockCornerCol() const
+{
+    if ( m_selection.empty() )
+        return -1;
+
+    const wxGridBlockCoords& block = *m_selection.rbegin();
+    if ( block.GetLeftCol() == m_grid->m_currentCellCoords.GetCol() )
+        return block.GetRightCol();
+    if ( block.GetRightCol() == m_grid->m_currentCellCoords.GetCol() )
+        return block.GetLeftCol();
+
+    return -1;
 }
 
 wxGridCellCoordsArray wxGridSelection::GetCellSelection() const

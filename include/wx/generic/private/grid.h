@@ -793,6 +793,13 @@ public:
     // boundary, i.e. is the first/last row/column
     virtual bool IsAtBoundary(const wxGridCellCoords& coords) const = 0;
 
+    // Check if the component of this point in our direction is
+    // valid, i.e. not -1
+    bool IsValid(const wxGridCellCoords& coords) const
+    {
+        return m_oper.Select(coords) != -1;
+    }
+
     // Increment the component of this point in our direction
     virtual void Advance(wxGridCellCoords& coords) const = 0;
 

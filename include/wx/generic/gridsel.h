@@ -75,6 +75,32 @@ public:
     void UpdateRows( size_t pos, int numRows );
     void UpdateCols( size_t pos, int numCols );
 
+    // Edit the current selection block or select a new one.
+    // blockStart and blockEnd specifies the opposite corner of the currently
+    // edited selection block. In almost all cases blockStart equals to
+    // wxGrid::m_currentCellCoords (the exception is when we scrolled out from
+    // the top of the grid and select a column or scrolled right and select
+    // a row: in this case the lowest visible row/column will be set as
+    // current, not the first one).
+    void EditCurrentBlock(int startRow, int startCol,
+                          int endRow, int endCol,
+                          const wxKeyboardState& kbd);
+    void EditCurrentBlock(const wxGridCellCoords& blockStart,
+                          const wxGridCellCoords& blockEnd,
+                          const wxKeyboardState& kbd)
+    {
+        EditCurrentBlock(blockStart.GetRow(), blockStart.GetCol(),
+                         blockEnd.GetRow(), blockEnd.GetCol(),
+                         kbd);
+    }
+
+    // Return the row of the current selection block if it exists and we can
+    // edit the block vertically. Otherwise return -1.
+    int GetCurrentBlockCornerRow() const;
+    // Return the column of the current selection block if it exists and we can
+    // edit the block horizontally. Otherwise return -1.
+    int GetCurrentBlockCornerCol() const;
+
     wxGridCellCoordsArray GetCellSelection() const;
     wxGridCellCoordsArray GetBlockSelectionTopLeft() const;
     wxGridCellCoordsArray GetBlockSelectionBottomRight() const;
