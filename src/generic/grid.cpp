@@ -3752,7 +3752,10 @@ void wxGrid::ProcessColLabelMouseEvent( wxMouseEvent& event, wxGridColLabelWindo
                     if ( col != -1 )
                     {
                         if ( m_selection )
-                            m_selection->SelectCol(col, event);
+                            m_selection->EditCurrentBlock(
+                                0, m_currentCellCoords.GetCol(),
+                                GetNumberRows() - 1, col,
+                                event);
                     }
                 }
                 break;
@@ -3861,12 +3864,19 @@ void wxGrid::ProcessColLabelMouseEvent( wxMouseEvent& event, wxGridColLabelWindo
                 }
                 else
                 {
-                    if ( !event.ShiftDown() && !event.CmdDown() )
-                        ClearSelection();
                     if ( m_selection )
                     {
-                        if ( event.ShiftDown() )
+                        bool selectNewCol = false;
+
+                        if ( event.ShiftDown() && event.CmdDown() )
                         {
+                            ClearSelection();
+                            selectNewCol = true;
+                        }
+                        else if ( event.ShiftDown() )
+                        {
+                            // Continue edit the current selection and don't
+                            // move the grid cursor.
                             m_selection->EditCurrentBlock
                                          (
                                             0, m_currentCellCoords.GetCol(),
@@ -3874,8 +3884,42 @@ void wxGrid::ProcessColLabelMouseEvent( wxMouseEvent& event, wxGridColLabelWindo
                                             event
                                          );
                         }
+                        else if ( event.CmdDown() )
+                        {
+                            wxArrayInt cols = GetSelectedCols();
+                            if ( cols.Index(col) >= 0 )
+                                DeselectCol(col);
+                            else
+                                selectNewCol = true;
+                        }
                         else
                         {
+                            ClearSelection();
+                            selectNewCol = true;
+                        }
+
+                        if (selectNewCol)
+                        {
+                            // Move the cursor to the top of the current column
+                            // visible area.
+                            int row;
+                            if ( GetNumberFrozenRows() > 0 )
+                            {
+                                row = 0;
+                            }
+                            else
+                            {
+                                int y;
+                                CalcGridWindowUnscrolledPosition(0, 0,
+                                                                 NULL, &y,
+                                                                 m_gridWin);
+                                // TODO: the returned row is not fully visible,
+                                // should we use the next one?
+                                row = YToRow(y, true, m_gridWin);
+                            }
+                            SetCurrentCell(row, col);
+
+                            // Select the new column.
                             m_selection->SelectCol(col, event);
                         }
                     }
