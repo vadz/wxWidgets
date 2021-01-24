@@ -1593,6 +1593,8 @@ void MyFrame::OnSorted( wxDataViewEvent &event )
 
 void MyFrame::OnDataViewChar(wxKeyEvent& event)
 {
+    wxLogMessage("wxEVT_CHAR with key code %x", event.GetKeyCode());
+
     if ( event.GetKeyCode() == WXK_DELETE )
         DeleteSelectedItems();
     else

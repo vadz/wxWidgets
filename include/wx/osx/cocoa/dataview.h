@@ -443,6 +443,9 @@ private:
         currentlyEditedRow;
 
     wxCocoaDataViewControl* implementation;
+
+    // non-null only while we're handling keyDown event
+    NSEvent* lastKeyDownEvent;
 }
 
     -(wxCocoaDataViewControl*) implementation;

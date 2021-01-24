@@ -28,6 +28,7 @@
 #include "wx/osx/private/available.h"
 #include "wx/osx/cocoa/dataview.h"
 #include "wx/renderer.h"
+#include "wx/scopeguard.h"
 #include "wx/stopwatch.h"
 #include "wx/dcgraph.h"
 
@@ -1641,7 +1642,9 @@ outlineView:(NSOutlineView*)outlineView
     if (self != nil)
     {
         currentlyEditedColumn =
-            currentlyEditedRow = -1;
+        currentlyEditedRow = -1;
+
+        lastKeyDownEvent = nil;
 
         [self setAutoresizesOutlineColumn:NO];
         [self registerForDraggedTypes:[NSArray arrayWithObjects:DataViewPboardType,NSStringPboardType,nil]];
@@ -1725,6 +1728,16 @@ outlineView:(NSOutlineView*)outlineView
 // to pass if the wxEvent is not processed.
 - (void)keyDown:(NSEvent *)event
 {
+    lastKeyDownEvent = event;
+    wxON_BLOCK_EXIT_NULL(lastKeyDownEvent);
+
+    // First, propagate key event to wxDVC so that user-defined handler could
+    // process them. Note that we can't return here even if the event was
+    // handled because this would break processing of any navigation keys (e.g.
+    // arrows) that are mapped to the standard selectors and for which
+    // DoHandleKeyEvent() currently always returns true.
+    implementation->DoHandleKeyEvent(event);
+
     if( [[event charactersIgnoringModifiers]
          characterAtIndex: 0] == NSCarriageReturnCharacter )
     {
@@ -1738,6 +1751,20 @@ outlineView:(NSOutlineView*)outlineView
     {
         [super keyDown:event];  // all other keys
     }
+}
+
+- (void)insertText:(id)str
+{
+    if ( lastKeyDownEvent )
+    {
+        // As above, let a user-defined wxEVT_CHAR handler process the event
+        // first if it's defined.
+        NSString *text = [str isKindOfClass:[NSAttributedString class]] ? [str string] : str;
+        if ( implementation->DoHandleCharEvent(lastKeyDownEvent, text) )
+            return;
+    }
+
+    [super insertText:str];
 }
 
 //
@@ -2059,7 +2086,8 @@ wxCocoaDataViewControl::wxCocoaDataViewControl(wxWindow* peer,
     : wxWidgetCocoaImpl
       (
         peer,
-        [[NSScrollView alloc] initWithFrame:wxOSXGetFrameForControl(peer,pos,size)]
+        [[NSScrollView alloc] initWithFrame:wxOSXGetFrameForControl(peer,pos,size)],
+        Widget_UserKeyEvents
       ),
       m_DataSource(NULL),
       m_OutlineView([[wxCocoaOutlineView alloc] init]),
