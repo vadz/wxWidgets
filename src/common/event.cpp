@@ -429,7 +429,7 @@ wxString wxCommandEvent::GetString() const
         // created a bogus event of this type.
         if ( wxWindow* const w = wxDynamicCast(m_eventObject, wxWindow) )
         {
-            if ( const wxTextEntry* const entry = w->WXGetTextEntry() )
+            if ( const wxTextEntryBase* const entry = w->WXGetTextEntry() )
                 return entry->GetValue();
         }
     }

@@ -161,7 +161,7 @@ public:
     virtual wxClientDataType GetClientDataType() const override;
     virtual void SetClientDataType(wxClientDataType clientDataItemsType) override;
 
-    virtual const wxTextEntry* WXGetTextEntry() const override { return this; }
+    virtual const wxTextEntryBase* WXGetTextEntry() const override { return this; }
 
 protected:
     virtual int DoInsertItems(const wxArrayStringsAdapter& items,

@@ -88,9 +88,7 @@ public:
     virtual void SetDescriptiveText(const wxString& text) = 0;
     virtual wxString GetDescriptiveText() const = 0;
 
-#if wxUSE_NATIVE_SEARCH_CONTROL
-    virtual const wxTextEntry* WXGetTextEntry() const override { return this; }
-#endif // wxUSE_NATIVE_SEARCH_CONTROL
+    virtual const wxTextEntryBase* WXGetTextEntry() const override { return this; }
 
 private:
     // implement wxTextEntry pure virtual method

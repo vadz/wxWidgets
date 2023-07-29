@@ -128,7 +128,7 @@ public:
     static wxVisualAttributes
     GetClassDefaultAttributes(wxWindowVariant variant = wxWINDOW_VARIANT_NORMAL);
 
-    virtual const wxTextEntry* WXGetTextEntry() const override { return this; }
+    virtual const wxTextEntryBase* WXGetTextEntry() const override { return this; }
 
 protected:
     // From wxWindowGTK:

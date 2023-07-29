@@ -821,7 +821,7 @@ public:
         return GetCompositeControlsDefaultAttributes(variant);
     }
 
-    virtual const wxTextEntry* WXGetTextEntry() const override { return this; }
+    virtual const wxTextEntryBase* WXGetTextEntry() const override { return this; }
 
 #if wxUSE_SPELLCHECK
     // Use native spelling and grammar checking functions.

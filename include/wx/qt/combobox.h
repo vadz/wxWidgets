@@ -82,7 +82,7 @@ public:
     virtual void Popup();
     virtual void Dismiss();
 
-    virtual const wxTextEntry* WXGetTextEntry() const override { return this; }
+    virtual const wxTextEntryBase* WXGetTextEntry() const override { return this; }
 
     virtual bool QtHandleFocusEvent(QWidget *handler, QFocusEvent *event) override;
 protected:

@@ -102,7 +102,7 @@ class WXDLLIMPEXP_CORE wxComboBox :
 #endif // wxOSX_USE_COCOA
 
 
-    virtual const wxTextEntry* WXGetTextEntry() const override { return this; }
+    virtual const wxTextEntryBase* WXGetTextEntry() const override { return this; }
 
     // osx specific event handling common for all osx-ports
 

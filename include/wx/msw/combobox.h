@@ -123,7 +123,7 @@ public:
 
     virtual void SetLayoutDirection(wxLayoutDirection dir) override;
 
-    virtual const wxTextEntry* WXGetTextEntry() const override { return this; }
+    virtual const wxTextEntryBase* WXGetTextEntry() const override { return this; }
 
 protected:
 #if wxUSE_TOOLTIPS
