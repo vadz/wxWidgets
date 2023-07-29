@@ -120,7 +120,6 @@ wxCONSTRUCTOR_6( wxTextCtrl, wxWindow*, Parent, wxWindowID, Id, \
 
 wxIMPLEMENT_DYNAMIC_CLASS(wxTextUrlEvent, wxCommandEvent);
 
-wxDEFINE_EVENT( wxEVT_TEXT, wxCommandEvent );
 wxDEFINE_EVENT( wxEVT_TEXT_ENTER, wxCommandEvent );
 wxDEFINE_EVENT( wxEVT_TEXT_URL, wxTextUrlEvent );
 wxDEFINE_EVENT( wxEVT_TEXT_MAXLEN, wxCommandEvent );

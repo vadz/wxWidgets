@@ -5816,6 +5816,11 @@ public:
         return wxTextAreaBase::HitTest(pt, col, row);
     }
 
+    virtual const wxTextEntryBase* WXGetTextEntry() const override
+    {
+        return this;
+    }
+
     // methods deprecated due to changes in the scintilla library
     // ---------------------------------------------
 #if WXWIN_COMPATIBILITY_3_0

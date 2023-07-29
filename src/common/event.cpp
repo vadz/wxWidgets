@@ -311,6 +311,45 @@ wxDEFINE_EVENT( wxEVT_COMMAND_ENTER, wxCommandEvent );
 wxDEFINE_EVENT( wxEVT_HELP, wxHelpEvent );
 wxDEFINE_EVENT( wxEVT_DETAILED_HELP, wxHelpEvent );
 
+// Text events.
+
+namespace
+{
+
+int GetTextEventTypesCount()
+{
+    // Assume we shouldn't need more than 10 such events.
+    return 10;
+}
+
+wxEventType GetFirstTextEventType()
+{
+    return wxEVT_USER_FIRST - GetTextEventTypesCount();
+}
+
+bool IsTextEventType(wxEventType eventType)
+{
+    return eventType >= GetFirstTextEventType() &&
+                eventType < GetFirstTextEventType() + GetTextEventTypesCount();
+}
+
+} // anonymous namespace
+
+int wxNewTextEventType()
+{
+    // Assume we shouldn't need more than 10 such events.
+    static int s_lastUsedTextEventType = GetFirstTextEventType();
+
+    if ( ++s_lastUsedTextEventType == wxEVT_USER_FIRST )
+    {
+        wxFAIL_MSG("Too many text events requested.");
+    }
+
+    return s_lastUsedTextEventType;
+}
+
+wxDEFINE_EVENT_ALIAS( wxEVT_TEXT, wxCommandEvent, wxNewTextEventType() );
+
 #endif // wxUSE_GUI
 
 #if wxUSE_BASE
@@ -422,9 +461,9 @@ wxString wxCommandEvent::GetString() const
     // This is part of the hack retrieving the event string from the control
     // itself only when/if it's really needed to avoid copying potentially huge
     // strings coming from multiline text controls.
-    if (m_eventType == wxEVT_TEXT && m_cmdString.empty() && m_eventObject)
+    if ( IsTextEventType(m_eventType) && m_cmdString.empty() && m_eventObject )
     {
-        // Only windows generate wxEVT_TEXT events, so this cast should really
+        // Only windows generate text events, so this cast should really
         // succeed, but err on the side of caution just in case somebody
         // created a bogus event of this type.
         if ( wxWindow* const w = wxDynamicCast(m_eventObject, wxWindow) )

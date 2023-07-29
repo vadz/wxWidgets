@@ -881,8 +881,13 @@ wxDECLARE_EXPORTED_EVENT(WXDLLIMPEXP_CORE, wxEVT_DETAILED_HELP, wxHelpEvent);
 #define wxEVT_TOOL wxEVT_MENU
 
 // ----------------------------------------------------------------------------
-// Compatibility
+// Special text events support
 // ----------------------------------------------------------------------------
+
+// Text events get special handling from wxCommandEvent::GetString(): it tries
+// to get the corresponding wxTextEntry from the event object and gets the text
+// from it, instead of assuming it's carried by the event itself.
+extern WXDLLIMPEXP_CORE wxEventType wxNewTextEventType();
 
 // this event is also used by wxComboBox and wxSpinCtrl which don't include
 // wx/textctrl.h in all ports [yet], so declare it here as well
