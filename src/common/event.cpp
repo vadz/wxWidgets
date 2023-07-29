@@ -422,7 +422,7 @@ wxString wxCommandEvent::GetString() const
     // This is part of the hack retrieving the event string from the control
     // itself only when/if it's really needed to avoid copying potentially huge
     // strings coming from multiline text controls.
-    if (m_eventType == wxEVT_TEXT && m_eventObject)
+    if (m_eventType == wxEVT_TEXT && m_cmdString.empty() && m_eventObject)
     {
         // Only windows generate wxEVT_TEXT events, so this cast should really
         // succeed, but err on the side of caution just in case somebody
