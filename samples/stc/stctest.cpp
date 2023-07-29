@@ -278,9 +278,10 @@ wxBEGIN_EVENT_TABLE (AppFrame, wxFrame)
 wxEND_EVENT_TABLE ()
 
 AppFrame::AppFrame (const wxString &title)
-        : wxFrame (nullptr, wxID_ANY, title, wxDefaultPosition, wxSize(750,550))
+        : wxFrame (nullptr, wxID_ANY, title)
 {
     SetIcon(wxICON(sample));
+    SetSize(FromDIP(wxSize(750,550)));
 
     // initialize important variables
     m_edit = nullptr;
@@ -640,8 +641,8 @@ wxRect AppFrame::DeterminePrintSize () {
 
     // determine position and size (shifting 16 left and down)
     wxRect rect = GetRect();
-    rect.x += 16;
-    rect.y += 16;
+    rect.x += FromDIP(16);
+    rect.y += FromDIP(16);
     rect.width = wxMin (rect.width, (scr.x - rect.x));
     rect.height = wxMin (rect.height, (scr.x - rect.y));
 
@@ -703,23 +704,25 @@ AppAbout::AppAbout (wxWindow *parent,
     wxBoxSizer *aboutpane = new wxBoxSizer (wxHORIZONTAL);
     wxBitmap bitmap = wxBitmap(wxICON (sample));
     aboutpane->Add (new wxStaticBitmap (this, wxID_ANY, bitmap),
-                    0, wxALIGN_LEFT|wxALIGN_CENTER_VERTICAL|wxLEFT|wxRIGHT, 20);
+                    0, wxALIGN_LEFT|wxALIGN_CENTER_VERTICAL|wxLEFT|wxRIGHT,
+                    FromDIP(20));
     aboutpane->Add (aboutinfo, 1, wxEXPAND);
-    aboutpane->Add (60, 0);
+    aboutpane->Add (FromDIP(60), 0);
 
     // about complete
     wxBoxSizer *totalpane = new wxBoxSizer (wxVERTICAL);
-    totalpane->Add (0, 20);
+    totalpane->Add (0, FromDIP(20));
     wxStaticText *appname = new wxStaticText(this, wxID_ANY, *g_appname);
     appname->SetFont (wxFontInfo(24).Bold());
-    totalpane->Add (appname, 0, wxALIGN_CENTER | wxLEFT | wxRIGHT, 40);
-    totalpane->Add (0, 10);
+    totalpane->Add (appname, 0, wxALIGN_CENTER | wxLEFT | wxRIGHT, FromDIP(40));
+    totalpane->Add (0, FromDIP(10));
     totalpane->Add (aboutpane, 0, wxEXPAND | wxALL, 4);
     totalpane->Add (new wxStaticText(this, wxID_ANY, APP_DESCR),
-                    0, wxALIGN_CENTER | wxALL, 10);
+                    0, wxALIGN_CENTER | wxALL, FromDIP(10));
     wxButton *okButton = new wxButton (this, wxID_OK, _("OK"));
     okButton->SetDefault();
-    totalpane->Add (okButton, 0, wxALIGN_CENTER | wxLEFT | wxRIGHT | wxBOTTOM, 10);
+    totalpane->Add (okButton, 0, wxALIGN_CENTER | wxLEFT | wxRIGHT | wxBOTTOM,
+                    FromDIP(10));
 
     SetSizerAndFit (totalpane);
 
