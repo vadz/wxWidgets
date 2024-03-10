@@ -45,8 +45,18 @@ if(NOT CEF_ROOT)
         ${CEF_DOWNLOAD_DIR}/CMakeLists.txt
     )
 
+    # We need to pass the same list of architectures and minimum macOS version
+    # to CEF as we're using for the main library.
+    if (CMAKE_OSX_ARCHITECTURES)
+        set(cef_osx_arch "-DCMAKE_OSX_ARCHITECTURES=${CMAKE_OSX_ARCHITECTURES}")
+    endif()
+
+    if (CMAKE_OSX_DEPLOYMENT_TARGET)
+        set(cef_osx_min "-DCMAKE_OSX_DEPLOYMENT_TARGET=${CMAKE_OSX_DEPLOYMENT_TARGET}")
+    endif()
+
     execute_process(
-        COMMAND ${CMAKE_COMMAND} -G "${CMAKE_GENERATOR}" .
+        COMMAND ${CMAKE_COMMAND} -G "${CMAKE_GENERATOR}" ${cef_osx_arch} ${cef_osx_min} .
         RESULT_VARIABLE result
         WORKING_DIRECTORY ${CEF_DOWNLOAD_DIR}
     )
