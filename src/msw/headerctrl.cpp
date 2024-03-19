@@ -31,7 +31,9 @@
 #ifndef wxHAS_GENERIC_HEADERCTRL
 
 #include "wx/imaglist.h"
+#include "wx/renderer.h"
 
+#include "wx/msw/dc.h"
 #include "wx/msw/wrapcctl.h"
 #include "wx/msw/private.h"
 #include "wx/msw/private/customdraw.h"
@@ -211,7 +213,7 @@ bool wxMSWHeaderCtrl::Create(wxWindow *parent,
         // which calls SetFont() from InheritAttributes(), so don't recreate it
         // in this case.
         if ( !m_customDraw )
-            m_customDraw.reset(new wxMSWHeaderCtrlCustomDraw());
+            m_customDraw.reset(new wxMSWHeaderCtrlCustomDraw(this, GetHwnd()));
         m_customDraw->UseHeaderThemeColors(GetHwnd());
     }
 
@@ -637,6 +639,70 @@ int wxMSWHeaderCtrl::MSWFromNativeOrder(int order)
 // wxMSWHeaderCtrl appearance
 // ----------------------------------------------------------------------------
 
+bool wxMSWHeaderCtrlCustomDraw::DrawItem(const NMCUSTOMDRAWINFO& cdi)
+{
+    TCHAR buffer[256];
+
+    wxHDITEM hdi;
+    hdi.mask = HDI_TEXT | HDI_FORMAT | HDF_IMAGE | HDF_BITMAP;
+    hdi.pszText = buffer;
+    hdi.cchTextMax = WXSIZEOF(buffer);
+
+    if ( !Header_GetItem(m_hwndHeader, cdi.dwItemSpec, &hdi) )
+    {
+        wxLogLastError("Header_GetItem");
+        return false;
+    }
+
+    if ( hdi.hbm || hdi.iImage )
+    {
+        // TODO: Implement support for drawing bitmaps.
+        return false;
+    }
+
+    wxDCTemp dc(cdi.hdc);
+    const wxRect rect = wxRectFromRECT(cdi.rc);
+
+    if ( m_attr.HasBackgroundColour() )
+    {
+        dc.SetBrush(m_attr.GetBackgroundColour());
+        dc.SetPen(*wxTRANSPARENT_PEN);
+        dc.DrawRectangle(rect);
+    }
+
+    wxHeaderButtonParams params;
+    params.m_labelText = hdi.pszText;
+    params.m_labelColour = m_attr.GetTextColour();
+    params.m_labelFont = m_attr.GetFont();
+
+    if ( hdi.fmt & HDF_RIGHT )
+        params.m_labelAlignment = wxALIGN_RIGHT;
+    else if ( hdi.fmt & HDF_CENTER )
+        params.m_labelAlignment = wxALIGN_CENTER;
+    else
+        params.m_labelAlignment = wxALIGN_LEFT;
+
+    wxHeaderSortIconType sortArrow;
+    if ( hdi.fmt & HDF_SORTUP )
+        sortArrow = wxHDR_SORT_ICON_UP;
+    else if ( hdi.fmt & HDF_SORTDOWN )
+        sortArrow = wxHDR_SORT_ICON_DOWN;
+    else
+        sortArrow = wxHDR_SORT_ICON_NONE;
+
+    wxRendererNative::Get().DrawHeaderButtonContents
+    (
+        m_window,
+        dc,
+        rect,
+        0,
+        sortArrow,
+        &params
+    );
+
+    return true;
+}
+
 wxMSWHeaderCtrlCustomDraw* wxMSWHeaderCtrl::GetCustomDraw()
 {
     // There is no need to make the control custom drawn just because it has a
@@ -651,7 +717,7 @@ wxMSWHeaderCtrlCustomDraw* wxMSWHeaderCtrl::GetCustomDraw()
     {
         // We do have at least one custom colour, so enable custom drawing.
         if ( !m_customDraw )
-            m_customDraw.reset(new wxMSWHeaderCtrlCustomDraw());
+            m_customDraw.reset(new wxMSWHeaderCtrlCustomDraw(this, GetHwnd()));
     }
 
     return m_customDraw.get();

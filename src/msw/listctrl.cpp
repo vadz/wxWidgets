@@ -365,7 +365,7 @@ void wxListCtrl::MSWInitHeader()
     // It's not clear why do we have to do it, but without using custom drawing
     // the header text is drawn in black, making it unreadable, so do use it.
     if ( !m_headerCustomDraw )
-        m_headerCustomDraw = new wxMSWHeaderCtrlCustomDraw();
+        m_headerCustomDraw = new wxMSWHeaderCtrlCustomDraw(this, hwndHdr);
 
     m_headerCustomDraw->UseHeaderThemeColors(hwndHdr);
 }
@@ -719,7 +719,7 @@ bool wxListCtrl::SetHeaderAttr(const wxItemAttr& attr)
     else // We do have custom attributes.
     {
         if ( !m_headerCustomDraw )
-            m_headerCustomDraw = new wxMSWHeaderCtrlCustomDraw();
+            m_headerCustomDraw = new wxMSWHeaderCtrlCustomDraw(this, hwndHdr);
 
         if ( m_headerCustomDraw->m_attr == attr )
         {

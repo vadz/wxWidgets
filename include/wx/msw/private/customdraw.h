@@ -15,6 +15,8 @@
 #include "wx/msw/uxtheme.h"
 #include "wx/msw/wrapcctl.h"
 
+typedef struct tagNMCUSTOMDRAWINFO NMCUSTOMDRAWINFO;
+
 namespace wxMSWImpl
 {
 
@@ -47,6 +49,12 @@ private:
     // item doesn't need to be custom-drawn.
     virtual const wxItemAttr* GetItemAttr(DWORD_PTR dwItemSpec) const = 0;
 
+    // Entirely handle the item painting, return true if we did it and false if
+    // this is not implemented, in which case standard drawing will be used,
+    // which may not respect all the attributes (the current example of this
+    // happening is the background colour being ignored for the header control).
+    virtual bool DrawItem(const NMCUSTOMDRAWINFO& WXUNUSED(cdi)) { return false; }
+
 
     // Set the colours and font for the specified HDC, return CDRF_NEWFONT if
     // the font was changed.
@@ -64,7 +72,8 @@ private:
 class wxMSWHeaderCtrlCustomDraw : public wxMSWImpl::CustomDraw
 {
 public:
-    wxMSWHeaderCtrlCustomDraw()
+    wxMSWHeaderCtrlCustomDraw(wxWindow* window, HWND hwndHeader)
+        : m_window{window}, m_hwndHeader{hwndHeader}
     {
     }
 
@@ -104,6 +113,11 @@ private:
         // We use the same attribute for all items for now.
         return &m_attr;
     }
+
+    virtual bool DrawItem(const NMCUSTOMDRAWINFO& cdi) override;
+
+    wxWindow* const m_window;
+    const HWND m_hwndHeader;
 };
 
 #endif // _WX_MSW_CUSTOMDRAW_H_

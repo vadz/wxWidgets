@@ -25,6 +25,8 @@
 
 #include "wx/msw/private/customdraw.h"
 
+#include "wx/msw/uxtheme.h"
+
 // ============================================================================
 // implementation
 // ============================================================================
@@ -59,8 +61,19 @@ LPARAM wxMSWImpl::CustomDraw::HandleCustomDraw(LPARAM lParam)
 
         case CDDS_ITEMPREPAINT:
             const wxItemAttr* const attr = GetItemAttr(nmcd->dwItemSpec);
-            if ( attr )
-                return HandleItemPrepaint(*attr, nmcd->hdc);
+            if ( !attr )
+                break;
+
+            if ( wxUxThemeIsActive() && attr->HasBackgroundColour() )
+            {
+                // If we have the background colour, we need to draw the item
+                // ourselves as custom draw doesn't take it into account when
+                // using themes.
+                if ( DrawItem(*nmcd) )
+                    return CDRF_SKIPDEFAULT;
+            }
+
+            return HandleItemPrepaint(*attr, nmcd->hdc);
     }
 
     return CDRF_DODEFAULT;
