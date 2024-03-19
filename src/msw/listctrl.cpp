@@ -695,6 +695,9 @@ bool wxListCtrl::SetBackgroundColour(const wxColour& col)
 
 bool wxListCtrl::SetHeaderAttr(const wxItemAttr& attr)
 {
+    HWND hwndHdr = ListView_GetHeader(GetHwnd());
+    wxCHECK_MSG( hwndHdr, false, "Must have the header to set attributes for" );
+
     // We need to propagate the change of the font to the native header window
     // as it also affects its layout.
     bool fontChanged;
@@ -729,32 +732,28 @@ bool wxListCtrl::SetHeaderAttr(const wxItemAttr& attr)
         m_headerCustomDraw->m_attr = attr;
     }
 
-    if ( HWND hwndHdr = ListView_GetHeader(GetHwnd()) )
+    if ( fontChanged )
     {
-        if ( fontChanged )
+        // Don't just reset the font if no font is specified, as the header
+        // uses the same font as the listview control and not the ugly
+        // default GUI font by default.
+        if ( attr.HasFont() )
         {
-            // Don't just reset the font if no font is specified, as the header
-            // uses the same font as the listview control and not the ugly
-            // default GUI font by default.
-            if ( attr.HasFont() )
-            {
-                wxSetWindowFont(hwndHdr, attr.GetFont());
-            }
-            else
-            {
-                // make sure m_font is valid before using its HFONT reference
-                SetFont(GetFont());
-                wxSetWindowFont(hwndHdr, m_font);
-            }
+            wxSetWindowFont(hwndHdr, attr.GetFont());
         }
-
-        // Refreshing the listview makes it notice the change in height of its
-        // header and redraws it too. We probably could do something less than
-        // a full refresh, but it doesn't seem to be worth it, the header
-        // attributes won't be changed that often, so keep it simple for now.
-        Refresh();
+        else
+        {
+            // make sure m_font is valid before using its HFONT reference
+            SetFont(GetFont());
+            wxSetWindowFont(hwndHdr, m_font);
+        }
     }
-    //else: header not shown or not in report view?
+
+    // Refreshing the listview makes it notice the change in height of its
+    // header and redraws it too. We probably could do something less than
+    // a full refresh, but it doesn't seem to be worth it, the header
+    // attributes won't be changed that often, so keep it simple for now.
+    Refresh();
 
     return true;
 }

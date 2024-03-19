@@ -1107,7 +1107,9 @@ public:
         Change the font and the colours used for the list control header.
 
         This method can be used to change the appearance of the header shown by
-        the control in report mode (unless @c wxLC_NO_HEADER style is used).
+        the control in report mode. It can only be called after creating the
+        control and if @c wxLC_NO_HEADER style is _not_ used, i.e. if the
+        header really exists.
 
         Currently it is implemented only for wxMSW and does nothing in the
         other ports.
