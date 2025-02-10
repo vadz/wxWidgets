@@ -30,14 +30,10 @@ public:
         wxWindow* wnd,
         const wxRect& rect) override;
 
-    void DrawTab(wxDC& dc,
+    int DrawPageTab(wxDC& dc,
         wxWindow* wnd,
-        const wxAuiNotebookPage& pane,
-        const wxRect& inRect,
-        int closeButtonState,
-        wxRect* outTabRect,
-        wxRect* outButtonRect,
-        int* xExtent) override;
+        wxAuiNotebookPage& page,
+        const wxRect& rect) override;
 
     void DrawButton(
         wxDC& dc,
@@ -56,13 +52,10 @@ public:
     int GetAdditionalBorderSpace(
         wxWindow* wnd) override;
 
-    wxSize GetTabSize(
+    wxSize GetPageTabSize(
         wxReadOnlyDC& dc,
         wxWindow* wnd,
-        const wxString& caption,
-        const wxBitmapBundle& bitmap,
-        bool active,
-        int closeButtonState,
+        const wxAuiNotebookPage& page,
         int* xExtent) override;
 
     int ShowDropDown(
