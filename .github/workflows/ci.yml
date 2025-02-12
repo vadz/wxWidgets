@@ -100,9 +100,9 @@ jobs:
             container: ubuntu:18.04
             configure_flags: --enable-compat30
             use_xvfb: true
-          - name: Ubuntu 22.04 wxGTK 3 with clang
-            runner: ubuntu-22.04
-            compiler: clang++-14
+          - name: Ubuntu 24.04 wxGTK 3 with clang
+            runner: ubuntu-24.04
+            compiler: clang++-18
             configure_flags: --disable-sys-libs --disable-mediactrl
             use_xvfb: true
           - name: Ubuntu 24.04 wxGTK with wx containers
