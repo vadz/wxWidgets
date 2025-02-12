@@ -103,7 +103,7 @@ jobs:
           - name: Ubuntu 22.04 wxGTK 3 with clang
             runner: ubuntu-22.04
             compiler: clang++-14
-            configure_flags: --disable-sys-libs
+            configure_flags: --disable-sys-libs --disable-mediactrl
             use_xvfb: true
           - name: Ubuntu 24.04 wxGTK with wx containers
             runner: ubuntu-24.04

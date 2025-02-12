@@ -81,21 +81,28 @@ case $(uname -s) in
                             ;;
                     esac
 
-                    case "$codename" in
-                        jammy)
-                            # Under Ubuntu 22.04 installing libgstreamer1.0-dev
-                            # fails because it depends on libunwind-dev which
-                            # is not going to be installed because it conflicts
-                            # with the pre-installed (in GitHub Actions
-                            # environment) libc++-dev, so we need to install it
-                            # directly to avoid errors later.
-                            extra_deps="$extra_deps libunwind-dev"
+                    case "$wxCONFIGURE_FLAGS" in
+                        *--disable-mediactrl*)
+                            ;;
+
+                        *)
+                            case "$codename" in
+                                jammy)
+                                    # Under Ubuntu 22.04 installing libgstreamer1.0-dev
+                                    # fails because it depends on libunwind-dev which
+                                    # is not going to be installed because it conflicts
+                                    # with the pre-installed (in GitHub Actions
+                                    # environment) libc++-dev, so we need to install it
+                                    # directly to avoid errors later.
+                                    extra_deps="$extra_deps libunwind-dev"
+                                    ;;
+                            esac
+
+                            extra_deps="$extra_deps \
+                                    libgstreamer1.0-dev libgstreamer-plugins-base1.0-dev \
+                                    "
                             ;;
                     esac
-
-                    extra_deps="$extra_deps \
-                            libgstreamer1.0-dev libgstreamer-plugins-base1.0-dev \
-                            "
             esac
 
             # Install locales used by our tests to run all the tests instead of
