@@ -228,6 +228,8 @@ jobs:
               echo LD=$compiler >> $GITHUB_ENV
 
               allow_warn_opt="-Wno-error=#warnings"
+
+              export WX_EXTRA_PACKAGES="libc++-dev"
               ;;
 
             g++*)
