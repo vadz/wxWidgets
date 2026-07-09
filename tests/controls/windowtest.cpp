@@ -30,6 +30,10 @@
 #include "wx/tooltip.h"
 #include "wx/wupdlock.h"
 
+#if wxUSE_SCROLLBAR
+    #include "wx/scrolwin.h"
+#endif // wxUSE_SCROLLBAR
+
 #ifdef __WXGTK__
     #include "wx/gtk/private/backend.h"
 #endif // __WXGTK__
@@ -132,6 +136,45 @@ private:
 };
 #endif // wxUSE_HELP
 
+#if wxUSE_SCROLLBAR
+
+class ScrollCountingWindow : public wxScrolledWindow
+{
+public:
+    ScrollCountingWindow(wxWindow* parent)
+        : wxScrolledWindow(parent, wxID_ANY, wxDefaultPosition, wxSize(100, 100))
+    {
+        SetScrollRate(10, 10);
+        SetVirtualSize(1000, 1000);
+        ResetScrollWindowCalls();
+    }
+
+    virtual void ScrollWindow(int dx, int dy,
+                              const wxRect* rect = nullptr) override
+    {
+        wxUnusedVar(rect);
+
+        m_scrollWindowCallCount++;
+        m_lastScrollWindowDelta = wxPoint(dx, dy);
+    }
+
+    void ResetScrollWindowCalls()
+    {
+        m_scrollWindowCallCount = 0;
+        m_lastScrollWindowDelta = wxPoint();
+    }
+
+    int GetScrollWindowCallCount() const { return m_scrollWindowCallCount; }
+
+    wxPoint GetLastScrollWindowDelta() const { return m_lastScrollWindowDelta; }
+
+private:
+    int m_scrollWindowCallCount = 0;
+    wxPoint m_lastScrollWindowDelta;
+};
+
+#endif // wxUSE_SCROLLBAR
+
 static void DoTestShowHideEvent(wxWindow* window)
 {
     EventCounter show(window, wxEVT_SHOW);
@@ -148,6 +191,33 @@ static void DoTestShowHideEvent(wxWindow* window)
 
     CHECK( show.GetCount() == 2 );
 }
+
+#if wxUSE_SCROLLBAR
+
+TEST_CASE_METHOD(WindowTestCase, "Window::ScrolledWindowPhysicalScrolling",
+                 "[window][scroll]")
+{
+    std::unique_ptr<ScrollCountingWindow>
+        win(new ScrollCountingWindow(wxTheApp->GetTopWindow()));
+
+    win->EnableScrolling(false, false);
+    win->Scroll(1, 2);
+
+    CHECK( win->GetViewStart() == wxPoint(1, 2) );
+    CHECK( win->GetScrollWindowCallCount() == 0 );
+
+    win->Scroll(0, 0);
+    win->EnableScrolling(true, false);
+    win->ResetScrollWindowCalls();
+
+    win->Scroll(1, 2);
+
+    CHECK( win->GetViewStart() == wxPoint(1, 2) );
+    REQUIRE( win->GetScrollWindowCallCount() == 1 );
+    CHECK( win->GetLastScrollWindowDelta() == wxPoint(-10, 0) );
+}
+
+#endif // wxUSE_SCROLLBAR
 
 TEST_CASE_METHOD(WindowTestCase, "Window::ShowHideEvent", "[window]")
 {

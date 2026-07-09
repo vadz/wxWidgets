@@ -147,9 +147,20 @@ void wxScrollHelper::DoScrollOneDir(int orient,
         m_win->SetScrollPos(orient, pos);
         pos = m_win->GetScrollPos(orient);
 
-        int diff = (*posOld - pos)*pixelsPerLine;
-        m_targetWindow->ScrollWindow(orient == wxHORIZONTAL ? diff : 0,
-                                     orient == wxHORIZONTAL ? 0 : diff);
+        const bool scrollingEnabled =
+            orient == wxHORIZONTAL ? m_xScrollingEnabled : m_yScrollingEnabled;
+        if ( scrollingEnabled )
+        {
+            int diff = (*posOld - pos)*pixelsPerLine;
+            m_targetWindow->ScrollWindow(orient == wxHORIZONTAL ? diff : 0,
+                                         orient == wxHORIZONTAL ? 0 : diff);
+        }
+        else
+        {
+            // Logical scrolling still changes the view position; only the
+            // physical move of the pixels is disabled.
+            m_targetWindow->Refresh(true, GetScrollRect());
+        }
 
         *posOld = pos;
     }
