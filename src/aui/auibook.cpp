@@ -2444,6 +2444,7 @@ wxWindow* wxAuiNotebook::DoRemovePage(size_t page_idx)
     wxWindow* active_wnd = nullptr;
     if (m_curPage >= 0)
         active_wnd = m_tabs.GetWindowFromIdx(m_curPage);
+    const int old_curpage = m_curPage;
 
     // save pointer of window being deleted
     wxWindow* wnd = m_tabs.GetWindowFromIdx(page_idx);
@@ -2529,8 +2530,23 @@ wxWindow* wxAuiNotebook::DoRemovePage(size_t page_idx)
     m_curPage = wxNOT_FOUND;
 
     // set new active pane unless we're being destroyed anyhow
-    if (new_active && !m_isBeingDeleted)
-        SetSelectionToWindow(new_active);
+    if ( !m_isBeingDeleted )
+    {
+        if ( new_active )
+        {
+            SetSelectionToWindow(new_active);
+        }
+        else if ( old_curpage != wxNOT_FOUND )
+        {
+            // Still send this event when not calling SetSelectionToWindow() as
+            // the selection did change.
+            wxAuiNotebookEvent evt(wxEVT_AUINOTEBOOK_PAGE_CHANGED, m_windowId);
+            evt.SetSelection(wxNOT_FOUND);
+            evt.SetOldSelection(old_curpage);
+            evt.SetEventObject(this);
+            (void)ProcessWindowEvent(evt);
+        }
+    }
 
     return wnd;
 }
