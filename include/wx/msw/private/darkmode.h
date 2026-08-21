@@ -87,6 +87,10 @@ UINT_PTR CALLBACK CommonDialogHookProc(HWND hwnd, UINT uiMsg, WPARAM wParam,
 // added in Windows 11 25H2 (build 26200).
 bool HasDarkTheme();
 
+// Draw"progress bar in dark mode: this is used when HasDarkTheme() returns
+// false as there is no native support for doing this in this case.
+void DrawGauge(wxDC& dc, const wxRect& rect, int value, int max, int flags);
+
 } // namespace wxMSWDarkMode
 
 namespace wxMSWImpl
