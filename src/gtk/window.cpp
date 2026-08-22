@@ -4513,15 +4513,12 @@ static bool wxUsesOverlayScrollbars(GtkWidget* widget)
 #endif // GTK+ >= 3.16
 
     // The user may have disabled them globally using the setting below, which
-    // only exists since GTK 3.24.9, so check that it's available before using
-    // it -- if it isn't, overlay scrollbars are used.
-    GtkSettings* const settings = gtk_widget_get_settings(widget);
-    if ( settings &&
-            g_object_class_find_property(G_OBJECT_GET_CLASS(settings),
-                                         "gtk-overlay-scrolling") )
+    // was added in GTK 3.24.9.
+    if ( wx_is_at_least_gtk3(24, 9) )
     {
         gboolean enabled = TRUE;
-        g_object_get(settings, "gtk-overlay-scrolling", &enabled, nullptr);
+        g_object_get(gtk_widget_get_settings(widget),
+            "gtk-overlay-scrolling", &enabled, nullptr);
         if ( !enabled )
             return false;
     }
