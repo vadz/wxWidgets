@@ -1752,10 +1752,13 @@ public:
         Most controls will use this to set their initial size, and their min
         size to the passed in value (if any.)
 
+        @return @true if the size was changed (the return value is only
+            available in wxWidgets 3.3.4 or later)
+
         @see SetSize(), GetBestSize(), GetEffectiveMinSize(),
              @ref overview_windowsizing
     */
-    void SetInitialSize(const wxSize& size = wxDefaultSize);
+    bool SetInitialSize(const wxSize& size = wxDefaultSize);
 
     /**
         Sets the maximum client size of the window, to indicate to the sizer
