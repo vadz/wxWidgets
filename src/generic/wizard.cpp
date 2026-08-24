@@ -936,9 +936,9 @@ bool wxWizard::DoLayoutAdaptation()
 
                         page->SetSizer(newSizer, false /* don't delete the old sizer */);
 
-                        scrolledWindow->SetSizer(oldSizer);
-
                         wxStandardDialogLayoutAdapter::DoReparentControls(page, scrolledWindow);
+
+                        scrolledWindow->SetSizer(oldSizer);
 
                         pages.Append(page);
                         windows.Append(scrolledWindow);
