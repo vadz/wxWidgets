@@ -1517,6 +1517,11 @@ TEST_CASE("wxTextCtrl::LongPaste", "[wxTextCtrl][clipboard][paste]")
     {
         wxClipboardLocker lock;
 
+        // Check this explicitly because if we failed to open the clipboard,
+        // e.g. because another application is using it, nothing would be
+        // pasted below and the test would fail in a rather confusing way.
+        REQUIRE( wxTheClipboard->IsOpened() );
+
         // Build a longish string.
         wxString s;
         s.reserve(NUM_LINES*5 + 10);
@@ -1527,8 +1532,14 @@ TEST_CASE("wxTextCtrl::LongPaste", "[wxTextCtrl][clipboard][paste]")
 
         s += "THE END";
 
-        wxTheClipboard->AddData(new wxTextDataObject(s));
+        REQUIRE( wxTheClipboard->AddData(new wxTextDataObject(s)) );
     }
+
+    // Similarly, check that the text really is on the clipboard before trying
+    // to paste it (note that only one of the formats may be available under
+    // some platforms, so accept either of them).
+    REQUIRE( (wxTheClipboard->IsSupported(wxDF_TEXT) ||
+                wxTheClipboard->IsSupported(wxDF_UNICODETEXT)) );
 
     text->ChangeValue("THE BEGINNING\n");
     text->SetInsertionPointEnd();
