@@ -1036,7 +1036,8 @@ static void TestDecoder(
         0
         );
     // make sure the correct output length was calculated
-    wxINFO_FMT("while converting \"%s\"", inputCopy); CHECK(outputWritten == wideChars);
+    wxINFO_FMT("while converting \"%s\"", inputCopy);
+    CHECK(outputWritten == wideChars);
 
     // convert the string
     size_t guardChars = 8; // to make sure we're not overrunning the output buffer

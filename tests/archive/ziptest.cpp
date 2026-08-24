@@ -111,14 +111,16 @@ void ZipTestCase::OnEntryExtracted(wxZipEntry& entry,
     string error_entry(name.mb_str());
     string error_context(" failed for entry" + error_entry);
 
-    INFO("GetComment" + error_context); CHECK(entry.GetComment() == testEntry.GetComment());
+    INFO("GetComment" + error_context);
+    CHECK(entry.GetComment() == testEntry.GetComment());
 
     // for seekable streams, GetNextEntry() doesn't read the local header so
     // call OpenEntry() to do it
     if (arc && (m_options & PipeIn) == 0 && entry.IsDir())
         arc->OpenEntry(entry);
 
-    INFO("IsText" + error_context); CHECK(entry.IsText() == testEntry.IsText());
+    INFO("IsText" + error_context);
+    CHECK(entry.IsText() == testEntry.IsText());
 
     INFO("Extra/LocalExtra mismatch for entry" + error_entry);
     if ( entry.GetExtraLen() )

@@ -84,7 +84,8 @@ TEST_CASE("Settings::GlobalFonts", "[settings]")
         const wxString facename = font[i].GetFaceName();
         if ( !facename.empty() )
         {
-            wxINFO_FMT("font #%u: facename \"%s\" is invalid", i, facename); CHECK(wxFontEnumerator::IsValidFacename(facename));
+            wxINFO_FMT("font #%u: facename \"%s\" is invalid", i, facename);
+            CHECK(wxFontEnumerator::IsValidFacename(facename));
         }
     }
 }

@@ -283,7 +283,8 @@ void zlibStream::doTestStreamData(int input_flag, int output_flag, int compress_
         CHECK(fstream_out.IsOk());
         {
             wxZlibOutputStream zstream_out(fstream_out, compress_level, output_flag);
-            INFO("Could not create the output stream"); CHECK(zstream_out.IsOk());
+            INFO("Could not create the output stream");
+            CHECK(zstream_out.IsOk());
 
             if (buf)
                 zstream_out.SetDictionary(*buf);
@@ -302,7 +303,8 @@ void zlibStream::doTestStreamData(int input_flag, int output_flag, int compress_
         wxFileInputStream fstream_in(FILENAME_GZ);
         CHECK(fstream_in.IsOk());
         wxZlibInputStream zstream_in(fstream_in, input_flag);
-        INFO("Could not create the input stream"); CHECK(zstream_in.IsOk());
+        INFO("Could not create the input stream");
+        CHECK(zstream_in.IsOk());
 
         if (buf)
             zstream_in.SetDictionary(*buf);
@@ -399,7 +401,8 @@ void zlibStream::doDecompress_ExternalData(const unsigned char *data, const char
             if (zstream_in.Eof())
                 break;
 
-            INFO("Stream is no longer ok!"); CHECK(zstream_in.IsOk());
+            INFO("Stream is no longer ok!");
+            CHECK(zstream_in.IsOk());
         }
 
         // Don't go over the end of the value buffer...
