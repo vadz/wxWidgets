@@ -74,6 +74,40 @@ TEST_CASE("wxHtmlDCRenderer::BodyBgColour", "[html][print]")
     CHECK(actual == bg);
 }
 
+TEST_CASE("wxHtmlPrintout::HeaderDoesNotEraseBody", "[html][print]")
+{
+    // Mirror the dimensions and scaling used by print preview and verify that
+    // rendering the header after the body only affects the header area.
+    const wxColour bg(0x12, 0x34, 0x56);
+    wxBitmap bmp(560, 790);
+    {
+        wxMemoryDC dc(bmp);
+        dc.SetBackground(*wxWHITE_BRUSH);
+        dc.Clear();
+
+        wxHtmlPrintout pr;
+        pr.SetHtmlText("<body bgcolor=\"#123456\"><p>Body</p></body>");
+        pr.SetHeader("Header<hr>", wxPAGE_ALL);
+        REQUIRE( pr.SetUp(dc) );
+
+        pr.SetPPIScreen(96, 96);
+        pr.SetPPIPrinter(600, 600);
+        pr.SetPageSizePixels(4960, 7016);
+        pr.SetPageSizeMM(210, 297);
+        pr.SetPaperRectPixels(wxRect(0, 0, 4960, 7016));
+
+        REQUIRE_NOTHROW( pr.OnPreparePrinting() );
+        REQUIRE( pr.HasPage(1) );
+        REQUIRE( pr.OnPrintPage(1) );
+    }
+
+    const wxImage image = bmp.ConvertToImage();
+    const wxColour actual(image.GetRed(280, 395),
+                          image.GetGreen(280, 395),
+                          image.GetBlue(280, 395));
+    CHECK( actual == bg );
+}
+
 TEST_CASE("wxHtmlPrintout::Pagination", "[html][print]")
 {
     wxHtmlPrintout pr;
