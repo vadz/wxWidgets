@@ -10,7 +10,7 @@
 
 // Match the guard in tests/net/ipc.cpp
 
-#if wxUSE_THREADS && !defined(__WXQT__)
+#if wxUSE_THREADS
 
 #ifndef WX_PRECOMP
     #include "wx/app.h"
@@ -715,4 +715,4 @@ void IPCServerThread::WaitForExit()
     launcher.DoStop();
 }
 
-#endif // wxUSE_THREADS && !__WXQT__
+#endif // wxUSE_THREADS
