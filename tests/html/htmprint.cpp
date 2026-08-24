@@ -23,6 +23,7 @@
     #include "wx/image.h"
 #endif // WX_PRECOMP
 
+#include "wx/display.h"
 #include "wx/html/htmprint.h"
 
 namespace
@@ -85,29 +86,36 @@ TEST_CASE("wxHtmlPrintout::Pagination", "[html][print]")
     // the DPI-dependent factor, but it doesn't seem to be worth doing it).
     pr.SetMargins(0, 0, 0, 0, 0);
 
-    // Use font size in pixels to make it DPI-independent: if we just used a
-    // normal (say 12pt) font, it would have different height in pixels on 96
-    // and 200 DPI systems, meaning that the text at the end of this test would
-    // take different number of (fixed to 1000px height) pages.
+    // Ensure that the fonts are not scaled when rendering: the scale used by
+    // wxHtmlPrintout::OnPreparePrinting() is the ratio of the printer and the
+    // screen PPI, and SetUp() below always uses wxDisplay::GetStdPPI() for the
+    // latter, so use the same value for the former to make the ratio 1.
     //
-    // We could also make the page height proportional to the DPI, but this
-    // would be more complicated as we also wouldn't be able to use hardcoded
-    // height attribute values in the HTML snippets below then.
-    const wxFont fontFixedPixelSize(wxFontInfo(wxSize(10, 16)));
-    pr.SetStandardFonts(fontFixedPixelSize.GetPointSize(), "Helvetica");
-
-    // We currently have to do this with wxGTK3 which uses 72 DPI for its
-    // wxMemoryDC, resulting in 3/4 scaling (because screen DPI is hardcoded as
-    // 96 in src/html/htmprint.cpp), when rendering onto it. This makes the
-    // tests pass, but really shouldn't be necessary. Unfortunately it's not
-    // clear where and how should this be fixed.
-#ifdef __WXGTK3__
-    pr.SetPPIPrinter(wxSize(96, 96));
-#endif
+    // Note that this must be done before SetUp() which would otherwise use the
+    // PPI of the DC below for the printer.
+    pr.SetPPIPrinter(wxDisplay::GetStdPPI());
 
     wxBitmap bmp(1000, 1000);
     wxMemoryDC dc(bmp);
     pr.SetUp(dc);
+
+    // Pagination depends on the height of the text in pixels, so the base font
+    // must have a fixed size in pixels for the results to be the same on all
+    // systems, whatever their DPI is. As SetStandardFonts() takes the size in
+    // points, convert the size we want using the PPI of the DC we're going to
+    // render on -- we can't use wxFont::GetPointSize() of a font created with
+    // the fixed pixel size for this, as the conversion performed by it doesn't
+    // necessarily use the same DPI, and doesn't under wxGTK, resulting in a
+    // different font size and hence different number of pages here.
+    //
+    // We could also make the page height proportional to the DPI, but this
+    // would be more complicated as we also wouldn't be able to use hardcoded
+    // height attribute values in the HTML snippets below then.
+    const int ppi = dc.GetPPI().y;
+    REQUIRE( ppi > 0 );
+
+    const int fontSize = 16 * 72 / ppi;
+    pr.SetStandardFonts(fontSize, "Helvetica");
 
     // Empty or short HTML documents should be printed on a single page only.
     CHECK( CountPages(pr) == 1 );
@@ -220,7 +228,7 @@ TEST_CASE("wxHtmlPrintout::Pagination", "[html][print]")
                 text
             )
        );
-    INFO("Using base font size " << fontFixedPixelSize.GetPointSize());
+    INFO("Using base font size " << fontSize);
     CHECK( CountPages(pr) == 3 );
 }
 
