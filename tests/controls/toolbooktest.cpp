@@ -20,15 +20,13 @@
 #include "wx/toolbar.h"
 #include "bookctrlbasetest.h"
 
-class ToolbookTestCase : public BookCtrlBaseTestCase, public CppUnit::TestCase
+class ToolbookTestCase : public BookCtrlBaseTestCase
 {
 public:
-    ToolbookTestCase() { }
+    ToolbookTestCase();
+    ~ToolbookTestCase();
 
-    virtual void setUp() override;
-    virtual void tearDown() override;
-
-private:
+protected:
     virtual wxBookCtrlBase *GetBase() const override { return m_toolbook; }
 
     virtual wxEventType GetChangedEvent() const override
@@ -39,41 +37,31 @@ private:
 
     virtual void Realize() override { m_toolbook->GetToolBar()->Realize(); }
 
-    CPPUNIT_TEST_SUITE( ToolbookTestCase );
-        wxBOOK_CTRL_BASE_TESTS();
-        CPPUNIT_TEST( ToolBar );
-    CPPUNIT_TEST_SUITE_END();
-
-    void ToolBar();
-
     wxToolbook *m_toolbook;
 
     wxDECLARE_NO_COPY_CLASS(ToolbookTestCase);
 };
 
-// register in the unnamed registry so that these tests are run by default
-CPPUNIT_TEST_SUITE_REGISTRATION( ToolbookTestCase );
+wxBOOK_CTRL_BASE_TESTS(ToolbookTestCase, "Toolbook",
+                       "[toolbook][book]");
 
-// also include in its own registry so that these tests can be run alone
-CPPUNIT_TEST_SUITE_NAMED_REGISTRATION( ToolbookTestCase, "ToolbookTestCase" );
-
-void ToolbookTestCase::setUp()
+ToolbookTestCase::ToolbookTestCase()
 {
     m_toolbook = new wxToolbook(wxTheApp->GetTopWindow(), wxID_ANY, wxDefaultPosition, wxSize(400, 200));
     AddPanels();
 }
 
-void ToolbookTestCase::tearDown()
+ToolbookTestCase::~ToolbookTestCase()
 {
     wxDELETE(m_toolbook);
 }
 
-void ToolbookTestCase::ToolBar()
+TEST_CASE_METHOD(ToolbookTestCase, "Toolbook::ToolBar", "[toolbook]")
 {
     wxToolBar* toolbar = static_cast<wxToolBar*>(m_toolbook->GetToolBar());
 
-    CPPUNIT_ASSERT(toolbar);
-    CPPUNIT_ASSERT_EQUAL(3, toolbar->GetToolsCount());
+    CHECK(toolbar);
+    CHECK(toolbar->GetToolsCount() == 3);
 }
 
 #endif //wxUSE_TOOLBOOK

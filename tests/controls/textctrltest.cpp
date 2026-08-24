@@ -56,77 +56,34 @@ static const int TEXT_HEIGHT = 200;
 // test class
 // ----------------------------------------------------------------------------
 
-class TextCtrlTestCase : public TextEntryTestCase, public CppUnit::TestCase
+class TextCtrlTestCase : public TextEntryTestCase
 {
 public:
-    TextCtrlTestCase() { }
+    // The style is specified by the derived class below to run the same tests
+    // for the multi-line controls too.
+    explicit TextCtrlTestCase(long style = 0)
+        : m_style(style)
+    {
+        CreateText(0);
+    }
 
-    virtual void setUp() override;
-    virtual void tearDown() override;
+    ~TextCtrlTestCase()
+    {
+        wxDELETE(m_text);
+    }
 
-private:
+protected:
     virtual wxTextEntry *GetTestEntry() const override { return m_text; }
     virtual wxWindow *GetTestWindow() const override { return m_text; }
 
-    #define SINGLE_AND_MULTI_TESTS() \
-        WXUISIM_TEST( ReadOnly ); \
-        CPPUNIT_TEST( StreamInput ); \
-        CPPUNIT_TEST( Redirector )
-
-    CPPUNIT_TEST_SUITE( TextCtrlTestCase );
-        // These tests run for single line text controls.
-        wxTEXT_ENTRY_TESTS();
-        WXUISIM_TEST( MaxLength );
-        CPPUNIT_TEST( PositionToXYSingleLine );
-        CPPUNIT_TEST( XYToPositionSingleLine );
-        CPPUNIT_TEST( HitTestSingleLine );
-        SINGLE_AND_MULTI_TESTS();
-
-        // Now switch to the multi-line text controls.
-        CPPUNIT_TEST( PseudoTestSwitchToMultiLineStyle );
-
-        // Rerun the text entry tests not specific to single line controls for
-        // multiline ones now.
-        wxTEXT_ENTRY_TESTS();
-        WXUISIM_TEST( MaxLength );
-        SINGLE_AND_MULTI_TESTS();
-
-
-        // All tests from now on are for multi-line controls only.
-        CPPUNIT_TEST( MultiLineReplace );
-        //WXUISIM_TEST( ProcessEnter );
-        WXUISIM_TEST( Url );
-        CPPUNIT_TEST( Style );
-        CPPUNIT_TEST( FontStyle );
-        CPPUNIT_TEST( Lines );
-#if wxUSE_LOG
-        CPPUNIT_TEST( LogTextCtrl );
-#endif // wxUSE_LOG
-        CPPUNIT_TEST( LongText );
-        CPPUNIT_TEST( PositionToCoords );
-        CPPUNIT_TEST( PositionToCoordsRich );
-        CPPUNIT_TEST( PositionToCoordsRich2 );
-        CPPUNIT_TEST( PositionToXYMultiLine );
-        CPPUNIT_TEST( XYToPositionMultiLine );
-#if wxUSE_RICHEDIT
-        CPPUNIT_TEST( PositionToXYMultiLineRich );
-        CPPUNIT_TEST( XYToPositionMultiLineRich );
-        CPPUNIT_TEST( PositionToXYMultiLineRich2 );
-        CPPUNIT_TEST( XYToPositionMultiLineRich2 );
-#endif // wxUSE_RICHEDIT
-    CPPUNIT_TEST_SUITE_END();
-
-    void PseudoTestSwitchToMultiLineStyle()
-    {
-        ms_style = wxTE_MULTILINE;
-    }
-
-    void MultiLineReplace();
+    // These tests are run for both single and multi-line controls.
     void ReadOnly();
     void MaxLength();
     void StreamInput();
     void Redirector();
-    void HitTestSingleLine();
+
+    // And these ones only make sense for the multi-line ones.
+    void MultiLineReplace();
     //void ProcessEnter();
     void Url();
     void Style();
@@ -147,6 +104,9 @@ private:
     void PositionToXYMultiLineRich2();
     void XYToPositionMultiLineRich2();
 #endif // wxUSE_RICHEDIT
+
+    // While these ones are only for the single line controls.
+    void HitTestSingleLine();
     void PositionToXYSingleLine();
     void XYToPositionSingleLine();
 
@@ -154,7 +114,7 @@ private:
     void DoPositionToXYMultiLine(long style);
     void DoXYToPositionMultiLine(long style);
 
-    // Create the control with the following styles added to ms_style which may
+    // Create the control with the following styles added to m_style which may
     // (or not) already contain wxTE_MULTILINE.
     void CreateText(long extraStyles);
 
@@ -163,28 +123,84 @@ private:
 
     wxTextCtrl *m_text;
 
-    static long ms_style;
+    const long m_style;
 
     wxDECLARE_NO_COPY_CLASS(TextCtrlTestCase);
 };
 
-// register in the unnamed registry so that these tests are run by default
-CPPUNIT_TEST_SUITE_REGISTRATION( TextCtrlTestCase );
+// Fixture used for running the same tests for the multi-line controls.
+class MultiLineTextCtrlTestCase : public TextCtrlTestCase
+{
+public:
+    MultiLineTextCtrlTestCase() : TextCtrlTestCase(wxTE_MULTILINE) { }
 
-// also include in its own registry so that these tests can be run alone
-CPPUNIT_TEST_SUITE_NAMED_REGISTRATION( TextCtrlTestCase, "TextCtrlTestCase" );
+    wxDECLARE_NO_COPY_CLASS(MultiLineTextCtrlTestCase);
+};
+
+// All wxTextEntry tests are run for both single and multi-line controls.
+wxTEXT_ENTRY_TESTS(TextCtrlTestCase, "wxTextCtrl",
+                   "[wxTextCtrl][text-entry]");
+wxTEXT_ENTRY_TESTS(MultiLineTextCtrlTestCase, "wxTextCtrl::MultiLine",
+                   "[wxTextCtrl][multiline][text-entry]");
+
+// And so are the tests defined using this macro.
+#define wxTEXT_CTRL_TESTS(name)                                              \
+    wxTEST_CASE_FOR_METHOD(TextCtrlTestCase, "wxTextCtrl", name,             \
+                           "[wxTextCtrl]")                                   \
+    wxTEST_CASE_FOR_METHOD(MultiLineTextCtrlTestCase, "wxTextCtrl::MultiLine",\
+                           name, "[wxTextCtrl][multiline]")
+
+#if wxUSE_UIACTIONSIMULATOR
+    wxTEXT_CTRL_TESTS(ReadOnly)
+    wxTEXT_CTRL_TESTS(MaxLength)
+#endif // wxUSE_UIACTIONSIMULATOR
+
+wxTEXT_CTRL_TESTS(StreamInput)
+wxTEXT_CTRL_TESTS(Redirector)
+
+// The remaining tests are only run for the controls of a single kind.
+#define wxTEXT_CTRL_SINGLE_LINE_TEST(name)                                   \
+    wxTEST_CASE_FOR_METHOD(TextCtrlTestCase, "wxTextCtrl", name,             \
+                           "[wxTextCtrl]")
+
+#define wxTEXT_CTRL_MULTI_LINE_TEST(name)                                    \
+    wxTEST_CASE_FOR_METHOD(MultiLineTextCtrlTestCase, "wxTextCtrl::MultiLine",\
+                           name, "[wxTextCtrl][multiline]")
+
+wxTEXT_CTRL_SINGLE_LINE_TEST(HitTestSingleLine)
+wxTEXT_CTRL_SINGLE_LINE_TEST(PositionToXYSingleLine)
+wxTEXT_CTRL_SINGLE_LINE_TEST(XYToPositionSingleLine)
+
+wxTEXT_CTRL_MULTI_LINE_TEST(MultiLineReplace)
+#if wxUSE_UIACTIONSIMULATOR
+    wxTEXT_CTRL_MULTI_LINE_TEST(Url)
+#endif // wxUSE_UIACTIONSIMULATOR
+wxTEXT_CTRL_MULTI_LINE_TEST(Style)
+wxTEXT_CTRL_MULTI_LINE_TEST(FontStyle)
+wxTEXT_CTRL_MULTI_LINE_TEST(Lines)
+#if wxUSE_LOG
+    wxTEXT_CTRL_MULTI_LINE_TEST(LogTextCtrl)
+#endif // wxUSE_LOG
+wxTEXT_CTRL_MULTI_LINE_TEST(LongText)
+wxTEXT_CTRL_MULTI_LINE_TEST(PositionToCoords)
+wxTEXT_CTRL_MULTI_LINE_TEST(PositionToCoordsRich)
+wxTEXT_CTRL_MULTI_LINE_TEST(PositionToCoordsRich2)
+wxTEXT_CTRL_MULTI_LINE_TEST(PositionToXYMultiLine)
+wxTEXT_CTRL_MULTI_LINE_TEST(XYToPositionMultiLine)
+#if wxUSE_RICHEDIT
+    wxTEXT_CTRL_MULTI_LINE_TEST(PositionToXYMultiLineRich)
+    wxTEXT_CTRL_MULTI_LINE_TEST(XYToPositionMultiLineRich)
+    wxTEXT_CTRL_MULTI_LINE_TEST(PositionToXYMultiLineRich2)
+    wxTEXT_CTRL_MULTI_LINE_TEST(XYToPositionMultiLineRich2)
+#endif // wxUSE_RICHEDIT
 
 // ----------------------------------------------------------------------------
 // test initialization
 // ----------------------------------------------------------------------------
 
-// This is 0 initially and set to wxTE_MULTILINE later to allow running the
-// same tests for both single and multi line controls.
-long TextCtrlTestCase::ms_style = 0;
-
 void TextCtrlTestCase::CreateText(long extraStyles)
 {
-    const long style = ms_style | extraStyles;
+    const long style = m_style | extraStyles;
     const int h = (style & wxTE_MULTILINE) ? TEXT_HEIGHT : -1;
     m_text = new wxTextCtrl(wxTheApp->GetTopWindow(), wxID_ANY, "",
                             wxDefaultPosition, wxSize(400, h),
@@ -201,16 +217,6 @@ wxString TextCtrlTestCase::MakeLinePattern(int len)
     return pattern;
 }
 
-void TextCtrlTestCase::setUp()
-{
-    CreateText(0);
-}
-
-void TextCtrlTestCase::tearDown()
-{
-    wxDELETE(m_text);
-}
-
 // ----------------------------------------------------------------------------
 // tests themselves
 // ----------------------------------------------------------------------------
@@ -223,19 +229,21 @@ void TextCtrlTestCase::MultiLineReplace()
 
     m_text->Replace(6, 13, "changed");
 
-    CPPUNIT_ASSERT_EQUAL("Hello changed\n"
-                         "0123456789012",
-                         m_text->GetValue());
-    CPPUNIT_ASSERT_EQUAL(13, m_text->GetInsertionPoint());
+    CHECK(m_text->GetValue() == "Hello changed\n"
+                         "0123456789012");
+    CHECK(m_text->GetInsertionPoint() == 13);
 
     m_text->Replace(13, -1, "");
-    CPPUNIT_ASSERT_EQUAL("Hello changed", m_text->GetValue());
-    CPPUNIT_ASSERT_EQUAL(13, m_text->GetInsertionPoint());
+    CHECK(m_text->GetValue() == "Hello changed");
+    CHECK(m_text->GetInsertionPoint() == 13);
 }
 
 void TextCtrlTestCase::ReadOnly()
 {
 #if wxUSE_UIACTIONSIMULATOR
+    if ( !EnableUITests() )
+        return;
+
     // we need a read only control for this test so recreate it
     delete m_text;
     CreateText(wxTE_READONLY);
@@ -248,8 +256,8 @@ void TextCtrlTestCase::ReadOnly()
     sim.Text("abcdef");
     wxYield();
 
-    CPPUNIT_ASSERT_EQUAL("", m_text->GetValue());
-    CPPUNIT_ASSERT_EQUAL(0, updated.GetCount());
+    CHECK(m_text->GetValue() == "");
+    CHECK(updated.GetCount() == 0);
 
     // SetEditable() is supposed to override wxTE_READONLY
     m_text->SetEditable(true);
@@ -266,17 +274,20 @@ void TextCtrlTestCase::ReadOnly()
     sim.Text("abcdef");
     wxYield();
 
-    CPPUNIT_ASSERT_EQUAL("abcdef", m_text->GetValue());
-    CPPUNIT_ASSERT_EQUAL(6, updated.GetCount());
+    CHECK(m_text->GetValue() == "abcdef");
+    CHECK(updated.GetCount() == 6);
 #endif
 }
 
 void TextCtrlTestCase::MaxLength()
 {
 #if wxUSE_UIACTIONSIMULATOR
+    if ( !EnableUITests() )
+        return;
+
     wxUIActionSimulator sim;
 
-    if ( ms_style == wxTE_MULTILINE )
+    if ( m_style == wxTE_MULTILINE )
     {
 #if defined(__WXMSW__) || defined(__WXGTK3__) || defined(__WXQT__)
         delete m_text;
@@ -299,7 +310,7 @@ void TextCtrlTestCase::MaxLength()
         sim.Char('v', wxMOD_CONTROL); // Paste copied line.
         wxYield();
 
-        CPPUNIT_ASSERT_EQUAL(0, maxlen.GetCount());
+        CHECK(maxlen.GetCount() == 0);
 
         m_text->SetInsertionPointEnd();
 
@@ -309,29 +320,29 @@ void TextCtrlTestCase::MaxLength()
         sim.Char('v', wxMOD_CONTROL); // Paste copied line (2nd time).
         WaitFor("wxTextCtrl update", [&]() { return maxlen.GetCount() != 0; });
 
-        CPPUNIT_ASSERT_EQUAL(1, maxlen.GetCount()); // Maximum length reached.
+        CHECK(maxlen.GetCount() == 1); // Maximum length reached.
         maxlen.Clear();
 
         sim.Text("7"); // Should be rejected.
         WaitFor("wxTextCtrl update", [&]() { return maxlen.GetCount() != 0; });
 
-        CPPUNIT_ASSERT_EQUAL(1, maxlen.GetCount());
+        CHECK(maxlen.GetCount() == 1);
         maxlen.Clear();
 
         // Depending on the underlying system, the new line (NL) could be
         // LF, CR or CRLF, and as a consequence the length of the last line
         // should be 50 - 2*NL.
 
-        CPPUNIT_ASSERT_EQUAL(3, m_text->GetNumberOfLines());
+        CHECK(m_text->GetNumberOfLines() == 3);
 
         int lineLength = m_text->GetLineText(0).length(); // 1st line
-        CPPUNIT_ASSERT_EQUAL(100, lineLength);
+        CHECK(lineLength == 100);
 
         lineLength = m_text->GetLineText(1).length(); // 2nd line
-        CPPUNIT_ASSERT_EQUAL(100, lineLength);
+        CHECK(lineLength == 100);
 
         lineLength = m_text->GetLineText(2).length(); // 3rd line
-        CPPUNIT_ASSERT( (lineLength == 46 || lineLength == 48) );
+        CHECK( (lineLength == 46 || lineLength == 48) );
 
         // Try to paste a long string into a shorter selection:
 
@@ -341,17 +352,17 @@ void TextCtrlTestCase::MaxLength()
         m_text->Paste(); // Only the first six characters can actually be pasted.
         WaitFor("wxTextCtrl update", [&]() { return maxlen.GetCount() != 0; });
         const auto line = m_text->GetLineText(0);
-        CPPUNIT_ASSERT( (line[15].GetValue() == '0' &&
+        CHECK( (line[15].GetValue() == '0' &&
                          line[20].GetValue() == '5' &&
                          line[21].GetValue() == '1') );
-        CPPUNIT_ASSERT_EQUAL(1, maxlen.GetCount());
+        CHECK(maxlen.GetCount() == 1);
         maxlen.Clear();
 
         // Now, despite the maximum length of 250 set above, adding additional
         // content to the control programmatically is still possible/allowed:
         m_text->AppendText(wxString::Format("\n%s", linePattern));
-        CPPUNIT_ASSERT_EQUAL(4, m_text->GetNumberOfLines());
-        CPPUNIT_ASSERT_EQUAL(0, maxlen.GetCount());
+        CHECK(m_text->GetNumberOfLines() == 4);
+        CHECK(maxlen.GetCount() == 0);
 #endif // __WXMSW__ || __WXGTK3__ || __WXQT__
     }
     else // !wxTE_MULTILINE
@@ -373,13 +384,13 @@ void TextCtrlTestCase::MaxLength()
         sim.Text("abcdef");
         wxYield();
 
-        CPPUNIT_ASSERT_EQUAL(0, maxlen.GetCount());
+        CHECK(maxlen.GetCount() == 0);
 
         sim.Text("ghij");
         wxYield();
 
-        CPPUNIT_ASSERT_EQUAL(0, maxlen.GetCount());
-        CPPUNIT_ASSERT_EQUAL(10, updated.GetCount());
+        CHECK(maxlen.GetCount() == 0);
+        CHECK(updated.GetCount() == 10);
 
         maxlen.Clear();
         updated.Clear();
@@ -387,8 +398,8 @@ void TextCtrlTestCase::MaxLength()
         sim.Text("k");
         wxYield();
 
-        CPPUNIT_ASSERT_EQUAL(1, maxlen.GetCount());
-        CPPUNIT_ASSERT_EQUAL(0, updated.GetCount());
+        CHECK(maxlen.GetCount() == 1);
+        CHECK(updated.GetCount() == 0);
 
         maxlen.Clear();
         updated.Clear();
@@ -398,8 +409,8 @@ void TextCtrlTestCase::MaxLength()
         sim.Text("k");
         wxYield();
 
-        CPPUNIT_ASSERT_EQUAL(0, maxlen.GetCount());
-        CPPUNIT_ASSERT_EQUAL(1, updated.GetCount());
+        CHECK(maxlen.GetCount() == 0);
+        CHECK(updated.GetCount() == 1);
     }
 #endif
 }
@@ -420,7 +431,7 @@ void TextCtrlTestCase::StreamInput()
                 << L'b';
     }
 
-    CPPUNIT_ASSERT_EQUAL("stringinput1010003.142.71ab", m_text->GetValue());
+    CHECK(m_text->GetValue() == "stringinput1010003.142.71ab");
 
     m_text->SetValue("");
 
@@ -438,7 +449,7 @@ void TextCtrlTestCase::StreamInput()
 
     stream.flush();
 
-    CPPUNIT_ASSERT_EQUAL("stringinput1010003.142.71a", m_text->GetValue());
+    CHECK(m_text->GetValue() == "stringinput1010003.142.71a");
 
 #endif // wxHAS_TEXT_WINDOW_STREAM
 #endif // !__WXOSX__
@@ -457,7 +468,7 @@ void TextCtrlTestCase::Redirector()
               << 2.71
               << 'a';
 
-    CPPUNIT_ASSERT_EQUAL("stringinput1010003.142.71a", m_text->GetValue());
+    CHECK(m_text->GetValue() == "stringinput1010003.142.71a");
 
 #endif
 }
@@ -552,7 +563,7 @@ void TextCtrlTestCase::ProcessEnter()
     sim.Char(WXK_RETURN);
     wxYield();
 
-    CPPUNIT_ASSERT_EQUAL(0, frame->GetEventCount(wxEVT_TEXT_ENTER));
+    CHECK(frame->GetEventCount(wxEVT_TEXT_ENTER) == 0);
 
     // we need a text control with wxTE_PROCESS_ENTER for this test
     delete m_text;
@@ -563,7 +574,7 @@ void TextCtrlTestCase::ProcessEnter()
     sim.Char(WXK_RETURN);
     wxYield();
 
-    CPPUNIT_ASSERT_EQUAL(1, frame->GetEventCount(wxEVT_TEXT_ENTER));
+    CHECK(frame->GetEventCount(wxEVT_TEXT_ENTER) == 1);
 #endif
 }
 #endif
@@ -571,6 +582,9 @@ void TextCtrlTestCase::ProcessEnter()
 void TextCtrlTestCase::Url()
 {
 #if wxUSE_UIACTIONSIMULATOR && defined(__WXMSW__) && !defined(__WXUNIVERSAL__)
+    if ( !EnableUITests() )
+        return;
+
     // For some reason, this test sporadically fails when run in AppVeyor or
     // GitHub Actions CI environments, even though it passes locally.
     if ( IsAutomaticTest() )
@@ -589,7 +603,7 @@ void TextCtrlTestCase::Url()
     sim.MouseClick();
     wxYield();
 
-    CPPUNIT_ASSERT_EQUAL(1, url.GetCount());
+    CHECK(url.GetCount() == 1);
 #endif
 }
 
@@ -603,18 +617,16 @@ void TextCtrlTestCase::Style()
     // Red text on a white background
     m_text->SetDefaultStyle(wxTextAttr(*wxRED, *wxWHITE));
 
-    CPPUNIT_ASSERT_EQUAL(m_text->GetDefaultStyle().GetTextColour(), *wxRED);
-    CPPUNIT_ASSERT_EQUAL(m_text->GetDefaultStyle().GetBackgroundColour(),
-                         *wxWHITE);
+    CHECK(*wxRED == m_text->GetDefaultStyle().GetTextColour());
+    CHECK(*wxWHITE == m_text->GetDefaultStyle().GetBackgroundColour());
 
     m_text->AppendText("red on white ");
 
     // Red text on a grey background
     m_text->SetDefaultStyle(wxTextAttr(wxNullColour, *wxLIGHT_GREY));
 
-    CPPUNIT_ASSERT_EQUAL(m_text->GetDefaultStyle().GetTextColour(), *wxRED);
-    CPPUNIT_ASSERT_EQUAL(m_text->GetDefaultStyle().GetBackgroundColour(),
-                         *wxLIGHT_GREY);
+    CHECK(*wxRED == m_text->GetDefaultStyle().GetTextColour());
+    CHECK(*wxLIGHT_GREY == m_text->GetDefaultStyle().GetBackgroundColour());
 
     m_text->AppendText("red on grey ");
 
@@ -622,9 +634,8 @@ void TextCtrlTestCase::Style()
     m_text->SetDefaultStyle(wxTextAttr(*wxBLUE));
 
 
-    CPPUNIT_ASSERT_EQUAL(m_text->GetDefaultStyle().GetTextColour(), *wxBLUE);
-    CPPUNIT_ASSERT_EQUAL(m_text->GetDefaultStyle().GetBackgroundColour(),
-                         *wxLIGHT_GREY);
+    CHECK(*wxBLUE == m_text->GetDefaultStyle().GetTextColour());
+    CHECK(*wxLIGHT_GREY == m_text->GetDefaultStyle().GetBackgroundColour());
 
     m_text->AppendText("blue on grey");
 
@@ -682,7 +693,7 @@ void TextCtrlTestCase::FontStyle()
         return;
     }
 
-    CPPUNIT_ASSERT( attrOut.HasFont() );
+    CHECK( attrOut.HasFont() );
 
     wxFont fontOut = attrOut.GetFont();
 #ifdef __WXMSW__
@@ -691,7 +702,7 @@ void TextCtrlTestCase::FontStyle()
     // to prevent the assert below from failing because of it.
     fontOut.SetEncoding(fontIn.GetEncoding());
 #endif
-    CPPUNIT_ASSERT_EQUAL( fontIn, fontOut );
+    CHECK( fontOut == fontIn );
 
 
     // Also check the same for SetStyle().
@@ -701,13 +712,13 @@ void TextCtrlTestCase::FontStyle()
     m_text->SetStyle(0, 6, attrIn);
 
     m_text->GetStyle(4, attrOut);
-    CPPUNIT_ASSERT( attrOut.HasFont() );
+    CHECK( attrOut.HasFont() );
 
     fontOut = attrOut.GetFont();
 #ifdef __WXMSW__
     fontOut.SetEncoding(fontIn.GetEncoding());
 #endif
-    CPPUNIT_ASSERT_EQUAL( fontIn, fontOut );
+    CHECK( fontOut == fontIn );
 }
 
 void TextCtrlTestCase::Lines()
@@ -716,16 +727,16 @@ void TextCtrlTestCase::Lines()
     m_text->Refresh();
     m_text->Update();
 
-    CPPUNIT_ASSERT_EQUAL(3, m_text->GetNumberOfLines());
-    CPPUNIT_ASSERT_EQUAL(5, m_text->GetLineLength(0));
-    CPPUNIT_ASSERT_EQUAL("line2", m_text->GetLineText(1));
-    CPPUNIT_ASSERT_EQUAL(16, m_text->GetLineLength(2));
+    CHECK(m_text->GetNumberOfLines() == 3);
+    CHECK(m_text->GetLineLength(0) == 5);
+    CHECK(m_text->GetLineText(1) == "line2");
+    CHECK(m_text->GetLineLength(2) == 16);
 
     m_text->AppendText("\n\nMore text on line 5");
 
-    CPPUNIT_ASSERT_EQUAL(5, m_text->GetNumberOfLines());
-    CPPUNIT_ASSERT_EQUAL(0, m_text->GetLineLength(3));
-    CPPUNIT_ASSERT_EQUAL("", m_text->GetLineText(3));
+    CHECK(m_text->GetNumberOfLines() == 5);
+    CHECK(m_text->GetLineLength(3) == 0);
+    CHECK(m_text->GetLineText(3) == "");
 
     // Verify that wrapped lines count as (at least) lines (but it can be more
     // if it's wrapped more than once).
@@ -735,16 +746,16 @@ void TextCtrlTestCase::Lines()
     // not physical, lines.
     m_text->AppendText("\n" + wxString(50, '1') + ' ' + wxString(50, '2'));
 #if defined(__WXGTK__) || defined(__WXOSX_COCOA__) || defined(__WXUNIVERSAL__) || defined(__WXQT__)
-    CPPUNIT_ASSERT_EQUAL(6, m_text->GetNumberOfLines());
+    CHECK(m_text->GetNumberOfLines() == 6);
 #else
-    CPPUNIT_ASSERT(m_text->GetNumberOfLines() > 6);
+    CHECK(m_text->GetNumberOfLines() > 6);
 #endif
 }
 
 #if wxUSE_LOG
 void TextCtrlTestCase::LogTextCtrl()
 {
-    CPPUNIT_ASSERT(m_text->IsEmpty());
+    CHECK(m_text->IsEmpty());
 
     wxLogTextCtrl* logtext = new wxLogTextCtrl(m_text);
 
@@ -754,7 +765,7 @@ void TextCtrlTestCase::LogTextCtrl()
 
     delete wxLog::SetActiveTarget(old);
 
-    CPPUNIT_ASSERT(!m_text->IsEmpty());
+    CHECK(!m_text->IsEmpty());
 }
 #endif // wxUSE_LOG
 
@@ -783,7 +794,7 @@ void TextCtrlTestCase::LongText()
     {
         wxString pattern = wxString::Format(wxT("[%3d] %s"), i, linePattern);
         wxString line = m_text->GetLineText(i);
-        CPPUNIT_ASSERT_EQUAL( line, pattern );
+        CHECK( pattern == line );
     }
 }
 
@@ -816,13 +827,13 @@ void TextCtrlTestCase::DoPositionToCoordsTestWithStyle(long style)
     if ( pos0 == wxDefaultPosition )
     {
 #if ( wxHAS_2CHAR_NEWLINES ) || defined(__WXGTK__)
-        CPPUNIT_FAIL( "PositionToCoords() unexpectedly failed." );
+        FAIL( "PositionToCoords() unexpectedly failed." );
 #endif
         return;
     }
 
-    CPPUNIT_ASSERT(pos0.x >= 0);
-    CPPUNIT_ASSERT(pos0.y >= 0);
+    CHECK(pos0.x >= 0);
+    CHECK(pos0.y >= 0);
 
 
     m_text->SetValue("Hello");
@@ -830,11 +841,11 @@ void TextCtrlTestCase::DoPositionToCoordsTestWithStyle(long style)
 
     // Position of non-first character should be positive.
     const long posHello4 = m_text->PositionToCoords(4).x;
-    CPPUNIT_ASSERT( posHello4 > 0 );
+    CHECK( posHello4 > 0 );
 
     // Asking for position beyond the last character should succeed and return
     // reasonable result.
-    CPPUNIT_ASSERT( m_text->PositionToCoords(5).x > posHello4 );
+    CHECK( m_text->PositionToCoords(5).x > posHello4 );
 
     // But asking for the next position should fail.
     WX_ASSERT_FAILS_WITH_ASSERT( m_text->PositionToCoords(6) );
@@ -844,8 +855,8 @@ void TextCtrlTestCase::DoPositionToCoordsTestWithStyle(long style)
     // for it.
     m_text->AppendText("\n");
     const wxPoint posLast = m_text->PositionToCoords(m_text->GetLastPosition());
-    CPPUNIT_ASSERT_EQUAL( pos0.x, posLast.x );
-    CPPUNIT_ASSERT( posLast.y > 0 );
+    CHECK( posLast.x == pos0.x );
+    CHECK( posLast.y > 0 );
 
 
     // Add enough contents to the control to make sure it has a scrollbar.
@@ -854,14 +865,11 @@ void TextCtrlTestCase::DoPositionToCoordsTestWithStyle(long style)
     wxYield(); // Let GTK layout the control correctly.
 
     // This shouldn't change anything for the first position coordinates.
-    CPPUNIT_ASSERT_EQUAL( pos0, m_text->PositionToCoords(0) );
+    CHECK( m_text->PositionToCoords(0) == pos0 );
 
     // And the last one must be beyond the window boundary and so not be
     // visible -- but getting its coordinate should still work.
-    CPPUNIT_ASSERT
-    (
-        m_text->PositionToCoords(m_text->GetLastPosition()).y > TEXT_HEIGHT
-    );
+    CHECK(m_text->PositionToCoords(m_text->GetLastPosition()).y > TEXT_HEIGHT );
 
 
     // Now make it scroll to the end and check that the first position now has
@@ -881,11 +889,11 @@ void TextCtrlTestCase::DoPositionToCoordsTestWithStyle(long style)
 
     wxPoint coords = m_text->PositionToCoords(0);
     INFO("First position coords = " << coords);
-    CPPUNIT_ASSERT( coords.y < 0 );
+    CHECK( coords.y < 0 );
 
     coords = m_text->PositionToCoords(pos);
     INFO("Position is " << pos << ", coords = " << coords);
-    CPPUNIT_ASSERT( coords.y <= TEXT_HEIGHT );
+    CHECK( coords.y <= TEXT_HEIGHT );
 }
 
 void TextCtrlTestCase::PositionToXYMultiLine()
@@ -925,17 +933,17 @@ void TextCtrlTestCase::DoPositionToXYMultiLine(long style)
     XYPos coords_0[numChars_0+1] =
         { { 0, 0 } };
 
-    CPPUNIT_ASSERT_EQUAL( numChars_0, m_text->GetLastPosition() );
+    CHECK( m_text->GetLastPosition() == numChars_0 );
     for ( long i = 0; i < (long)WXSIZEOF(coords_0); i++ )
     {
         long x, y;
         ok = m_text->PositionToXY(i, &x, &y);
-        CPPUNIT_ASSERT_EQUAL( true, ok );
-        CPPUNIT_ASSERT_EQUAL( coords_0[i].x, x );
-        CPPUNIT_ASSERT_EQUAL( coords_0[i].y, y );
+        CHECK( ok == true );
+        CHECK( x == coords_0[i].x );
+        CHECK( y == coords_0[i].y );
     }
     ok = m_text->PositionToXY(WXSIZEOF(coords_0), nullptr, nullptr);
-    CPPUNIT_ASSERT_EQUAL( false, ok );
+    CHECK( ok == false );
 
     // one line
     text = wxS("1234");
@@ -945,17 +953,17 @@ void TextCtrlTestCase::DoPositionToXYMultiLine(long style)
     XYPos coords_1[numChars_1+1] =
         { { 0, 0 }, { 1, 0 }, { 2, 0}, { 3, 0 }, { 4, 0 } };
 
-    CPPUNIT_ASSERT_EQUAL( numChars_1, m_text->GetLastPosition() );
+    CHECK( m_text->GetLastPosition() == numChars_1 );
     for ( long i = 0; i < (long)WXSIZEOF(coords_1); i++ )
     {
         long x, y;
         ok = m_text->PositionToXY(i, &x, &y);
-        CPPUNIT_ASSERT_EQUAL( true, ok );
-        CPPUNIT_ASSERT_EQUAL( coords_1[i].x, x );
-        CPPUNIT_ASSERT_EQUAL( coords_1[i].y, y );
+        CHECK( ok == true );
+        CHECK( x == coords_1[i].x );
+        CHECK( y == coords_1[i].y );
     }
     ok = m_text->PositionToXY(WXSIZEOF(coords_1), nullptr, nullptr);
-    CPPUNIT_ASSERT_EQUAL( false, ok );
+    CHECK( ok == false );
 
     // few lines
     text = wxS("123\nab\nX");
@@ -993,17 +1001,17 @@ void TextCtrlTestCase::DoPositionToXYMultiLine(long style)
         coords_2;
 #endif
 
-    CPPUNIT_ASSERT_EQUAL( ref_numChars_2, m_text->GetLastPosition() );
+    CHECK( m_text->GetLastPosition() == ref_numChars_2 );
     for ( long i = 0; i < ref_numChars_2+1; i++ )
     {
         long x, y;
         ok = m_text->PositionToXY(i, &x, &y);
-        CPPUNIT_ASSERT_EQUAL( true, ok );
-        CPPUNIT_ASSERT_EQUAL( ref_coords_2[i].x, x );
-        CPPUNIT_ASSERT_EQUAL( ref_coords_2[i].y, y );
+        CHECK( ok == true );
+        CHECK( x == ref_coords_2[i].x );
+        CHECK( y == ref_coords_2[i].y );
     }
     ok = m_text->PositionToXY(ref_numChars_2 + 1, nullptr, nullptr);
-    CPPUNIT_ASSERT_EQUAL( false, ok );
+    CHECK( ok == false );
 
     // only empty lines
     text = wxS("\n\n\n");
@@ -1043,17 +1051,17 @@ void TextCtrlTestCase::DoPositionToXYMultiLine(long style)
         coords_3;
 #endif
 
-    CPPUNIT_ASSERT_EQUAL( ref_numChars_3, m_text->GetLastPosition() );
+    CHECK( m_text->GetLastPosition() == ref_numChars_3 );
     for ( long i = 0; i < ref_numChars_3+1; i++ )
     {
         long x, y;
         ok = m_text->PositionToXY(i, &x, &y);
-        CPPUNIT_ASSERT_EQUAL( true, ok );
-        CPPUNIT_ASSERT_EQUAL( ref_coords_3[i].x, x );
-        CPPUNIT_ASSERT_EQUAL( ref_coords_3[i].y, y );
+        CHECK( ok == true );
+        CHECK( x == ref_coords_3[i].x );
+        CHECK( y == ref_coords_3[i].y );
     }
     ok = m_text->PositionToXY(ref_numChars_3 + 1, nullptr, nullptr);
-    CPPUNIT_ASSERT_EQUAL( false, ok );
+    CHECK( ok == false );
 
     // mixed empty/non-empty lines
     text = wxS("123\na\n\nX\n\n");
@@ -1097,17 +1105,17 @@ void TextCtrlTestCase::DoPositionToXYMultiLine(long style)
         coords_4;
 #endif
 
-    CPPUNIT_ASSERT_EQUAL( ref_numChars_4, m_text->GetLastPosition() );
+    CHECK( m_text->GetLastPosition() == ref_numChars_4 );
     for ( long i = 0; i < ref_numChars_4+1; i++ )
     {
         long x, y;
         ok = m_text->PositionToXY(i, &x, &y);
-        CPPUNIT_ASSERT_EQUAL( true, ok );
-        CPPUNIT_ASSERT_EQUAL( ref_coords_4[i].x, x );
-        CPPUNIT_ASSERT_EQUAL( ref_coords_4[i].y, y  );
+        CHECK( ok == true );
+        CHECK( x == ref_coords_4[i].x );
+        CHECK( y == ref_coords_4[i].y );
     }
     ok = m_text->PositionToXY(ref_numChars_4 + 1, nullptr, nullptr);
-    CPPUNIT_ASSERT_EQUAL( false, ok );
+    CHECK( ok == false );
 }
 
 void TextCtrlTestCase::XYToPositionMultiLine()
@@ -1141,7 +1149,7 @@ void TextCtrlTestCase::DoXYToPositionMultiLine(long style)
     m_text->Clear();
     const long maxLineLength_0 = 0+1;
     const long numLines_0 = 1;
-    CPPUNIT_ASSERT_EQUAL( numLines_0, m_text->GetNumberOfLines() );
+    CHECK( m_text->GetNumberOfLines() == numLines_0 );
     long pos_0[numLines_0+1][maxLineLength_0+1] =
         { {  0, -1 },
           { -1, -1 } };
@@ -1150,7 +1158,7 @@ void TextCtrlTestCase::DoXYToPositionMultiLine(long style)
         {
             long p = m_text->XYToPosition(x, y);
             INFO("x=" << x << ", y=" << y);
-            CPPUNIT_ASSERT_EQUAL( pos_0[y][x], p );
+            CHECK( p == pos_0[y][x] );
         }
 
     // one line
@@ -1158,7 +1166,7 @@ void TextCtrlTestCase::DoXYToPositionMultiLine(long style)
     m_text->SetValue(text);
     const long maxLineLength_1 = 4+1;
     const long numLines_1 = 1;
-    CPPUNIT_ASSERT_EQUAL( numLines_1, m_text->GetNumberOfLines() );
+    CHECK( m_text->GetNumberOfLines() == numLines_1 );
     long pos_1[numLines_1+1][maxLineLength_1+1] =
         { {  0,  1,  2,  3,  4, -1 },
           { -1, -1, -1, -1, -1, -1 } };
@@ -1167,7 +1175,7 @@ void TextCtrlTestCase::DoXYToPositionMultiLine(long style)
         {
             long p = m_text->XYToPosition(x, y);
             INFO("x=" << x << ", y=" << y);
-            CPPUNIT_ASSERT_EQUAL( pos_1[y][x], p  );
+            CHECK( p == pos_1[y][x] );
         }
 
     // few lines
@@ -1175,7 +1183,7 @@ void TextCtrlTestCase::DoXYToPositionMultiLine(long style)
     m_text->SetValue(text);
     const long maxLineLength_2 = 4;
     const long numLines_2 = 3;
-    CPPUNIT_ASSERT_EQUAL( numLines_2, m_text->GetNumberOfLines() );
+    CHECK( m_text->GetNumberOfLines() == numLines_2 );
 #if wxHAS_2CHAR_NEWLINES
     // Note: New lines are occupied by two characters.
     long pos_2_msw[numLines_2 + 1][maxLineLength_2 + 1] =
@@ -1202,7 +1210,7 @@ void TextCtrlTestCase::DoXYToPositionMultiLine(long style)
         {
             long p = m_text->XYToPosition(x, y);
             INFO("x=" << x << ", y=" << y);
-            CPPUNIT_ASSERT_EQUAL( ref_pos_2[y][x], p );
+            CHECK( p == ref_pos_2[y][x] );
         }
 
     // only empty lines
@@ -1210,7 +1218,7 @@ void TextCtrlTestCase::DoXYToPositionMultiLine(long style)
     m_text->SetValue(text);
     const long maxLineLength_3 = 1;
     const long numLines_3 = 4;
-    CPPUNIT_ASSERT_EQUAL( numLines_3, m_text->GetNumberOfLines() );
+    CHECK( m_text->GetNumberOfLines() == numLines_3 );
 #if wxHAS_2CHAR_NEWLINES
     // Note: New lines are occupied by two characters.
     long pos_3_msw[numLines_3 + 1][maxLineLength_3 + 1] =
@@ -1239,7 +1247,7 @@ void TextCtrlTestCase::DoXYToPositionMultiLine(long style)
         {
             long p = m_text->XYToPosition(x, y);
             INFO("x=" << x << ", y=" << y);
-            CPPUNIT_ASSERT_EQUAL( ref_pos_3[y][x], p );
+            CHECK( p == ref_pos_3[y][x] );
         }
 
     // mixed empty/non-empty lines
@@ -1247,7 +1255,7 @@ void TextCtrlTestCase::DoXYToPositionMultiLine(long style)
     m_text->SetValue(text);
     const long maxLineLength_4 = 4;
     const long numLines_4 = 6;
-    CPPUNIT_ASSERT_EQUAL( numLines_4, m_text->GetNumberOfLines() );
+    CHECK( m_text->GetNumberOfLines() == numLines_4 );
 #if wxHAS_2CHAR_NEWLINES
     // Note: New lines are occupied by two characters.
     long pos_4_msw[numLines_4 + 1][maxLineLength_4 + 1] =
@@ -1280,7 +1288,7 @@ void TextCtrlTestCase::DoXYToPositionMultiLine(long style)
         {
             long p = m_text->XYToPosition(x, y);
             INFO("x=" << x << ", y=" << y);
-            CPPUNIT_ASSERT_EQUAL( ref_pos_4[y][x], p );
+            CHECK( p == ref_pos_4[y][x] );
         }
 }
 
@@ -1294,49 +1302,49 @@ void TextCtrlTestCase::PositionToXYSingleLine()
     // empty field
     m_text->Clear();
     const long numChars_0 = 0;
-    CPPUNIT_ASSERT_EQUAL( numChars_0, m_text->GetLastPosition() );
+    CHECK( m_text->GetLastPosition() == numChars_0 );
     for ( long i = 0; i <= numChars_0; i++ )
     {
         long x0, y0;
         ok = m_text->PositionToXY(i, &x0, &y0);
-        CPPUNIT_ASSERT_EQUAL( true, ok );
-        CPPUNIT_ASSERT_EQUAL( i, x0 );
-        CPPUNIT_ASSERT_EQUAL( 0, y0 );
+        CHECK( ok == true );
+        CHECK( x0 == i );
+        CHECK( y0 == 0 );
     }
     ok = m_text->PositionToXY(numChars_0+1, nullptr, nullptr);
-    CPPUNIT_ASSERT_EQUAL( false, ok );
+    CHECK( ok == false );
 
     // pure one line
     text = wxS("1234");
     m_text->SetValue(text);
     const long numChars_1 = text.length();
-    CPPUNIT_ASSERT_EQUAL( numChars_1, m_text->GetLastPosition() );
+    CHECK( m_text->GetLastPosition() == numChars_1 );
     for ( long i = 0; i <= numChars_1; i++ )
     {
         long x1, y1;
         ok = m_text->PositionToXY(i, &x1, &y1);
-        CPPUNIT_ASSERT_EQUAL( true, ok );
-        CPPUNIT_ASSERT_EQUAL( i, x1 );
-        CPPUNIT_ASSERT_EQUAL( 0, y1 );
+        CHECK( ok == true );
+        CHECK( x1 == i );
+        CHECK( y1 == 0 );
     }
     ok = m_text->PositionToXY(numChars_1+1, nullptr, nullptr);
-    CPPUNIT_ASSERT_EQUAL( false, ok );
+    CHECK( ok == false );
 
     // with new line characters
     text = wxS("123\nab\nX");
     m_text->SetValue(text);
     const long numChars_2 = text.length();
-    CPPUNIT_ASSERT_EQUAL( numChars_2, m_text->GetLastPosition() );
+    CHECK( m_text->GetLastPosition() == numChars_2 );
     for ( long i = 0; i <= numChars_2; i++ )
     {
         long x2, y2;
         ok = m_text->PositionToXY(i, &x2, &y2);
-        CPPUNIT_ASSERT_EQUAL( true, ok );
-        CPPUNIT_ASSERT_EQUAL( i, x2 );
-        CPPUNIT_ASSERT_EQUAL( 0, y2 );
+        CHECK( ok == true );
+        CHECK( x2 == i );
+        CHECK( y2 == 0 );
     }
     ok = m_text->PositionToXY(numChars_2+1, nullptr, nullptr);
-    CPPUNIT_ASSERT_EQUAL( false, ok );
+    CHECK( ok == false );
 }
 
 void TextCtrlTestCase::XYToPositionSingleLine()
@@ -1347,49 +1355,49 @@ void TextCtrlTestCase::XYToPositionSingleLine()
     wxString text;
     // empty field
     m_text->Clear();
-    CPPUNIT_ASSERT_EQUAL( 1, m_text->GetNumberOfLines() );
+    CHECK( m_text->GetNumberOfLines() == 1 );
     for( long x = 0; x < m_text->GetLastPosition()+2; x++ )
     {
         long p0 = m_text->XYToPosition(x, 0);
         if ( x <= m_text->GetLastPosition() )
-            CPPUNIT_ASSERT_EQUAL( x, p0 );
+            CHECK( p0 == x );
         else
-            CPPUNIT_ASSERT_EQUAL( -1, p0 );
+            CHECK( p0 == -1 );
 
         p0 = m_text->XYToPosition(x, 1);
-        CPPUNIT_ASSERT_EQUAL( -1, p0 );
+        CHECK( p0 == -1 );
     }
 
     // pure one line
     text = wxS("1234");
     m_text->SetValue(text);
-    CPPUNIT_ASSERT_EQUAL( 1, m_text->GetNumberOfLines() );
+    CHECK( m_text->GetNumberOfLines() == 1 );
     for( long x = 0; x < m_text->GetLastPosition()+2; x++ )
     {
         long p1 = m_text->XYToPosition(x, 0);
         if ( x <= m_text->GetLastPosition() )
-            CPPUNIT_ASSERT_EQUAL( x, p1 );
+            CHECK( p1 == x );
         else
-            CPPUNIT_ASSERT_EQUAL( -1, p1 );
+            CHECK( p1 == -1 );
 
         p1 = m_text->XYToPosition(x, 1);
-        CPPUNIT_ASSERT_EQUAL( -1, p1 );
+        CHECK( p1 == -1 );
     }
 
     // with new line characters
     text = wxS("123\nab\nX");
     m_text->SetValue(text);
-    CPPUNIT_ASSERT_EQUAL( 1, m_text->GetNumberOfLines() );
+    CHECK( m_text->GetNumberOfLines() == 1 );
     for( long x = 0; x < m_text->GetLastPosition()+2; x++ )
     {
         long p2 = m_text->XYToPosition(x, 0);
         if ( x <= m_text->GetLastPosition() )
-            CPPUNIT_ASSERT_EQUAL( x, p2 );
+            CHECK( p2 == x );
         else
-            CPPUNIT_ASSERT_EQUAL( -1, p2 );
+            CHECK( p2 == -1 );
 
         p2 = m_text->XYToPosition(x, 1);
-        CPPUNIT_ASSERT_EQUAL( -1, p2 );
+        CHECK( p2 == -1 );
     }
 }
 

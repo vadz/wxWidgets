@@ -19,36 +19,25 @@
 #include "itemcontainertest.h"
 #include "testableframe.h"
 
-class RearrangeListTestCase : public ItemContainerTestCase, public CppUnit::TestCase
+class RearrangeListTestCase : public ItemContainerTestCase
 {
 public:
-    RearrangeListTestCase() { }
+    RearrangeListTestCase();
+    ~RearrangeListTestCase();
 
-    virtual void setUp() override;
-    virtual void tearDown() override;
-
-private:
+protected:
     virtual wxItemContainer *GetContainer() const override { return m_rearrange; }
     virtual wxWindow *GetContainerWindow() const override { return m_rearrange; }
-
-    CPPUNIT_TEST_SUITE( RearrangeListTestCase );
-        wxITEM_CONTAINER_TESTS();
-        CPPUNIT_TEST( Move );
-        CPPUNIT_TEST( MoveClientData );
-    CPPUNIT_TEST_SUITE_END();
-
-    void Move();
-    void MoveClientData();
 
     wxRearrangeList* m_rearrange;
 
     wxDECLARE_NO_COPY_CLASS(RearrangeListTestCase);
 };
 
-wxREGISTER_UNIT_TEST_WITH_TAGS(RearrangeListTestCase,
-                               "[RearrangeListTestCase][item-container]");
+wxITEM_CONTAINER_TESTS(RearrangeListTestCase, "RearrangeList",
+                       "[rearrangelist][item-container]");
 
-void RearrangeListTestCase::setUp()
+RearrangeListTestCase::RearrangeListTestCase()
 {
     //We do not add items here as the wxITEM_CONTAINER_TESTS add their own
     wxArrayInt order;
@@ -59,12 +48,13 @@ void RearrangeListTestCase::setUp()
                                       items);
 }
 
-void RearrangeListTestCase::tearDown()
+RearrangeListTestCase::~RearrangeListTestCase()
 {
     wxDELETE(m_rearrange);
 }
 
-void RearrangeListTestCase::Move()
+TEST_CASE_METHOD(RearrangeListTestCase, "RearrangeList::Move",
+                 "[rearrangelist]")
 {
     wxArrayInt order;
     order.push_back(1);
@@ -86,18 +76,18 @@ void RearrangeListTestCase::Move()
     //item specified in the constructor
     m_rearrange->SetSelection(0);
 
-    CPPUNIT_ASSERT(!m_rearrange->CanMoveCurrentUp());
-    CPPUNIT_ASSERT(m_rearrange->CanMoveCurrentDown());
+    CHECK(!m_rearrange->CanMoveCurrentUp());
+    CHECK(m_rearrange->CanMoveCurrentDown());
 
     m_rearrange->SetSelection(1);
 
-    CPPUNIT_ASSERT(m_rearrange->CanMoveCurrentUp());
-    CPPUNIT_ASSERT(m_rearrange->CanMoveCurrentDown());
+    CHECK(m_rearrange->CanMoveCurrentUp());
+    CHECK(m_rearrange->CanMoveCurrentDown());
 
     m_rearrange->SetSelection(2);
 
-    CPPUNIT_ASSERT(m_rearrange->CanMoveCurrentUp());
-    CPPUNIT_ASSERT(!m_rearrange->CanMoveCurrentDown());
+    CHECK(m_rearrange->CanMoveCurrentUp());
+    CHECK(!m_rearrange->CanMoveCurrentDown());
 
     m_rearrange->MoveCurrentUp();
     m_rearrange->SetSelection(0);
@@ -105,16 +95,17 @@ void RearrangeListTestCase::Move()
 
     wxArrayInt neworder = m_rearrange->GetCurrentOrder();
 
-    CPPUNIT_ASSERT_EQUAL(neworder[0], 0);
-    CPPUNIT_ASSERT_EQUAL(neworder[1], 1);
-    CPPUNIT_ASSERT_EQUAL(neworder[2], ~2);
+    CHECK(0 == neworder[0]);
+    CHECK(1 == neworder[1]);
+    CHECK(~2 == neworder[2]);
 
-    CPPUNIT_ASSERT_EQUAL("first", m_rearrange->GetString(0));
-    CPPUNIT_ASSERT_EQUAL("second", m_rearrange->GetString(1));
-    CPPUNIT_ASSERT_EQUAL("third", m_rearrange->GetString(2));
+    CHECK(m_rearrange->GetString(0) == "first");
+    CHECK(m_rearrange->GetString(1) == "second");
+    CHECK(m_rearrange->GetString(2) == "third");
 }
 
-void RearrangeListTestCase::MoveClientData()
+TEST_CASE_METHOD(RearrangeListTestCase, "RearrangeList::MoveClientData",
+                 "[rearrangelist]")
 {
     wxArrayInt order;
     order.push_back(0);
@@ -146,13 +137,13 @@ void RearrangeListTestCase::MoveClientData()
     m_rearrange->SetSelection(2);
     m_rearrange->MoveCurrentUp();
 
-    CPPUNIT_ASSERT_EQUAL(item1data, m_rearrange->GetClientObject(0));
-    CPPUNIT_ASSERT_EQUAL(item2data, m_rearrange->GetClientObject(1));
-    CPPUNIT_ASSERT_EQUAL(item0data, m_rearrange->GetClientObject(2));
+    CHECK(m_rearrange->GetClientObject(0) == item1data);
+    CHECK(m_rearrange->GetClientObject(1) == item2data);
+    CHECK(m_rearrange->GetClientObject(2) == item0data);
 
-    CPPUNIT_ASSERT_EQUAL("second", m_rearrange->GetString(0));
-    CPPUNIT_ASSERT_EQUAL("third", m_rearrange->GetString(1));
-    CPPUNIT_ASSERT_EQUAL("first", m_rearrange->GetString(2));
+    CHECK(m_rearrange->GetString(0) == "second");
+    CHECK(m_rearrange->GetString(1) == "third");
+    CHECK(m_rearrange->GetString(2) == "first");
 }
 
 #endif

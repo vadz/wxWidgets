@@ -12,19 +12,16 @@
 
 #include "wx/catch_cppunit.h"
 
-// Custom test macro that is only defined when wxUIActionSimulator is available
-// this allows the tests that do not rely on it to run on platforms that don't
-// support it.
+// Define a test case with the given name and tags simply calling the given
+// method of the given test class.
 //
-// Unfortunately, currently too many of the UI tests fail on non-MSW platforms,
-// so they're disabled there by default. This really, really needs to be fixed,
-// but for now having the UI tests always failing is not helpful as it prevents
-// other test failures from being noticed, so disable them there.
-#if wxUSE_UIACTIONSIMULATOR
-    #define WXUISIM_TEST(test) if ( EnableUITests() ) { CPPUNIT_TEST(test) }
-#else
-    #define WXUISIM_TEST(test)
-#endif
+// This is useful for running the same tests for several different fixtures,
+// e.g. for testing both single and multi-line wxTextCtrl.
+#define wxTEST_CASE_FOR_METHOD(testclass, prefix, name, tags) \
+    TEST_CASE_METHOD(testclass, prefix "::" #name, tags)      \
+    {                                                         \
+        name();                                               \
+    }
 
 #if defined(__VISUALC__)
     #if _MSC_VER < 1910

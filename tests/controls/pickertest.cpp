@@ -26,42 +26,31 @@
 
 #if wxUSE_COLOURPICKERCTRL
 
-class ColourPickerCtrlTestCase : public PickerBaseTestCase,
-                                 public CppUnit::TestCase
+class ColourPickerCtrlTestCase : public PickerBaseTestCase
 {
 public:
-    ColourPickerCtrlTestCase() { }
+    ColourPickerCtrlTestCase();
+    ~ColourPickerCtrlTestCase();
 
-    virtual void setUp() override;
-    virtual void tearDown() override;
-
-private:
+protected:
     virtual wxPickerBase *GetBase() const override { return m_colour; }
-
-    CPPUNIT_TEST_SUITE( ColourPickerCtrlTestCase );
-        wxPICKER_BASE_TESTS();
-    CPPUNIT_TEST_SUITE_END();
 
     wxColourPickerCtrl *m_colour;
 
     wxDECLARE_NO_COPY_CLASS(ColourPickerCtrlTestCase);
 };
 
-// register in the unnamed registry so that these tests are run by default
-CPPUNIT_TEST_SUITE_REGISTRATION( ColourPickerCtrlTestCase );
+wxPICKER_BASE_TESTS(ColourPickerCtrlTestCase, "ColourPickerCtrl",
+                    "[colourpicker][picker]");
 
-// also include in its own registry so that these tests can be run alone
-CPPUNIT_TEST_SUITE_NAMED_REGISTRATION( ColourPickerCtrlTestCase,
-                                      "ColourPickerCtrlTestCase" );
-
-void ColourPickerCtrlTestCase::setUp()
+ColourPickerCtrlTestCase::ColourPickerCtrlTestCase()
 {
     m_colour = new wxColourPickerCtrl(wxTheApp->GetTopWindow(), wxID_ANY,
                                      *wxBLACK, wxDefaultPosition,
                                       wxDefaultSize, wxCLRP_USE_TEXTCTRL);
 }
 
-void ColourPickerCtrlTestCase::tearDown()
+ColourPickerCtrlTestCase::~ColourPickerCtrlTestCase()
 {
     wxDELETE(m_colour);
 }
@@ -70,35 +59,24 @@ void ColourPickerCtrlTestCase::tearDown()
 
 #if wxUSE_DIRPICKERCTRL
 
-class DirPickerCtrlTestCase : public PickerBaseTestCase,
-                              public CppUnit::TestCase
+class DirPickerCtrlTestCase : public PickerBaseTestCase
 {
 public:
-    DirPickerCtrlTestCase() { }
+    DirPickerCtrlTestCase();
+    ~DirPickerCtrlTestCase();
 
-    virtual void setUp() override;
-    virtual void tearDown() override;
-
-private:
+protected:
     virtual wxPickerBase *GetBase() const override { return m_dir; }
-
-    CPPUNIT_TEST_SUITE( DirPickerCtrlTestCase );
-        wxPICKER_BASE_TESTS();
-    CPPUNIT_TEST_SUITE_END();
 
     wxDirPickerCtrl *m_dir;
 
     wxDECLARE_NO_COPY_CLASS(DirPickerCtrlTestCase);
 };
 
-// register in the unnamed registry so that these tests are run by default
-CPPUNIT_TEST_SUITE_REGISTRATION( DirPickerCtrlTestCase );
+wxPICKER_BASE_TESTS(DirPickerCtrlTestCase, "DirPickerCtrl",
+                    "[dirpicker][picker]");
 
-// also include in its own registry so that these tests can be run alone
-CPPUNIT_TEST_SUITE_NAMED_REGISTRATION( DirPickerCtrlTestCase,
-                                      "DirPickerCtrlTestCase" );
-
-void DirPickerCtrlTestCase::setUp()
+DirPickerCtrlTestCase::DirPickerCtrlTestCase()
 {
     m_dir = new wxDirPickerCtrl(wxTheApp->GetTopWindow(), wxID_ANY,
                                 wxEmptyString, wxDirSelectorPromptStr,
@@ -106,7 +84,7 @@ void DirPickerCtrlTestCase::setUp()
                                 wxDIRP_USE_TEXTCTRL);
 }
 
-void DirPickerCtrlTestCase::tearDown()
+DirPickerCtrlTestCase::~DirPickerCtrlTestCase()
 {
     wxDELETE(m_dir);
 }
@@ -115,35 +93,24 @@ void DirPickerCtrlTestCase::tearDown()
 
 #if wxUSE_FILEPICKERCTRL
 
-class FilePickerCtrlTestCase : public PickerBaseTestCase,
-                               public CppUnit::TestCase
+class FilePickerCtrlTestCase : public PickerBaseTestCase
 {
 public:
-    FilePickerCtrlTestCase() { }
+    FilePickerCtrlTestCase();
+    ~FilePickerCtrlTestCase();
 
-    virtual void setUp() override;
-    virtual void tearDown() override;
-
-private:
+protected:
     virtual wxPickerBase *GetBase() const override { return m_file; }
-
-    CPPUNIT_TEST_SUITE( FilePickerCtrlTestCase );
-        wxPICKER_BASE_TESTS();
-    CPPUNIT_TEST_SUITE_END();
 
     wxFilePickerCtrl *m_file;
 
     wxDECLARE_NO_COPY_CLASS(FilePickerCtrlTestCase);
 };
 
-// register in the unnamed registry so that these tests are run by default
-CPPUNIT_TEST_SUITE_REGISTRATION( FilePickerCtrlTestCase );
+wxPICKER_BASE_TESTS(FilePickerCtrlTestCase, "FilePickerCtrl",
+                    "[filepicker][picker]");
 
-// also include in its own registry so that these tests can be run alone
-CPPUNIT_TEST_SUITE_NAMED_REGISTRATION( FilePickerCtrlTestCase,
-                                      "FilePickerCtrlTestCase" );
-
-void FilePickerCtrlTestCase::setUp()
+FilePickerCtrlTestCase::FilePickerCtrlTestCase()
 {
     m_file = new wxFilePickerCtrl(wxTheApp->GetTopWindow(), wxID_ANY,
                                   wxEmptyString, wxFileSelectorPromptStr,
@@ -152,7 +119,7 @@ void FilePickerCtrlTestCase::setUp()
                                   wxFLP_USE_TEXTCTRL);
 }
 
-void FilePickerCtrlTestCase::tearDown()
+FilePickerCtrlTestCase::~FilePickerCtrlTestCase()
 {
     wxDELETE(m_file);
 }
@@ -161,50 +128,37 @@ void FilePickerCtrlTestCase::tearDown()
 
 #if wxUSE_FONTPICKERCTRL
 
-class FontPickerCtrlTestCase : public PickerBaseTestCase,
-                               public CppUnit::TestCase
+class FontPickerCtrlTestCase : public PickerBaseTestCase
 {
 public:
-    FontPickerCtrlTestCase() { }
+    FontPickerCtrlTestCase();
+    ~FontPickerCtrlTestCase();
 
-    virtual void setUp() override;
-    virtual void tearDown() override;
-
-private:
+protected:
     virtual wxPickerBase *GetBase() const override { return m_font; }
-
-    CPPUNIT_TEST_SUITE( FontPickerCtrlTestCase );
-        wxPICKER_BASE_TESTS();
-        CPPUNIT_TEST( ColourSelection );
-    CPPUNIT_TEST_SUITE_END();
-
-    void ColourSelection();
 
     wxFontPickerCtrl *m_font;
 
     wxDECLARE_NO_COPY_CLASS(FontPickerCtrlTestCase);
 };
 
-// register in the unnamed registry so that these tests are run by default
-CPPUNIT_TEST_SUITE_REGISTRATION( FontPickerCtrlTestCase );
+wxPICKER_BASE_TESTS(FontPickerCtrlTestCase, "FontPickerCtrl",
+                    "[fontpicker][picker]");
 
-// also include in its own registry so that these tests can be run alone
-CPPUNIT_TEST_SUITE_NAMED_REGISTRATION( FontPickerCtrlTestCase,
-                                      "FontPickerCtrlTestCase" );
-
-void FontPickerCtrlTestCase::setUp()
+FontPickerCtrlTestCase::FontPickerCtrlTestCase()
 {
     m_font = new wxFontPickerCtrl(wxTheApp->GetTopWindow(), wxID_ANY,
                                   wxNullFont, wxDefaultPosition, wxDefaultSize,
                                   wxFNTP_USE_TEXTCTRL);
 }
 
-void FontPickerCtrlTestCase::tearDown()
+FontPickerCtrlTestCase::~FontPickerCtrlTestCase()
 {
     wxDELETE(m_font);
 }
 
-void FontPickerCtrlTestCase::ColourSelection()
+TEST_CASE_METHOD(FontPickerCtrlTestCase, "FontPickerCtrl::ColourSelection",
+                 "[fontpicker]")
 {
     wxColour selectedColour(0xFF4269UL);
 
@@ -212,8 +166,8 @@ void FontPickerCtrlTestCase::ColourSelection()
 
     m_font->SetSelectedColour(selectedColour);
 
-    CPPUNIT_ASSERT_EQUAL_MESSAGE("Font picker did not react to color selection",
-        m_font->GetSelectedColour(), selectedColour);
+    INFO("Font picker did not react to color selection");
+    CHECK(selectedColour == m_font->GetSelectedColour());
 }
 #endif //wxUSE_FONTPICKERCTRL
 

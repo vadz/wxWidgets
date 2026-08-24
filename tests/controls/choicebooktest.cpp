@@ -19,15 +19,13 @@
 #include "wx/choicebk.h"
 #include "bookctrlbasetest.h"
 
-class ChoicebookTestCase : public BookCtrlBaseTestCase, public CppUnit::TestCase
+class ChoicebookTestCase : public BookCtrlBaseTestCase
 {
 public:
-    ChoicebookTestCase() { }
+    ChoicebookTestCase();
+    ~ChoicebookTestCase();
 
-    virtual void setUp() override;
-    virtual void tearDown() override;
-
-private:
+protected:
     virtual wxBookCtrlBase *GetBase() const override { return m_choicebook; }
 
     virtual wxEventType GetChangedEvent() const override
@@ -38,42 +36,32 @@ private:
 
     virtual bool HasBrokenMnemonics() const override { return true; }
 
-    CPPUNIT_TEST_SUITE( ChoicebookTestCase );
-        wxBOOK_CTRL_BASE_TESTS();
-        CPPUNIT_TEST( Choice );
-    CPPUNIT_TEST_SUITE_END();
-
-    void Choice();
-
     wxChoicebook *m_choicebook;
 
     wxDECLARE_NO_COPY_CLASS(ChoicebookTestCase);
 };
 
-// register in the unnamed registry so that these tests are run by default
-CPPUNIT_TEST_SUITE_REGISTRATION( ChoicebookTestCase );
+wxBOOK_CTRL_BASE_TESTS(ChoicebookTestCase, "Choicebook",
+                       "[choicebook][book]");
 
-// also include in its own registry so that these tests can be run alone
-CPPUNIT_TEST_SUITE_NAMED_REGISTRATION( ChoicebookTestCase, "ChoicebookTestCase" );
-
-void ChoicebookTestCase::setUp()
+ChoicebookTestCase::ChoicebookTestCase()
 {
     m_choicebook = new wxChoicebook(wxTheApp->GetTopWindow(), wxID_ANY);
     AddPanels();
 }
 
-void ChoicebookTestCase::tearDown()
+ChoicebookTestCase::~ChoicebookTestCase()
 {
     wxDELETE(m_choicebook);
 }
 
-void ChoicebookTestCase::Choice()
+TEST_CASE_METHOD(ChoicebookTestCase, "Choicebook::Choice", "[choicebook]")
 {
     wxChoice* choice = m_choicebook->GetChoiceCtrl();
 
-    CPPUNIT_ASSERT(choice);
-    CPPUNIT_ASSERT_EQUAL(3, choice->GetCount());
-    CPPUNIT_ASSERT_EQUAL("Panel 1", choice->GetString(0));
+    CHECK(choice);
+    CHECK(choice->GetCount() == 3);
+    CHECK(choice->GetString(0) == "Panel 1");
 }
 
 #endif //wxUSE_CHOICEBOOK

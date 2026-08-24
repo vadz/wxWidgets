@@ -20,15 +20,13 @@
 #include "wx/listctrl.h"
 #include "bookctrlbasetest.h"
 
-class ListbookTestCase : public BookCtrlBaseTestCase, public CppUnit::TestCase
+class ListbookTestCase : public BookCtrlBaseTestCase
 {
 public:
-    ListbookTestCase() { }
+    ListbookTestCase();
+    ~ListbookTestCase();
 
-    virtual void setUp() override;
-    virtual void tearDown() override;
-
-private:
+protected:
     virtual wxBookCtrlBase *GetBase() const override { return m_listbook; }
 
     virtual wxEventType GetChangedEvent() const override
@@ -39,43 +37,33 @@ private:
 
     virtual bool HasBrokenMnemonics() const override { return true; }
 
-    CPPUNIT_TEST_SUITE( ListbookTestCase );
-        wxBOOK_CTRL_BASE_TESTS();
-        CPPUNIT_TEST( ListView );
-    CPPUNIT_TEST_SUITE_END();
-
-    void ListView();
-
     wxListbook *m_listbook;
 
     wxDECLARE_NO_COPY_CLASS(ListbookTestCase);
 };
 
-// register in the unnamed registry so that these tests are run by default
-CPPUNIT_TEST_SUITE_REGISTRATION( ListbookTestCase );
+wxBOOK_CTRL_BASE_TESTS(ListbookTestCase, "Listbook",
+                       "[listbook][book]");
 
-// also include in its own registry so that these tests can be run alone
-CPPUNIT_TEST_SUITE_NAMED_REGISTRATION( ListbookTestCase, "ListbookTestCase" );
-
-void ListbookTestCase::setUp()
+ListbookTestCase::ListbookTestCase()
 {
     m_listbook = new wxListbook(wxTheApp->GetTopWindow(), wxID_ANY,
                                 wxDefaultPosition, wxSize(400, 300));
     AddPanels();
 }
 
-void ListbookTestCase::tearDown()
+ListbookTestCase::~ListbookTestCase()
 {
     wxDELETE(m_listbook);
 }
 
-void ListbookTestCase::ListView()
+TEST_CASE_METHOD(ListbookTestCase, "Listbook::ListView", "[listbook]")
 {
     wxListView* listview = m_listbook->GetListView();
 
-    CPPUNIT_ASSERT(listview);
-    CPPUNIT_ASSERT_EQUAL(3, listview->GetItemCount());
-    CPPUNIT_ASSERT_EQUAL("Panel 1", listview->GetItemText(0));
+    CHECK(listview);
+    CHECK(listview->GetItemCount() == 3);
+    CHECK(listview->GetItemText(0) == "Panel 1");
 }
 
 #endif //wxUSE_LISTBOOK

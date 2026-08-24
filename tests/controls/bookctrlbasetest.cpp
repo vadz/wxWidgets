@@ -51,23 +51,23 @@ void BookCtrlBaseTestCase::Selection()
 
     base->SetSelection(0);
 
-    CPPUNIT_ASSERT_EQUAL(0, base->GetSelection());
-    CPPUNIT_ASSERT_EQUAL(wxStaticCast(m_panel1, wxWindow), base->GetCurrentPage());
+    CHECK(base->GetSelection() == 0);
+    CHECK(base->GetCurrentPage() == wxStaticCast(m_panel1, wxWindow));
 
     base->AdvanceSelection(false);
 
-    CPPUNIT_ASSERT_EQUAL(2, base->GetSelection());
-    CPPUNIT_ASSERT_EQUAL(wxStaticCast(m_panel3, wxWindow), base->GetCurrentPage());
+    CHECK(base->GetSelection() == 2);
+    CHECK(base->GetCurrentPage() == wxStaticCast(m_panel3, wxWindow));
 
     base->AdvanceSelection();
 
-    CPPUNIT_ASSERT_EQUAL(0, base->GetSelection());
-    CPPUNIT_ASSERT_EQUAL(wxStaticCast(m_panel1, wxWindow), base->GetCurrentPage());
+    CHECK(base->GetSelection() == 0);
+    CHECK(base->GetCurrentPage() == wxStaticCast(m_panel1, wxWindow));
 
     base->ChangeSelection(1);
 
-    CPPUNIT_ASSERT_EQUAL(1, base->GetSelection());
-    CPPUNIT_ASSERT_EQUAL(wxStaticCast(m_panel2, wxWindow), base->GetCurrentPage());
+    CHECK(base->GetSelection() == 1);
+    CHECK(base->GetCurrentPage() == wxStaticCast(m_panel2, wxWindow));
 }
 
 void BookCtrlBaseTestCase::Text()
@@ -75,20 +75,20 @@ void BookCtrlBaseTestCase::Text()
     wxBookCtrlBase * const base = GetBase();
 
     const wxString expected(HasBrokenMnemonics() ? "Panel 1" : "Panel &1");
-    CPPUNIT_ASSERT_EQUAL(expected, base->GetPageText(0));
+    CHECK(base->GetPageText(0) == expected);
 
     base->SetPageText(1, "Some other string");
 
-    CPPUNIT_ASSERT_EQUAL("Some other string", base->GetPageText(1));
+    CHECK(base->GetPageText(1) == "Some other string");
 
     base->SetPageText(2, "string with\nline break");
 
-    CPPUNIT_ASSERT_EQUAL("string with\nline break", base->GetPageText(2));
+    CHECK(base->GetPageText(2) == "string with\nline break");
 
     if ( !HasBrokenMnemonics() )
     {
         base->SetPageText(0, "With &mnemonic");
-        CPPUNIT_ASSERT_EQUAL("With &mnemonic", base->GetPageText(0));
+        CHECK(base->GetPageText(0) == "With &mnemonic");
     }
 }
 
@@ -100,28 +100,28 @@ void BookCtrlBaseTestCase::PageManagement()
 
     Realize();
 
-    CPPUNIT_ASSERT_EQUAL(0, base->GetSelection());
-    CPPUNIT_ASSERT_EQUAL(4, base->GetPageCount());
+    CHECK(base->GetSelection() == 0);
+    CHECK(base->GetPageCount() == 4);
 
     // Change the selection to verify that deleting a page before the currently
     // selected one correctly updates the selection.
     base->SetSelection(2);
-    CPPUNIT_ASSERT_EQUAL(2, base->GetSelection());
+    CHECK(base->GetSelection() == 2);
 
     base->DeletePage(1);
 
-    CPPUNIT_ASSERT_EQUAL(3, base->GetPageCount());
-    CPPUNIT_ASSERT_EQUAL(1, base->GetSelection());
+    CHECK(base->GetPageCount() == 3);
+    CHECK(base->GetSelection() == 1);
 
     base->RemovePage(0);
 
-    CPPUNIT_ASSERT_EQUAL(2, base->GetPageCount());
-    CPPUNIT_ASSERT_EQUAL(0, base->GetSelection());
+    CHECK(base->GetPageCount() == 2);
+    CHECK(base->GetSelection() == 0);
 
     base->DeleteAllPages();
 
-    CPPUNIT_ASSERT_EQUAL(0, base->GetPageCount());
-    CPPUNIT_ASSERT_EQUAL(-1, base->GetSelection());
+    CHECK(base->GetPageCount() == 0);
+    CHECK(base->GetSelection() == -1);
 }
 
 void BookCtrlBaseTestCase::ChangeEvents()
@@ -135,27 +135,27 @@ void BookCtrlBaseTestCase::ChangeEvents()
 
     base->SetSelection(1);
 
-    CPPUNIT_ASSERT_EQUAL(1, changing.GetCount());
-    CPPUNIT_ASSERT_EQUAL(1, changed.GetCount());
+    CHECK(changing.GetCount() == 1);
+    CHECK(changed.GetCount() == 1);
 
     changed.Clear();
     changing.Clear();
     base->ChangeSelection(2);
 
-    CPPUNIT_ASSERT_EQUAL(0, changing.GetCount());
-    CPPUNIT_ASSERT_EQUAL(0, changed.GetCount());
+    CHECK(changing.GetCount() == 0);
+    CHECK(changed.GetCount() == 0);
 
     base->AdvanceSelection();
 
-    CPPUNIT_ASSERT_EQUAL(1, changing.GetCount());
-    CPPUNIT_ASSERT_EQUAL(1, changed.GetCount());
+    CHECK(changing.GetCount() == 1);
+    CHECK(changed.GetCount() == 1);
 
     changed.Clear();
     changing.Clear();
     base->AdvanceSelection(false);
 
-    CPPUNIT_ASSERT_EQUAL(1, changing.GetCount());
-    CPPUNIT_ASSERT_EQUAL(1, changed.GetCount());
+    CHECK(changing.GetCount() == 1);
+    CHECK(changed.GetCount() == 1);
 }
 
 void BookCtrlBaseTestCase::Image()
@@ -163,14 +163,14 @@ void BookCtrlBaseTestCase::Image()
     wxBookCtrlBase * const base = GetBase();
 
     //Check AddPanels() set things correctly
-    CPPUNIT_ASSERT_EQUAL(m_list, base->GetImageList());
-    CPPUNIT_ASSERT_EQUAL(0, base->GetPageImage(0));
-    CPPUNIT_ASSERT_EQUAL(1, base->GetPageImage(1));
-    CPPUNIT_ASSERT_EQUAL(2, base->GetPageImage(2));
+    CHECK(base->GetImageList() == m_list);
+    CHECK(base->GetPageImage(0) == 0);
+    CHECK(base->GetPageImage(1) == 1);
+    CHECK(base->GetPageImage(2) == 2);
 
     base->SetPageImage(0, 2);
 
-    CPPUNIT_ASSERT_EQUAL(2, base->GetPageImage(2));
+    CHECK(base->GetPageImage(2) == 2);
 }
 
 #endif
