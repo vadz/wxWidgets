@@ -43,11 +43,6 @@ See the last subsection for more details about running the tests.
 Testing with Catch
 ------------------
 
-**WARNING**: Some of the existing GUI tests are still written in the CppUnit
-style, using `CPPUNIT_TEST_SUITE()` and `CPPUNIT_ASSERT()` macros, please do
-_not_ follow them when writing new tests, the old style is too complex and
-unnecessary.
-
 Writing tests with Catch is almost embarrassingly simple: you need to just
 add a new test case and use Catch assertion macros inside it, e.g.
 

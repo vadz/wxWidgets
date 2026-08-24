@@ -20,12 +20,6 @@
 #define CATCH_CONFIG_RUNNER
 #include <catch2/catch.hpp>
 
-// Also define our own global variables.
-namespace wxPrivate
-{
-std::string wxTheCurrentTestClass, wxTheCurrentTestMethod;
-}
-
 // for all others, include the necessary headers
 #ifndef WX_PRECOMP
     #include "wx/wx.h"
