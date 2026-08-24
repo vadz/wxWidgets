@@ -97,7 +97,7 @@ TEST_CASE("wxHtmlPrintout::Pagination", "[html][print]")
 
     wxBitmap bmp(1000, 1000);
     wxMemoryDC dc(bmp);
-    pr.SetUp(dc);
+    REQUIRE( pr.SetUp(dc) );
 
     // Pagination depends on the height of the text in pixels, so the base font
     // must have a fixed size in pixels for the results to be the same on all
