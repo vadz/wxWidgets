@@ -933,7 +933,7 @@ void wxWindowBase::SetMaxSize(const wxSize& maxSize)
     InvalidateBestSize();
 }
 
-void wxWindowBase::SetInitialSize(const wxSize& size)
+bool wxWindowBase::SetInitialSize(const wxSize& size)
 {
     // Set the min size to the size passed in.  This will usually either be
     // wxDefaultSize or the size passed to this window's ctor/Create function.
@@ -943,8 +943,12 @@ void wxWindowBase::SetInitialSize(const wxSize& size)
     wxSize best = GetEffectiveMinSize();
 
     // If the current size doesn't match then change it
-    if (GetSize() != best)
-        SetSize(best);
+    if ( GetSize() == best )
+        return false;
+
+    SetSize(best);
+
+    return true;
 }
 
 
