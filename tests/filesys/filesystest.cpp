@@ -233,7 +233,7 @@ TEST_CASE("wxFileSystem::DataSchemeFSHandler", "[filesys][dataschemefshandler][o
     class AutoDataSchemeFSHandler
     {
     public:
-        AutoDataSchemeFSHandler() : m_handler(new wxDataSchemeFSHandler())
+        AutoDataSchemeFSHandler() : m_handler(make_unique<wxDataSchemeFSHandler>())
         {
             wxFileSystem::AddHandler(m_handler.get());
         }
@@ -281,7 +281,7 @@ TEST_CASE("wxFileSystem::MemoryFSHandler", "[filesys][memoryfshandler][find]")
     {
     public:
         AutoMemoryFSHandler()
-            : m_handler(new wxMemoryFSHandler())
+            : m_handler(make_unique<wxMemoryFSHandler>())
         {
             wxFileSystem::AddHandler(m_handler.get());
         }
@@ -334,7 +334,8 @@ TEST_CASE("wxFileSystem::ArchiveDuplicateNames", "[filesys][fs_arc][zip][find]")
     {
     public:
         AutoHandlers()
-            : m_mem(new wxMemoryFSHandler()), m_arc(new wxArchiveFSHandler())
+            : m_mem(make_unique<wxMemoryFSHandler>()),
+              m_arc(make_unique<wxArchiveFSHandler>())
         {
             wxFileSystem::AddHandler(m_mem.get());
             wxFileSystem::AddHandler(m_arc.get());
