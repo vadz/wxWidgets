@@ -2240,7 +2240,13 @@ public:
 // test below.
 inline void UpdateGrid(wxGrid* grid)
 {
-#ifndef __WXQT__
+#if defined(__WXGTK__)
+    // Update() is a no-op under GTK3/Wayland, so wait for the actual
+    // paint event instead of relying on it being synchronous.
+    WaitForPaint waitForPaint(grid);
+    grid->Refresh();
+    waitForPaint.YieldUntilPainted();
+#elif !defined(__WXQT__)
     grid->Refresh();
     grid->Update();
 #else
