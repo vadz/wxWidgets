@@ -41,8 +41,8 @@ TEST_CASE("DynamicLibrary::Load", "[dynlib]")
     static const char* const candidateDirs[] =
     {
         "/lib/x86_64-linux-gnu",
-        "/lib",
         "/lib64",
+        "/lib",
         "/usr/lib",
     };
 
