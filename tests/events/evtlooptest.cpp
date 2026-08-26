@@ -150,7 +150,7 @@ protected:
         // Wait until the main thread is actually blocked waiting for events, so
         // the CallAfter() below arrives while the loop is idle -- which is when
         // it must still be able to wake the loop.
-        wxMilliSleep(250);
+        wxMilliSleep(100);
 
         // wxEventLoop is not a wxEvtHandler, so route the deferred call through
         // wxTheApp (which lives on, and runs the call on, the main thread).
