@@ -43,6 +43,7 @@
 
 #ifdef __WXGTK__
     #include <glib.h>
+    #include "wx/gtk/private/backend.h"
 #endif // __WXGTK__
 #endif // wxUSE_GUI
 
@@ -571,6 +572,20 @@ bool EnableUITests()
 #else // !(__WXMSW__ || __WXGTK__ || __WXQT__)
             s_enabled = 0;
 #endif // (__WXMSW__ || __WXGTK__ || __WXQT__)
+
+#ifdef __WXGTK3__
+            // wxUIActionSimulator injects X11 events, which never reach a
+            // native Wayland client, so disable UI tests by default there
+            // (WX_UI_TESTS=1 above still overrides this).
+            if ( s_enabled == 1 && !wxGTKImpl::IsX11(nullptr) )
+            {
+                s_enabled = 0;
+                wxFprintf(stderr, wxASCII_STR(
+                    "Disabling UI tests: wxUIActionSimulator doesn't work "
+                    "when running as a native Wayland client (use "
+                    "WX_UI_TESTS=1 to force them anyway).\n"));
+            }
+#endif // __WXGTK3__
         }
     }
 
