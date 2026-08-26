@@ -20,84 +20,63 @@
 #include "testableframe.h"
 #include "wx/uiaction.h"
 
-class ListBoxTestCase : public ItemContainerTestCase, public CppUnit::TestCase
+#include <memory>
+
+class ListBoxTestCase : public ItemContainerTestCase
 {
 public:
-    ListBoxTestCase() { }
+    ListBoxTestCase();
 
-    virtual void setUp() override;
-    virtual void tearDown() override;
+protected:
+    virtual wxItemContainer *GetContainer() const override
+    { return m_list.get(); }
+    virtual wxWindow *GetContainerWindow() const override
+    { return m_list.get(); }
 
-private:
-    virtual wxItemContainer *GetContainer() const override { return m_list; }
-    virtual wxWindow *GetContainerWindow() const override { return m_list; }
+    // Recreate the list box as an owner-drawn one, only used under MSW.
+    void MakeOwnerDrawn()
+    {
+        m_list = make_unique<wxListBox>(wxTheApp->GetTopWindow(), wxID_ANY,
+                                        wxDefaultPosition, wxSize(300, 200),
+                                        0, nullptr, wxLB_OWNERDRAW);
+    }
 
-    CPPUNIT_TEST_SUITE( ListBoxTestCase );
-        wxITEM_CONTAINER_TESTS();
-        CPPUNIT_TEST( Sort );
-        CPPUNIT_TEST( MultipleSelect );
-        WXUISIM_TEST( ClickEvents );
-        WXUISIM_TEST( ClickNotOnItem );
-        CPPUNIT_TEST( HitTest );
-        //We also run all tests as an ownerdrawn list box.  We do not need to
-        //run the wxITEM_CONTAINER_TESTS as they are tested with wxCheckListBox
-#ifdef __WXMSW__
-        CPPUNIT_TEST( PseudoTest_OwnerDrawn );
-        CPPUNIT_TEST( Sort );
-        CPPUNIT_TEST( MultipleSelect );
-        WXUISIM_TEST( ClickEvents );
-        WXUISIM_TEST( ClickNotOnItem );
-        CPPUNIT_TEST( HitTest );
-#endif
-    CPPUNIT_TEST_SUITE_END();
-
-    void Sort();
-    void MultipleSelect();
-    void ClickEvents();
-    void ClickNotOnItem();
-    void HitTest();
-    void PseudoTest_OwnerDrawn() { ms_ownerdrawn = true; }
-
-    static bool ms_ownerdrawn;
-
-    wxListBox* m_list;
+    std::unique_ptr<wxListBox> m_list;
 
     wxDECLARE_NO_COPY_CLASS(ListBoxTestCase);
 };
 
-wxREGISTER_UNIT_TEST_WITH_TAGS(ListBoxTestCase,
-                               "[ListBoxTestCase][item-container]");
+wxITEM_CONTAINER_TESTS(ListBoxTestCase, "ListBox",
+                       "[listbox][item-container]");
 
-//initialise the static variable
-bool ListBoxTestCase::ms_ownerdrawn = false;
+// Under MSW the tests below are run twice, for the normal and the owner-drawn
+// list boxes. There is no need to run the wxItemContainer tests for the latter
+// as they're already tested with wxCheckListBox which is always owner-drawn.
+#ifdef __WXMSW__
+    #define wxLISTBOX_TEST_OWNERDRAWN()                    \
+        const bool ownerDrawn = GENERATE(false, true);      \
+        CAPTURE(ownerDrawn);                                \
+        if ( ownerDrawn )                                   \
+            MakeOwnerDrawn()
+#else
+    #define wxLISTBOX_TEST_OWNERDRAWN() ((void)0)
+#endif
 
-void ListBoxTestCase::setUp()
+ListBoxTestCase::ListBoxTestCase()
 {
-    if( ms_ownerdrawn )
-    {
-        m_list = new wxListBox(wxTheApp->GetTopWindow(), wxID_ANY,
-                               wxDefaultPosition, wxSize(300, 200), 0, nullptr,
-                               wxLB_OWNERDRAW);
-    }
-    else
-    {
-        m_list = new wxListBox(wxTheApp->GetTopWindow(), wxID_ANY,
-                               wxDefaultPosition, wxSize(300, 200));
-    }
+    m_list = make_unique<wxListBox>(wxTheApp->GetTopWindow(), wxID_ANY,
+                                    wxDefaultPosition, wxSize(300, 200));
 }
 
-void ListBoxTestCase::tearDown()
-{
-    wxDELETE(m_list);
-}
 
-void ListBoxTestCase::Sort()
+TEST_CASE_METHOD(ListBoxTestCase, "ListBox::Sort", "[listbox]")
 {
+    wxLISTBOX_TEST_OWNERDRAWN();
+
 #ifndef __WXOSX__
-    wxDELETE(m_list);
-    m_list = new wxListBox(wxTheApp->GetTopWindow(), wxID_ANY,
-                            wxDefaultPosition, wxDefaultSize, 0, nullptr,
-                            wxLB_SORT);
+    m_list = make_unique<wxListBox>(wxTheApp->GetTopWindow(), wxID_ANY,
+                                    wxDefaultPosition, wxDefaultSize, 0,
+                                    nullptr, wxLB_SORT);
 
     wxArrayString testitems;
     testitems.Add("aaa");
@@ -110,34 +89,35 @@ void ListBoxTestCase::Sort()
     m_list->Append(testitems);
 
 #if defined(__WXQT__) && defined(__WINDOWS__)
-    CPPUNIT_ASSERT_EQUAL("aaa", m_list->GetString(0));
-    CPPUNIT_ASSERT_EQUAL("Aaa", m_list->GetString(1));
-    CPPUNIT_ASSERT_EQUAL("AAA", m_list->GetString(2));
-    CPPUNIT_ASSERT_EQUAL("aaab", m_list->GetString(3));
-    CPPUNIT_ASSERT_EQUAL("aab", m_list->GetString(4));
-    CPPUNIT_ASSERT_EQUAL("aba", m_list->GetString(5));
+    CHECK(m_list->GetString(0) == "aaa");
+    CHECK(m_list->GetString(1) == "Aaa");
+    CHECK(m_list->GetString(2) == "AAA");
+    CHECK(m_list->GetString(3) == "aaab");
+    CHECK(m_list->GetString(4) == "aab");
+    CHECK(m_list->GetString(5) == "aba");
 
     m_list->Append("a", wxUIntToPtr(1));
 
-    CPPUNIT_ASSERT_EQUAL("a", m_list->GetString(0));
-    CPPUNIT_ASSERT_EQUAL(wxUIntToPtr(1), m_list->GetClientData(0));
+    CHECK(m_list->GetString(0) == "a");
+    CHECK(m_list->GetClientData(0) == wxUIntToPtr(1));
 #else
-    CPPUNIT_ASSERT_EQUAL("AAA", m_list->GetString(0));
-    CPPUNIT_ASSERT_EQUAL("Aaa", m_list->GetString(1));
-    CPPUNIT_ASSERT_EQUAL("aaa", m_list->GetString(2));
-    CPPUNIT_ASSERT_EQUAL("aaab", m_list->GetString(3));
-    CPPUNIT_ASSERT_EQUAL("aab", m_list->GetString(4));
-    CPPUNIT_ASSERT_EQUAL("aba", m_list->GetString(5));
+    CHECK(m_list->GetString(0) == "AAA");
+    CHECK(m_list->GetString(1) == "Aaa");
+    CHECK(m_list->GetString(2) == "aaa");
+    CHECK(m_list->GetString(3) == "aaab");
+    CHECK(m_list->GetString(4) == "aab");
+    CHECK(m_list->GetString(5) == "aba");
 #endif
 #endif
 }
 
-void ListBoxTestCase::MultipleSelect()
+TEST_CASE_METHOD(ListBoxTestCase, "ListBox::MultipleSelect", "[listbox]")
 {
-    wxDELETE(m_list);
-    m_list = new wxListBox(wxTheApp->GetTopWindow(), wxID_ANY,
-                            wxDefaultPosition, wxDefaultSize, 0, nullptr,
-                            wxLB_MULTIPLE);
+    wxLISTBOX_TEST_OWNERDRAWN();
+
+    m_list = make_unique<wxListBox>(wxTheApp->GetTopWindow(), wxID_ANY,
+                                    wxDefaultPosition, wxDefaultSize, 0,
+                                    nullptr, wxLB_MULTIPLE);
 
     wxArrayString testitems;
     testitems.Add("item 0");
@@ -152,38 +132,43 @@ void ListBoxTestCase::MultipleSelect()
     wxArrayInt selected;
     m_list->GetSelections(selected);
 
-    CPPUNIT_ASSERT_EQUAL(1, selected.Count());
-    CPPUNIT_ASSERT_EQUAL(0, selected.Item(0));
+    CHECK(selected.Count() == 1);
+    CHECK(selected.Item(0) == 0);
 
     m_list->SetSelection(2);
 
     m_list->GetSelections(selected);
 
-    CPPUNIT_ASSERT_EQUAL(2, selected.Count());
-    CPPUNIT_ASSERT_EQUAL(2, selected.Item(1));
+    CHECK(selected.Count() == 2);
+    CHECK(selected.Item(1) == 2);
 
     m_list->Deselect(0);
 
     m_list->GetSelections(selected);
 
-    CPPUNIT_ASSERT_EQUAL(1, selected.Count());
-    CPPUNIT_ASSERT_EQUAL(2, selected.Item(0));
+    CHECK(selected.Count() == 1);
+    CHECK(selected.Item(0) == 2);
 
-    CPPUNIT_ASSERT(!m_list->IsSelected(0));
-    CPPUNIT_ASSERT(!m_list->IsSelected(1));
-    CPPUNIT_ASSERT(m_list->IsSelected(2));
-    CPPUNIT_ASSERT(!m_list->IsSelected(3));
+    CHECK(!m_list->IsSelected(0));
+    CHECK(!m_list->IsSelected(1));
+    CHECK(m_list->IsSelected(2));
+    CHECK(!m_list->IsSelected(3));
 
     m_list->SetSelection(0);
     m_list->SetSelection(wxNOT_FOUND);
 
     m_list->GetSelections(selected);
-    CPPUNIT_ASSERT_EQUAL(0, selected.Count());
+    CHECK(selected.Count() == 0);
 }
 
-void ListBoxTestCase::ClickEvents()
+TEST_CASE_METHOD(ListBoxTestCase, "ListBox::ClickEvents", "[listbox]")
 {
 #if wxUSE_UIACTIONSIMULATOR
+    if ( !EnableUITests() )
+        return;
+
+    wxLISTBOX_TEST_OWNERDRAWN();
+
     wxTestableFrame* frame = wxStaticCast(wxTheApp->GetTopWindow(),
                                               wxTestableFrame);
 
@@ -208,18 +193,23 @@ void ListBoxTestCase::ClickEvents()
     sim.MouseClick();
     wxYield();
 
-    CPPUNIT_ASSERT_EQUAL(1, selected.GetCount());
+    CHECK(selected.GetCount() == 1);
 
     sim.MouseDblClick();
     wxYield();
 
-    CPPUNIT_ASSERT_EQUAL(1, dclicked.GetCount());
+    CHECK(dclicked.GetCount() == 1);
 #endif
 }
 
-void ListBoxTestCase::ClickNotOnItem()
+TEST_CASE_METHOD(ListBoxTestCase, "ListBox::ClickNotOnItem", "[listbox]")
 {
 #if wxUSE_UIACTIONSIMULATOR
+    if ( !EnableUITests() )
+        return;
+
+    wxLISTBOX_TEST_OWNERDRAWN();
+
     wxTestableFrame* frame = wxStaticCast(wxTheApp->GetTopWindow(),
                                               wxTestableFrame);
 
@@ -255,13 +245,15 @@ void ListBoxTestCase::ClickNotOnItem()
     wxYield();
 
     //If we are not clicking on an item we shouldn't have any events
-    CPPUNIT_ASSERT_EQUAL(0, selected.GetCount());
-    CPPUNIT_ASSERT_EQUAL(0, dclicked.GetCount());
+    CHECK(selected.GetCount() == 0);
+    CHECK(dclicked.GetCount() == 0);
 #endif
 }
 
-void ListBoxTestCase::HitTest()
+TEST_CASE_METHOD(ListBoxTestCase, "ListBox::HitTest", "[listbox]")
 {
+    wxLISTBOX_TEST_OWNERDRAWN();
+
     wxArrayString testitems;
     testitems.Add("item 0");
     testitems.Add("item 1");
@@ -284,9 +276,9 @@ void ListBoxTestCase::HitTest()
         p = wxPoint(10, 10);
     }
 #endif
-    CPPUNIT_ASSERT_EQUAL( 0, m_list->HitTest(p) );
+    CHECK( m_list->HitTest(p) == 0 );
 
-    CPPUNIT_ASSERT_EQUAL( wxNOT_FOUND, m_list->HitTest(290, 190) );
+    CHECK( m_list->HitTest(290, 190) == wxNOT_FOUND );
 }
 
 #endif //wxUSE_LISTBOX

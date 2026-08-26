@@ -19,48 +19,38 @@
 #include "wx/simplebook.h"
 #include "bookctrlbasetest.h"
 
-class SimplebookTestCase : public BookCtrlBaseTestCase, public CppUnit::TestCase
+#include <memory>
+
+class SimplebookTestCase : public BookCtrlBaseTestCase
 {
 public:
-    SimplebookTestCase() { }
+    SimplebookTestCase();
 
-    virtual void setUp() override;
-    virtual void tearDown() override;
-
-private:
-    virtual wxBookCtrlBase *GetBase() const override { return m_simplebook; }
+protected:
+    virtual wxBookCtrlBase *GetBase() const override
+    { return m_simplebook.get(); }
 
     virtual wxEventType GetChangedEvent() const override
-        { return wxEVT_BOOKCTRL_PAGE_CHANGED; }
+    { return wxEVT_BOOKCTRL_PAGE_CHANGED; }
 
     virtual wxEventType GetChangingEvent() const override
-        { return wxEVT_BOOKCTRL_PAGE_CHANGING; }
+    { return wxEVT_BOOKCTRL_PAGE_CHANGING; }
 
-    CPPUNIT_TEST_SUITE( SimplebookTestCase );
-        wxBOOK_CTRL_BASE_TESTS();
-    CPPUNIT_TEST_SUITE_END();
-
-    wxSimplebook *m_simplebook;
+    std::unique_ptr<wxSimplebook> m_simplebook;
 
     wxDECLARE_NO_COPY_CLASS(SimplebookTestCase);
 };
 
-// register in the unnamed registry so that these tests are run by default
-CPPUNIT_TEST_SUITE_REGISTRATION( SimplebookTestCase );
+wxBOOK_CTRL_BASE_TESTS(SimplebookTestCase, "Simplebook",
+                       "[simplebook][book]");
 
-// also include in its own registry so that these tests can be run alone
-CPPUNIT_TEST_SUITE_NAMED_REGISTRATION( SimplebookTestCase, "SimplebookTestCase" );
-
-void SimplebookTestCase::setUp()
+SimplebookTestCase::SimplebookTestCase()
 {
-    m_simplebook = new wxSimplebook(wxTheApp->GetTopWindow(), wxID_ANY);
+    m_simplebook = make_unique<wxSimplebook>(
+        wxTheApp->GetTopWindow(), wxID_ANY);
     AddPanels();
 }
 
-void SimplebookTestCase::tearDown()
-{
-    wxDELETE(m_simplebook);
-}
 
 #endif // wxUSE_BOOKCTRL
 

@@ -19,25 +19,18 @@
 
 #include "wx/app.h"
 
+#include <memory>
+
 // ----------------------------------------------------------------------------
 // test class
 // ----------------------------------------------------------------------------
 
-class TreeListCtrlTestCase : public CppUnit::TestCase
+class TreeListCtrlTestCase
 {
 public:
-    TreeListCtrlTestCase() { }
+    TreeListCtrlTestCase();
 
-    virtual void setUp() override;
-    virtual void tearDown() override;
-
-private:
-    CPPUNIT_TEST_SUITE( TreeListCtrlTestCase );
-        CPPUNIT_TEST( Traversal );
-        CPPUNIT_TEST( ItemText );
-        CPPUNIT_TEST( ItemCheck );
-    CPPUNIT_TEST_SUITE_END();
-
+protected:
     // Create the control with the given style.
     void Create(long style);
 
@@ -49,13 +42,9 @@ private:
 
 
     // Tests:
-    void Traversal();
-    void ItemText();
-    void ItemCheck();
-
 
     // The control itself.
-    wxTreeListCtrl *m_treelist;
+    std::unique_ptr<wxTreeListCtrl> m_treelist;
 
     // And some of its items.
     wxTreeListItem m_code,
@@ -67,12 +56,6 @@ private:
 
     wxDECLARE_NO_COPY_CLASS(TreeListCtrlTestCase);
 };
-
-// register in the unnamed registry so that these tests are run by default
-CPPUNIT_TEST_SUITE_REGISTRATION( TreeListCtrlTestCase );
-
-// also include in its own registry so that these tests can be run alone
-CPPUNIT_TEST_SUITE_NAMED_REGISTRATION( TreeListCtrlTestCase, "TreeListCtrlTestCase" );
 
 // ----------------------------------------------------------------------------
 // test initialization
@@ -98,11 +81,11 @@ TreeListCtrlTestCase::AddItem(const char *label,
 
 void TreeListCtrlTestCase::Create(long style)
 {
-    m_treelist = new wxTreeListCtrl(wxTheApp->GetTopWindow(),
-                                    wxID_ANY,
-                                    wxDefaultPosition,
-                                    wxSize(400, 200),
-                                    style);
+    m_treelist = make_unique<wxTreeListCtrl>(wxTheApp->GetTopWindow(),
+                                             wxID_ANY,
+                                             wxDefaultPosition,
+                                             wxSize(400, 200),
+                                             style);
 
     m_treelist->AppendColumn("Component");
     m_treelist->AppendColumn("# Files");
@@ -130,46 +113,32 @@ void TreeListCtrlTestCase::Create(long style)
     m_treelist->Update();
 }
 
-void TreeListCtrlTestCase::setUp()
+TreeListCtrlTestCase::TreeListCtrlTestCase()
 {
     m_numItems = 0;
     Create(wxTL_MULTIPLE | wxTL_3STATE);
 }
 
-void TreeListCtrlTestCase::tearDown()
-{
-    delete m_treelist;
-    m_treelist = nullptr;
-}
 
 // ----------------------------------------------------------------------------
 // the tests themselves
 // ----------------------------------------------------------------------------
 
 // Test various tree traversal methods.
-void TreeListCtrlTestCase::Traversal()
+TEST_CASE_METHOD(TreeListCtrlTestCase, "TreeListCtrl::Traversal", "[treelistctrl]")
 {
     // GetParent() tests:
     wxTreeListItem root = m_treelist->GetRootItem();
-    CPPUNIT_ASSERT( !m_treelist->GetItemParent(root) );
+    CHECK( !m_treelist->GetItemParent(root) );
 
-    CPPUNIT_ASSERT_EQUAL( root, m_treelist->GetItemParent(m_code) );
-    CPPUNIT_ASSERT_EQUAL( m_code, m_treelist->GetItemParent(m_code_osx) );
-
+    CHECK( m_treelist->GetItemParent(m_code) == root );
+    CHECK( m_treelist->GetItemParent(m_code_osx) == m_code );
 
     // GetFirstChild() and GetNextSibling() tests:
-    CPPUNIT_ASSERT_EQUAL( m_code, m_treelist->GetFirstChild(root) );
-    CPPUNIT_ASSERT_EQUAL
-    (
-        m_code_osx,
-        m_treelist->GetNextSibling
-        (
-            m_treelist->GetNextSibling
-            (
-                m_treelist->GetFirstChild(m_code)
-            )
-        )
-    );
+    CHECK( m_treelist->GetFirstChild(root) == m_code );
+    CHECK( m_treelist->GetNextSibling(
+               m_treelist->GetNextSibling(
+                   m_treelist->GetFirstChild(m_code))) == m_code_osx );
 
     // Get{First,Next}Item() test:
     unsigned numItems = 0;
@@ -180,52 +149,43 @@ void TreeListCtrlTestCase::Traversal()
         numItems++;
     }
 
-    CPPUNIT_ASSERT_EQUAL( m_numItems, numItems );
+    CHECK( numItems == m_numItems );
 }
 
 // Test accessing items text.
-void TreeListCtrlTestCase::ItemText()
+TEST_CASE_METHOD(TreeListCtrlTestCase, "TreeListCtrl::ItemText", "[treelistctrl]")
 {
-    CPPUNIT_ASSERT_EQUAL( "Cocoa", m_treelist->GetItemText(m_code_osx_cocoa) );
-    CPPUNIT_ASSERT_EQUAL( "46", m_treelist->GetItemText(m_code_osx_cocoa, 1) );
+    CHECK( m_treelist->GetItemText(m_code_osx_cocoa) == "Cocoa" );
+    CHECK( m_treelist->GetItemText(m_code_osx_cocoa, 1) == "46" );
 
     m_treelist->SetItemText(m_code_osx_cocoa, "wxCocoa");
-    CPPUNIT_ASSERT_EQUAL( "wxCocoa", m_treelist->GetItemText(m_code_osx_cocoa) );
+    CHECK( m_treelist->GetItemText(m_code_osx_cocoa) == "wxCocoa" );
 
     m_treelist->SetItemText(m_code_osx_cocoa, 1, "47");
-    CPPUNIT_ASSERT_EQUAL( "47", m_treelist->GetItemText(m_code_osx_cocoa, 1) );
+    CHECK( m_treelist->GetItemText(m_code_osx_cocoa, 1) == "47" );
 }
 
 // Test checking and unchecking items.
-void TreeListCtrlTestCase::ItemCheck()
+TEST_CASE_METHOD(TreeListCtrlTestCase, "TreeListCtrl::ItemCheck", "[treelistctrl]")
 {
-    CPPUNIT_ASSERT_EQUAL( wxCHK_UNCHECKED,
-                          m_treelist->GetCheckedState(m_code) );
+    CHECK( m_treelist->GetCheckedState(m_code) == wxCHK_UNCHECKED );
 
     m_treelist->CheckItemRecursively(m_code);
-    CPPUNIT_ASSERT_EQUAL( wxCHK_CHECKED,
-                          m_treelist->GetCheckedState(m_code) );
-    CPPUNIT_ASSERT_EQUAL( wxCHK_CHECKED,
-                          m_treelist->GetCheckedState(m_code_osx) );
-    CPPUNIT_ASSERT_EQUAL( wxCHK_CHECKED,
-                          m_treelist->GetCheckedState(m_code_osx_cocoa) );
+    CHECK( m_treelist->GetCheckedState(m_code) == wxCHK_CHECKED );
+    CHECK( m_treelist->GetCheckedState(m_code_osx) == wxCHK_CHECKED );
+    CHECK( m_treelist->GetCheckedState(m_code_osx_cocoa) == wxCHK_CHECKED );
 
     m_treelist->UncheckItem(m_code_osx_cocoa);
-    CPPUNIT_ASSERT_EQUAL( wxCHK_UNCHECKED,
-                          m_treelist->GetCheckedState(m_code_osx_cocoa) );
+    CHECK( m_treelist->GetCheckedState(m_code_osx_cocoa) == wxCHK_UNCHECKED );
 
     m_treelist->UpdateItemParentStateRecursively(m_code_osx_cocoa);
-    CPPUNIT_ASSERT_EQUAL( wxCHK_UNDETERMINED,
-                          m_treelist->GetCheckedState(m_code_osx) );
-    CPPUNIT_ASSERT_EQUAL( wxCHK_UNDETERMINED,
-                          m_treelist->GetCheckedState(m_code) );
+    CHECK( m_treelist->GetCheckedState(m_code_osx) == wxCHK_UNDETERMINED );
+    CHECK( m_treelist->GetCheckedState(m_code) == wxCHK_UNDETERMINED );
 
     m_treelist->CheckItemRecursively(m_code_osx, wxCHK_UNCHECKED);
     m_treelist->UpdateItemParentStateRecursively(m_code_osx_cocoa);
-    CPPUNIT_ASSERT_EQUAL( wxCHK_UNCHECKED,
-                          m_treelist->GetCheckedState(m_code_osx) );
-    CPPUNIT_ASSERT_EQUAL( wxCHK_UNDETERMINED,
-                          m_treelist->GetCheckedState(m_code) );
+    CHECK( m_treelist->GetCheckedState(m_code_osx) == wxCHK_UNCHECKED );
+    CHECK( m_treelist->GetCheckedState(m_code) == wxCHK_UNDETERMINED );
 }
 
 #endif // wxUSE_TREELISTCTRL
