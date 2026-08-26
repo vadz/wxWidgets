@@ -16,6 +16,9 @@
 #include "wx/apptrait.h"
 #include "wx/evtloop.h"
 #include "wx/timer.h"
+#include "wx/app.h"
+#include "wx/evtloop.h"
+#include "wx/thread.h"
 
 #include <memory>
 
@@ -126,3 +129,62 @@ TEST_CASE("EventLoop::TestExit", "[evtloop]")
     timerRun2.StartOnce(1);
     CHECK( loopOuter.Run() == EXIT_CODE_OUTER_LOOP );
 }
+
+#if wxUSE_THREADS
+
+// Worker thread that, after giving the main thread time to enter and block in
+// its event loop, schedules a callback on the main thread via CallAfter().
+class ExitLoopFromThread : public wxThread
+{
+public:
+    ExitLoopFromThread(wxEventLoop& loop, int rc)
+        : wxThread(wxTHREAD_JOINABLE),
+          m_loop(loop),
+          m_rc(rc)
+    {
+    }
+
+protected:
+    virtual void *Entry() override
+    {
+        // Wait until the main thread is actually blocked waiting for events, so
+        // the CallAfter() below arrives while the loop is idle -- which is when
+        // it must still be able to wake the loop.
+        wxMilliSleep(250);
+
+        // wxEventLoop is not a wxEvtHandler, so route the deferred call through
+        // wxTheApp (which lives on, and runs the call on, the main thread).
+        wxEventLoop* const loop = &m_loop;
+        const int rc = m_rc;
+        wxTheApp->CallAfter([loop, rc] { loop->ScheduleExit(rc); });
+
+        return nullptr;
+    }
+
+private:
+    wxEventLoop& m_loop;
+    const int m_rc;
+
+    wxDECLARE_NO_COPY_CLASS(ExitLoopFromThread);
+};
+
+TEST_CASE("EventLoop::TestCrossThreadCallAfter", "[evtloop]")
+{
+    // A CallAfter() issued from another thread must wake the main event loop and
+    // run there, even when the loop is otherwise idle. This is a regression test
+    // for wxQt, where wxQtEventLoopBase::WakeUp() woke the loop without posting a
+    // Qt event, so queued pending events (CallAfter) were never processed and the
+    // Run() below would block forever. See src/qt/evtloop.cpp.
+    wxEventLoop loop;
+
+    ExitLoopFromThread thread(loop, EXIT_CODE_OUTER_LOOP);
+    REQUIRE( thread.Run() == wxTHREAD_NO_ERROR );
+
+    // If the cross-thread CallAfter() is delivered, the loop exits with the code
+    // the worker passed to ScheduleExit(); otherwise this hangs (the bug).
+    CHECK( loop.Run() == EXIT_CODE_OUTER_LOOP );
+
+    thread.Wait();
+}
+
+#endif // wxUSE_THREADS
