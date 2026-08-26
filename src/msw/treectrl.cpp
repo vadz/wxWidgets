@@ -2793,7 +2793,7 @@ wxTreeCtrl::MSWWindowProc(WXUINT nMsg, WXWPARAM wParam, WXLPARAM lParam)
         // As with wxListCtrl, we need to draw the corner between two
         // scrollbars ourselves in dark mode to give it correct colour.
         rc = wxTreeCtrlBase::MSWWindowProc(nMsg, wParam, lParam);
-        wxMSWImpl::PaintScrollBarCorner(GetHwnd());
+        wxMSWImpl::PaintScrollBarCorner(this);
         return rc;
     }
 

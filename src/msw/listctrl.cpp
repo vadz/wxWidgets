@@ -3751,7 +3751,7 @@ wxListCtrl::MSWWindowProc(WXUINT nMsg, WXWPARAM wParam, WXLPARAM lParam)
                 auto const rc =
                     wxListCtrlBase::MSWWindowProc(nMsg, wParam, lParam);
 
-                wxMSWImpl::PaintScrollBarCorner(GetHwnd());
+                wxMSWImpl::PaintScrollBarCorner(this);
                 return rc;
             }
             break;
