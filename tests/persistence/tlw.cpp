@@ -23,6 +23,7 @@
 
 #ifdef __WXGTK__
     #include "waitfor.h"
+    #include "wx/gtk/private/backend.h"
 #endif // __WXGTK__
 
 // ----------------------------------------------------------------------------
@@ -52,6 +53,14 @@ TEST_CASE_METHOD(PersistenceTests, "wxPersistTLW", "[persist][tlw]")
 {
     const wxPoint pos(100, 150);
     const wxSize size(450, 350);
+
+    // Wayland doesn't allow clients to position their own top-level windows
+    // at all, unlike X11, so don't check the restored position there.
+#ifdef __WXGTK3__
+    const bool checkPosition = wxGTKImpl::IsX11(nullptr);
+#else
+    const bool checkPosition = true;
+#endif
 
     // Save the frame geometry.
     {
@@ -96,8 +105,11 @@ TEST_CASE_METHOD(PersistenceTests, "wxPersistTLW", "[persist][tlw]")
         // Test that the object was registered and restored.
         CHECK(wxPersistenceManager::Get().RegisterAndRestore(frame));
 
-        CHECK(pos.x == frame->GetPosition().x);
-        CHECK(pos.y == frame->GetPosition().y);
+        if ( checkPosition )
+        {
+            CHECK(pos.x == frame->GetPosition().x);
+            CHECK(pos.y == frame->GetPosition().y);
+        }
         CHECK(size.x == frame->GetSize().GetWidth());
         CHECK(size.y == frame->GetSize().GetHeight());
         CHECK(!frame->IsMaximized());
@@ -152,8 +164,11 @@ TEST_CASE_METHOD(PersistenceTests, "wxPersistTLW", "[persist][tlw]")
 
         frame->Restore();
 
-        CHECK(pos.x == frame->GetPosition().x);
-        CHECK(pos.y == frame->GetPosition().y);
+        if ( checkPosition )
+        {
+            CHECK(pos.x == frame->GetPosition().x);
+            CHECK(pos.y == frame->GetPosition().y);
+        }
         CHECK(size.x == frame->GetSize().GetWidth());
         CHECK(size.y == frame->GetSize().GetHeight());
 
