@@ -2764,7 +2764,7 @@ void wxGridWindow::ScrollWindow( int dx, int dy, const wxRect *rect )
 
 void wxGrid::ScrollWindow( int dx, int dy, const wxRect *rect )
 {
-    if ( UsesOverlaySelection() && IsSelection() )
+    if ( UsesOverlaySelection() && IsSelection() && ShouldRefresh() )
     {
         wxRect r; // dummy renderExtent
         wxRect oldSel = m_selection->GetSelectionShape(r).GetBoundingBox();
