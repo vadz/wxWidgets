@@ -251,6 +251,7 @@ private:
 
     QScrollBar *QtGetScrollBar( int orientation ) const;
 
+    void QtApplyFrameBorder(); // Apply border style like wxBORDER_SIMPLE to this window
     bool QtSetBackgroundStyle();
 
     std::unique_ptr<QPicture> m_qtPicture;                   // owned by this window

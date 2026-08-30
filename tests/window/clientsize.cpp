@@ -87,9 +87,6 @@ TEST_CASE("wxWindow::SetClientSize", "[window][client-size]")
 // Check that the client size of a scrolled window accounts for the scrollbars
 // shown in it.
 //
-// All important checks below fails for wxQt currently, so disable the test for
-// it for now.
-#ifndef __WXQT__
 TEST_CASE("wxScrolled::ClientSize", "[window][client-size][scroll]")
 {
     // Check that the borders, if any, are accounted for correctly too.
@@ -185,4 +182,3 @@ TEST_CASE("wxScrolled::ClientSize", "[window][client-size][scroll]")
     const wxSize sizeScrolled = sizeVirtual - sizeClient;
     CHECK( win->GetViewStart() == wxPoint(sizeScrolled.x, sizeScrolled.y) );
 }
-#endif // !__WXQT__

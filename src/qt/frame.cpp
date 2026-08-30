@@ -152,59 +152,26 @@ void wxFrame::SetToolBar(wxToolBar *toolbar)
 
 void wxFrame::SetWindowStyleFlag( long style )
 {
-    wxWindow::SetWindowStyleFlag( style );
+    wxFrameBase::SetWindowStyleFlag( style );
 
-    Qt::WindowFlags qtFlags = Qt::CustomizeWindowHint;
+    auto qtFlags = GetHandle()->windowFlags();
+
+    if ( HasFlag( wxFRAME_NO_TASKBAR ) )
+    {
+        qtFlags |= Qt::Dialog;
+    }
 
     if ( HasFlag( wxFRAME_TOOL_WINDOW ) )
     {
         qtFlags |= Qt::Tool;
     }
-    else
-    {
-        qtFlags |= Qt::Window;
-    }
 
-    if ( HasFlag(wxCAPTION) )
+    if ( HasFlag(wxSIMPLE_BORDER) || HasFlag(wxBORDER_NONE) )
     {
-        qtFlags |= Qt::WindowTitleHint;
-    }
-
-    if ( HasFlag(wxSYSTEM_MENU) )
-    {
-        qtFlags |= Qt::WindowSystemMenuHint;
-    }
-
-    if ( HasFlag(wxSTAY_ON_TOP) )
-    {
-        qtFlags |= Qt::WindowStaysOnTopHint;
-    }
-
-    if ( HasFlag(wxMINIMIZE_BOX) )
-    {
-        qtFlags |= Qt::WindowMinimizeButtonHint;
-    }
-
-    if ( HasFlag(wxMAXIMIZE_BOX) )
-    {
-        qtFlags |= Qt::WindowMaximizeButtonHint;
-    }
-
-    if ( HasFlag(wxCLOSE_BOX) )
-    {
-        qtFlags |= Qt::WindowCloseButtonHint;
-    }
-
-    if ( HasFlag(wxNO_BORDER) )
-    {
-        // Note any of the other window decoration hints (e.g.
-        // Qt::WindowCloseButtonHint, Qt::WindowTitleHint) override this style.
-        // It doesn't seem possible to create a QMainWindow with a title bar
-        // but without a resize border.
         qtFlags |= Qt::FramelessWindowHint;
     }
 
-    GetQMainWindow()->setWindowFlags(qtFlags);
+    GetHandle()->setWindowFlags(qtFlags);
 }
 
 void wxFrame::SetWindowModality(wxWindowMode modality)
