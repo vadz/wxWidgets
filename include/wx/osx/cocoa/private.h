@@ -235,6 +235,7 @@ public :
     virtual void                controlTextDidChange();
 
     virtual void                ClipsToBounds(bool clip) override;
+    virtual bool                DoesClipToBounds() const override;
 
     virtual void                AdjustClippingView(wxScrollBar* horizontal, wxScrollBar* vertical) override;
     virtual void                UseClippingView() override;
