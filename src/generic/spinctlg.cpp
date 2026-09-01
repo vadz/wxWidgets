@@ -247,10 +247,6 @@ bool wxSpinCtrlGenericBase::Create(wxWindow *parent,
             m_value = AdjustAndSnap(d);
     }
 
-#ifdef __WXOSX__
-    MacClipsToBounds(false);
-#endif
-
     m_textCtrl   = new wxSpinCtrlTextGeneric(this, DoValueToText(m_value), style);
     m_spinButton = new wxSpinCtrlButtonGeneric(this, styleWithoutBorder);
 
