@@ -498,6 +498,9 @@ TEST_CASE_METHOD(GridTestCase, "Grid::CellEditResize", "[grid]")
 TEST_CASE_METHOD(GridTestCase, "Grid::CellClick", "[grid]")
 {
 #if wxUSE_UIACTIONSIMULATOR
+    if ( !EnableUITests() )
+        return;
+
     EventCounter lclick(m_grid, wxEVT_GRID_CELL_LEFT_CLICK);
     EventCounter ldclick(m_grid, wxEVT_GRID_CELL_LEFT_DCLICK);
     EventCounter rclick(m_grid, wxEVT_GRID_CELL_RIGHT_CLICK);
@@ -556,6 +559,9 @@ TEST_CASE_METHOD(GridTestCase, "Grid::CellClick", "[grid]")
 TEST_CASE_METHOD(GridTestCase, "Grid::ReorderedColumnsCellClick", "[grid]")
 {
 #if wxUSE_UIACTIONSIMULATOR
+    if ( !EnableUITests() )
+        return;
+
     EventCounter click(m_grid, wxEVT_GRID_CELL_LEFT_CLICK);
 
     wxUIActionSimulator sim;
@@ -587,6 +593,9 @@ TEST_CASE_METHOD(GridTestCase, "Grid::ReorderedColumnsCellClick", "[grid]")
 TEST_CASE_METHOD(GridTestCase, "Grid::CellSelect", "[grid]")
 {
 #if wxUSE_UIACTIONSIMULATOR
+    if ( !EnableUITests() )
+        return;
+
     EventCounter cell(m_grid, wxEVT_GRID_SELECT_CELL);
 
     wxUIActionSimulator sim;
@@ -2231,7 +2240,13 @@ public:
 // test below.
 inline void UpdateGrid(wxGrid* grid)
 {
-#ifndef __WXQT__
+#if defined(__WXGTK__)
+    // Update() is a no-op under GTK3/Wayland, so wait for the actual
+    // paint event instead of relying on it being synchronous.
+    WaitForPaint waitForPaint(grid);
+    grid->Refresh();
+    waitForPaint.YieldUntilPainted();
+#elif !defined(__WXQT__)
     grid->Refresh();
     grid->Update();
 #else

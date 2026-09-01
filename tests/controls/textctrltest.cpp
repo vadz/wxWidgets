@@ -118,6 +118,8 @@ protected:
 
     std::unique_ptr<wxTextCtrl> m_text;
 
+    std::unique_ptr<wxWindow> m_dummySibling;
+
     const long m_style;
 
     wxDECLARE_NO_COPY_CLASS(TextCtrlTestCase);
@@ -197,6 +199,7 @@ void TextCtrlTestCase::CreateText(long extraStyles)
 {
     const long style = m_style | extraStyles;
     const int h = (style & wxTE_MULTILINE) ? TEXT_HEIGHT : -1;
+    m_dummySibling = make_unique<wxWindow>(wxTheApp->GetTopWindow(), wxID_ANY);
     m_text = make_unique<wxTextCtrl>(wxTheApp->GetTopWindow(), wxID_ANY, "",
                                      wxDefaultPosition, wxSize(400, h),
                                      style);

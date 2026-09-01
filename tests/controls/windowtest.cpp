@@ -30,6 +30,10 @@
 #include "wx/tooltip.h"
 #include "wx/wupdlock.h"
 
+#ifdef __WXGTK__
+    #include "wx/gtk/private/backend.h"
+#endif // __WXGTK__
+
 
 class WindowTestCase
 {
@@ -627,9 +631,15 @@ TEST_CASE_METHOD(WindowTestCase, "Window::Refresh", "[window]")
     WaitFor("parent repaint", [&]() { return isParentPainted; }, 100);
 
     // child1 should be the only window not to receive the wxEVT_PAINT event
-    // because it does not intersect with the refreshed rectangle.
+    // because it does not intersect with the refreshed rectangle. However,
+    // GTK3 with a native Wayland backend doesn't support partial redraws at
+    // all: any invalidation anywhere ends up repainting every window with
+    // its own full bounds, so don't check this there.
+#ifdef __WXGTK3__
+    if ( wxGTKImpl::IsX11(nullptr) )
+#endif // __WXGTK3__
+        CHECK(isChild1Painted == false);
     CHECK(isParentPainted == true);
-    CHECK(isChild1Painted == false);
     CHECK(isChild2Painted == true);
     CHECK(isChild3Painted == true);
 }

@@ -229,13 +229,13 @@ TEST_CASE_METHOD(KeyboardEventTestCase, "KeyboardEvent::NormalLetter",
     sim.Char('a');
     wxYield();
 
-    CHECK( m_win->GetKeyDownCount() == 1 );
+    REQUIRE( m_win->GetKeyDownCount() == 1 );
     ASSERT_KEY_EVENT_IS( m_win->GetKeyDownEvent(), 'A' );
 
-    CHECK( m_win->GetCharCount() == 1 );
+    REQUIRE( m_win->GetCharCount() == 1 );
     ASSERT_KEY_EVENT_IS( m_win->GetCharEvent(), 'a' );
 
-    CHECK( m_win->GetKeyUpCount() == 1 );
+    REQUIRE( m_win->GetKeyUpCount() == 1 );
     ASSERT_KEY_EVENT_IS( m_win->GetKeyUpEvent(), 'A' );
 #endif
 }
@@ -250,13 +250,13 @@ TEST_CASE_METHOD(KeyboardEventTestCase, "KeyboardEvent::NormalSpecial",
     sim.Char(WXK_END);
     wxYield();
 
-    CHECK( m_win->GetKeyDownCount() == 1 );
+    REQUIRE( m_win->GetKeyDownCount() == 1 );
     ASSERT_KEY_EVENT_IS( m_win->GetKeyDownEvent(), WXK_END );
 
-    CHECK( m_win->GetCharCount() == 1 );
+    REQUIRE( m_win->GetCharCount() == 1 );
     ASSERT_KEY_EVENT_IS( m_win->GetCharEvent(), WXK_END );
 
-    CHECK( m_win->GetKeyUpCount() == 1 );
+    REQUIRE( m_win->GetKeyUpCount() == 1 );
     ASSERT_KEY_EVENT_IS( m_win->GetKeyUpEvent(), WXK_END );
 }
 
@@ -273,17 +273,17 @@ TEST_CASE_METHOD(KeyboardEventTestCase, "KeyboardEvent::CtrlLetter",
     sim.Char('z', wxMOD_CONTROL);
     wxYield();
 
-    CHECK( m_win->GetKeyDownCount() == 2 );
+    REQUIRE( m_win->GetKeyDownCount() == 2 );
     ASSERT_KEY_EVENT_IS( m_win->GetKeyDownEvent(0),
                          ModKeyDown(WXK_CONTROL) );
     ASSERT_KEY_EVENT_IS( m_win->GetKeyDownEvent(1),
                          KeyDesc('Z', wxMOD_CONTROL) );
 
-    CHECK( m_win->GetCharCount() == 1 );
+    REQUIRE( m_win->GetCharCount() == 1 );
     ASSERT_KEY_EVENT_IS( m_win->GetCharEvent(),
                          KeyDesc('\x1a', wxMOD_CONTROL) );
 
-    CHECK( m_win->GetKeyUpCount() == 2 );
+    REQUIRE( m_win->GetKeyUpCount() == 2 );
     ASSERT_KEY_EVENT_IS( m_win->GetKeyUpEvent(0),
                          KeyDesc('Z', wxMOD_CONTROL) );
     ASSERT_KEY_EVENT_IS( m_win->GetKeyUpEvent(1),
@@ -301,17 +301,17 @@ TEST_CASE_METHOD(KeyboardEventTestCase, "KeyboardEvent::CtrlSpecial",
     sim.Char(WXK_PAGEUP, wxMOD_CONTROL);
     wxYield();
 
-    CHECK( m_win->GetKeyDownCount() == 2 );
+    REQUIRE( m_win->GetKeyDownCount() == 2 );
     ASSERT_KEY_EVENT_IS( m_win->GetKeyDownEvent(0),
                          ModKeyDown(WXK_CONTROL) );
     ASSERT_KEY_EVENT_IS( m_win->GetKeyDownEvent(1),
                          KeyDesc(WXK_PAGEUP, wxMOD_CONTROL) );
 
-    CHECK( m_win->GetCharCount() == 1 );
+    REQUIRE( m_win->GetCharCount() == 1 );
     ASSERT_KEY_EVENT_IS( m_win->GetCharEvent(),
                          KeyDesc(WXK_PAGEUP, wxMOD_CONTROL) );
 
-    CHECK( m_win->GetKeyUpCount() == 2 );
+    REQUIRE( m_win->GetKeyUpCount() == 2 );
     ASSERT_KEY_EVENT_IS( m_win->GetKeyUpEvent(0),
                          KeyDesc(WXK_PAGEUP, wxMOD_CONTROL) );
     ASSERT_KEY_EVENT_IS( m_win->GetKeyUpEvent(1),
@@ -328,17 +328,17 @@ TEST_CASE_METHOD(KeyboardEventTestCase, "KeyboardEvent::ShiftLetter",
     sim.Char('Q', wxMOD_SHIFT);
     wxYield();
 
-    CHECK( m_win->GetKeyDownCount() == 2 );
+    REQUIRE( m_win->GetKeyDownCount() == 2 );
     ASSERT_KEY_EVENT_IS( m_win->GetKeyDownEvent(0),
                          ModKeyDown(WXK_SHIFT) );
     ASSERT_KEY_EVENT_IS( m_win->GetKeyDownEvent(1),
                          KeyDesc('Q', wxMOD_SHIFT) );
 
-    CHECK( m_win->GetCharCount() == 1 );
+    REQUIRE( m_win->GetCharCount() == 1 );
     ASSERT_KEY_EVENT_IS( m_win->GetCharEvent(),
                          KeyDesc('Q', wxMOD_SHIFT) );
 
-    CHECK( m_win->GetKeyUpCount() == 2 );
+    REQUIRE( m_win->GetKeyUpCount() == 2 );
     ASSERT_KEY_EVENT_IS( m_win->GetKeyUpEvent(0),
                          KeyDesc('Q', wxMOD_SHIFT) );
     ASSERT_KEY_EVENT_IS( m_win->GetKeyUpEvent(1),
@@ -355,17 +355,17 @@ TEST_CASE_METHOD(KeyboardEventTestCase, "KeyboardEvent::ShiftSpecial",
     sim.Char(WXK_F3, wxMOD_SHIFT);
     wxYield();
 
-    CHECK( m_win->GetKeyDownCount() == 2 );
+    REQUIRE( m_win->GetKeyDownCount() == 2 );
     ASSERT_KEY_EVENT_IS( m_win->GetKeyDownEvent(0),
                          ModKeyDown(WXK_SHIFT) );
     ASSERT_KEY_EVENT_IS( m_win->GetKeyDownEvent(1),
                          KeyDesc(WXK_F3, wxMOD_SHIFT) );
 
-    CHECK( m_win->GetCharCount() == 1 );
+    REQUIRE( m_win->GetCharCount() == 1 );
     ASSERT_KEY_EVENT_IS( m_win->GetCharEvent(),
                          KeyDesc(WXK_F3, wxMOD_SHIFT) );
 
-    CHECK( m_win->GetKeyUpCount() == 2 );
+    REQUIRE( m_win->GetKeyUpCount() == 2 );
     ASSERT_KEY_EVENT_IS( m_win->GetKeyUpEvent(0),
                          KeyDesc(WXK_F3, wxMOD_SHIFT) );
     ASSERT_KEY_EVENT_IS( m_win->GetKeyUpEvent(1),

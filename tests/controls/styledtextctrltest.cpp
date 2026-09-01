@@ -62,6 +62,9 @@ TEST_CASE_METHOD(StcPopupWindowsTestCase,
                  "wxStyledTextCtrl::AutoComp",
                  "[wxStyledTextCtrl][focus]")
 {
+    if ( !EnableUITests() )
+        return;
+
     m_stc->SetFocus();
     m_focusAlwaysRetained = true;
     m_stc->AutoCompShow(0,"ability able about above abroad absence absent");
@@ -111,6 +114,9 @@ TEST_CASE_METHOD(StcPopupWindowsTestCase,
                  "wxStyledTextCtrl::Calltip",
                  "[wxStyledTextCtrl][focus]")
 {
+    if ( !EnableUITests() )
+        return;
+
     m_stc->SetFocus();
     m_calltipClickReceived = false;
     m_focusAlwaysRetained = true;

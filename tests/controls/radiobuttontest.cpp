@@ -50,6 +50,9 @@ TEST_CASE_METHOD(RadioButtonTestCase, "RadioButton::Click", "[radiobutton]")
 {
     // OS X doesn't support selecting a single radio button
 #if wxUSE_UIACTIONSIMULATOR && !defined(__WXOSX__)
+    if ( !EnableUITests() )
+        return;
+
     EventCounter selected(m_radio.get(), wxEVT_RADIOBUTTON);
 
     wxUIActionSimulator sim;

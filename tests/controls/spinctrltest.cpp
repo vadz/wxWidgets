@@ -143,6 +143,9 @@ TEST_CASE_METHOD(SpinCtrlTestCase1, "SpinCtrl::NoEventsInCtor", "[spinctrl]")
 TEST_CASE_METHOD(SpinCtrlTestCase2, "SpinCtrl::Arrows", "[spinctrl]")
 {
 #if wxUSE_UIACTIONSIMULATOR
+    if ( !EnableUITests() )
+        return;
+
     EventCounter updated(m_spin.get(), wxEVT_SPINCTRL);
 
     wxUIActionSimulator sim;
@@ -170,6 +173,9 @@ TEST_CASE_METHOD(SpinCtrlTestCase2, "SpinCtrl::Arrows", "[spinctrl]")
 TEST_CASE_METHOD(SpinCtrlTestCase1, "SpinCtrl::Wrap", "[spinctrl]")
 {
 #if wxUSE_UIACTIONSIMULATOR
+    if ( !EnableUITests() )
+        return;
+
     m_spin->Create(wxTheApp->GetTopWindow(), wxID_ANY, "",
                    wxDefaultPosition, wxDefaultSize,
                    wxSP_ARROW_KEYS | wxSP_WRAP);
@@ -337,6 +343,9 @@ TEST_CASE_METHOD(SpinCtrlTestCase2, "SpinCtrl::Base", "[spinctrl]")
 TEST_CASE_METHOD(SpinCtrlTestCase3, "SpinCtrl::SetValueInsideEventHandler", "[spinctrl]")
 {
 #if wxUSE_UIACTIONSIMULATOR
+    if ( !EnableUITests() )
+        return;
+
     // A dummy control with which we change the focus.
     wxTextCtrl* text = new wxTextCtrl(wxTheApp->GetTopWindow(), wxID_ANY);
     text->Move(m_spin->GetSize().x, m_spin->GetSize().y * 3);
@@ -367,6 +376,9 @@ TEST_CASE_METHOD(SpinCtrlTestCase3, "SpinCtrl::SetValueInsideEventHandler", "[sp
 TEST_CASE_METHOD(SpinCtrlTestCase1, "SpinCtrl::Increment", "[spinctrl]")
 {
 #if wxUSE_UIACTIONSIMULATOR
+    if ( !EnableUITests() )
+        return;
+
     m_spin->Create(wxTheApp->GetTopWindow(), wxID_ANY, "",
         wxDefaultPosition, wxDefaultSize,
         wxSP_ARROW_KEYS | wxSP_WRAP);

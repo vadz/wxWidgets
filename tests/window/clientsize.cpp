@@ -60,12 +60,12 @@ TEST_CASE("wxWindow::MinClientSize", "[window][client-size]")
 
 TEST_CASE("wxWindow::SetClientSize", "[window][client-size]")
 {
-#if defined(__WXGTK__) && !defined(__WXGTK3__)
-    // Under wxGTK2 we need to have two children (at least) because if there
+#if defined(__WXGTK__)
+    // Under wxGTK we need to have two children (at least) because if there
     // is exactly one child its size is set to fill the whole parent frame
     // and the window cannot be resized - see wxTopLevelWindowBase::Layout().
     std::unique_ptr<wxWindow> w0(new wxWindow(wxTheApp->GetTopWindow(), wxID_ANY));
-#endif // wxGTK 2
+#endif // wxGTK
     std::unique_ptr<wxWindow> w(new wxWindow(wxTheApp->GetTopWindow(), wxID_ANY));
 
     wxRect reqSize = wxTheApp->GetTopWindow()->GetClientRect();

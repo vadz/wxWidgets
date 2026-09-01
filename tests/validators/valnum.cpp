@@ -312,6 +312,9 @@ TEST_CASE_METHOD(NumValidatorTestCase, "ValNum::SignSpace", "[valnum]")
 
 TEST_CASE_METHOD(NumValidatorTestCase, "ValNum::Interactive", "[valnum]")
 {
+    if ( !EnableUITests() )
+        return;
+
     // Set a locale using comma as thousands separator character.
     wxLocale loc(wxLANGUAGE_ENGLISH_UK, wxLOCALE_DONT_LOAD_DEFAULT);
 

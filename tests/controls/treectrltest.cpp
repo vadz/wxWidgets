@@ -204,6 +204,9 @@ TEST_CASE_METHOD(TreeCtrlTestCase, "wxTreeCtrl::DeleteAllItems", "[treectrl]")
 
 TEST_CASE_METHOD(TreeCtrlTestCase, "wxTreeCtrl::ItemClick", "[treectrl]")
 {
+    if ( !EnableUITests() )
+        return;
+
     EventCounter activated(m_tree.get(), wxEVT_TREE_ITEM_ACTIVATED);
     EventCounter rclick(m_tree.get(), wxEVT_TREE_ITEM_RIGHT_CLICK);
 
@@ -230,6 +233,9 @@ TEST_CASE_METHOD(TreeCtrlTestCase, "wxTreeCtrl::ItemClick", "[treectrl]")
 
 TEST_CASE_METHOD(TreeCtrlTestCase, "wxTreeCtrl::LabelEdit", "[treectrl]")
 {
+    if ( !EnableUITests() )
+        return;
+
     EventCounter beginedit(m_tree.get(), wxEVT_TREE_BEGIN_LABEL_EDIT);
     EventCounter endedit(m_tree.get(), wxEVT_TREE_END_LABEL_EDIT);
 
@@ -256,6 +262,9 @@ TEST_CASE_METHOD(TreeCtrlTestCase, "wxTreeCtrl::LabelEdit", "[treectrl]")
 
 TEST_CASE_METHOD(TreeCtrlTestCase, "wxTreeCtrl::KeyDown", "[treectrl]")
 {
+    if ( !EnableUITests() )
+        return;
+
     EventCounter keydown(m_tree.get(), wxEVT_TREE_KEY_DOWN);
 
     wxUIActionSimulator sim;
@@ -270,6 +279,9 @@ TEST_CASE_METHOD(TreeCtrlTestCase, "wxTreeCtrl::KeyDown", "[treectrl]")
 
 TEST_CASE_METHOD(TreeCtrlTestCase, "wxTreeCtrl::CollapseExpandEvents", "[treectrl]")
 {
+    if ( !EnableUITests() )
+        return;
+
 #ifdef __WXGTK__
     // Works locally, but not when run on Travis CI.
     if ( IsAutomaticTest() )
@@ -315,6 +327,9 @@ TEST_CASE_METHOD(TreeCtrlTestCase, "wxTreeCtrl::CollapseExpandEvents", "[treectr
 
 TEST_CASE_METHOD(TreeCtrlTestCase, "wxTreeCtrl::SelectionChange", "[treectrl]")
 {
+    if ( !EnableUITests() )
+        return;
+
     m_tree->ExpandAll();
 
     // This is currently needed to work around a problem under wxMSW: clicking
@@ -400,6 +415,9 @@ TEST_CASE_METHOD(TreeCtrlTestCase, "wxTreeCtrl::SelectionChange", "[treectrl]")
 
 TEST_CASE_METHOD(TreeCtrlTestCase, "wxTreeCtrl::SelectItemMultiInteractive", "[treectrl]")
 {
+    if ( !EnableUITests() )
+        return;
+
 #if defined(__WXGTK__) && !defined(__WXGTK3__)
     // FIXME: This test fails on GitHub CI under wxGTK2 although works fine on
     //        development machine, no idea why though!
@@ -475,6 +493,9 @@ TEST_CASE_METHOD(TreeCtrlTestCase, "wxTreeCtrl::SelectItemMultiInteractive", "[t
 
 TEST_CASE_METHOD(TreeCtrlTestCase, "wxTreeCtrl::Menu", "[treectrl]")
 {
+    if ( !EnableUITests() )
+        return;
+
     EventCounter menu(m_tree.get(), wxEVT_TREE_ITEM_MENU);
     wxUIActionSimulator sim;
 
@@ -495,6 +516,9 @@ TEST_CASE_METHOD(TreeCtrlTestCase, "wxTreeCtrl::Menu", "[treectrl]")
 
 TEST_CASE_METHOD(TreeCtrlTestCase, "wxTreeCtrl::KeyNavigation", "[treectrl]")
 {
+    if ( !EnableUITests() )
+        return;
+
     wxUIActionSimulator sim;
 
     m_tree->CollapseAll();
