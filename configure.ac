@@ -547,7 +547,7 @@ WX_ARG_WITH(libnotify,     [  --with-libnotify        use libnotify for notifica
 WX_ARG_WITH(appindicator,  [  --with-appindicator     use AppIndicator (required for wxTaskBarIcon under Wayland)], wxUSE_APPINDICATOR)
 WX_ARG_WITH(opengl,        [  --with-opengl           use OpenGL (or Mesa)], wxUSE_OPENGL)
 WX_ARG_WITH(xtest,         [  --with-xtest            use XTest extension], wxUSE_XTEST)
-WX_ARG_WITH(nanosvg,       [  --with-nanosvg          use NanoSVG for rasterizing SVG], wxUSE_NANOSVG)
+WX_ARG_SYS_WITH(nanosvg,   [  --with-nanosvg          use NanoSVG for rasterizing SVG], wxUSE_NANOSVG)
 WX_ARG_WITH(lunasvg,       [  --with-lunasvg          use LunaSVG for rasterizing SVG], wxUSE_LUNASVG)
 
 if test "$wxUSE_GTK" = 1 -o "$wxUSE_X11" = 1; then
@@ -2767,8 +2767,35 @@ dnl ------------------------------------------------------------------------
 dnl Check for NanoSVG libraries
 dnl ------------------------------------------------------------------------
 
-if test "$wxUSE_NANOSVG" = "yes"; then
+NANOSVG_LINK=
+if test "$wxUSE_NANOSVG" != "no" ; then
     AC_DEFINE(wxUSE_NANOSVG)
+
+    if test "$wxUSE_NANOSVG" = "sys" -o "$wxUSE_NANOSVG" = "yes" ; then
+        dnl NanoSVG doesn't provide a pkg-config file, so just check for its
+        dnl header, which the system packages providing it (e.g. Debian,
+        dnl Fedora) install into a "nanosvg" subdirectory.
+        AC_CHECK_HEADER([nanosvg/nanosvg.h], [wx_found_nanosvg=yes],
+                        [wx_found_nanosvg=no], [ ])
+
+        if test "$wx_found_nanosvg" = "yes" ; then
+            wxUSE_NANOSVG=sys
+            AC_DEFINE(wxUSE_NANOSVG_EXTERNAL)
+
+            dnl Some distributions (e.g. Fedora) also build NanoSVG as a shared
+            dnl library: link with it if available, otherwise compile the
+            dnl header-only implementation into wxWidgets itself.
+            AC_CHECK_LIB(nanosvgrast, nsvgCreateRasterizer,
+                         [NANOSVG_LINK="-lnanosvgrast -lnanosvg"],
+                         [CXXFLAGS="$CXXFLAGS -DwxUSE_NANOSVG_EXTERNAL_ENABLE_IMPL"],
+                         [-lnanosvg -lm])
+        elif test "$wxUSE_NANOSVG" = "sys" ; then
+            AC_MSG_ERROR([system NanoSVG library not found! Use --with-nanosvg=builtin to use built-in version])
+        else
+            AC_MSG_WARN([system NanoSVG library not found, will use built-in instead])
+            wxUSE_NANOSVG=builtin
+        fi
+    fi
 fi
 
 dnl ------------------------------------------------------------------------
@@ -7953,7 +7980,7 @@ EXTRALIBS_XML="$EXPAT_LINK"
 EXTRALIBS_HTML="$MSPACK_LINK"
 EXTRALIBS_MEDIA="$GST_LIBS"
 if test "$wxUSE_GUI" = "yes"; then
-    EXTRALIBS_GUI=`echo $GUI_TK_LIBRARY $SDL_LIBS $PNG_LINK $JPEG_LINK $TIFF_LINK $LZMA_LINK $JBIG_LINK $WEBP_LINK $WEBKIT_LINK`
+    EXTRALIBS_GUI=`echo $GUI_TK_LIBRARY $SDL_LIBS $PNG_LINK $JPEG_LINK $TIFF_LINK $LZMA_LINK $JBIG_LINK $WEBP_LINK $NANOSVG_LINK $WEBKIT_LINK`
 fi
 if test "$wxUSE_OPENGL" = "yes"; then
     EXTRALIBS_OPENGL="$LDFLAGS_GL $OPENGL_LIBS"
@@ -8003,6 +8030,9 @@ if test "$wxUSE_GUI" = "yes"; then
             WXCONFIG_LIBS="$WEBP_LINK $WXCONFIG_LIBS"
             ;;
     esac
+    if test "$wxUSE_NANOSVG" = "sys" -a -n "$NANOSVG_LINK" ; then
+        WXCONFIG_LIBS="$NANOSVG_LINK $WXCONFIG_LIBS"
+    fi
 fi
 case "$wxUSE_REGEX" in
     builtin)
@@ -8602,6 +8632,7 @@ echo "                                       png                ${wxUSE_LIBPNG-n
 echo "                                       regex              ${wxUSE_REGEX}"
 echo "                                       tiff               ${wxUSE_LIBTIFF-none}"
 echo "                                       webp               ${wxUSE_LIBWEBP-none}"
+echo "                                       nanosvg            ${wxUSE_NANOSVG-none}"
 if test "$wxUSE_X11" = 1; then
 echo "                                       xpm                ${wxUSE_LIBXPM-none}"
 fi

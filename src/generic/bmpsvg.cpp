@@ -279,8 +279,8 @@ wxGCC_WARNING_SUPPRESS(double-promotion)
 #endif
 
 #if wxUSE_NANOSVG_EXTERNAL
-    #include <nanosvg.h>
-    #include <nanosvgrast.h>
+    #include <nanosvg/nanosvg.h>
+    #include <nanosvg/nanosvgrast.h>
 #else
     #include "../../3rdparty/nanosvg/src/nanosvg.h"
     #include "../../3rdparty/nanosvg/src/nanosvgrast.h"
