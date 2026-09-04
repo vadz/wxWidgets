@@ -607,6 +607,11 @@ protected:
     void OnFloatingPaneActivated(wxWindow* window);
     void OnFloatingPaneClosed(wxWindow* window, wxCloseEvent& evt);
     void OnFloatingPaneResized(wxWindow* window, const wxRect& rect);
+
+    void DoMovePane(wxAuiPaneInfo& pane, const wxPoint& pt, const wxPoint& offset);
+    void DoDropPane(wxAuiPaneInfo& pane, const wxPoint& pt, const wxPoint& offset);
+    void DoEndMovePane(wxAuiPaneInfo& pane);
+
     void Render(wxDC* dc);
     void Repaint(wxDC* dc = nullptr);
     void ProcessMgrEvent(wxAuiManagerEvent& event);

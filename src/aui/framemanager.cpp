@@ -4269,12 +4269,20 @@ void wxAuiManager::OnFloatingPaneMoving(wxWindow* wnd, wxDirection dir)
     wxUnusedVar(dir);
 #endif
 
-    wxPoint client_pt = m_frame->ScreenToClient(pt);
-
     // calculate the offset from the upper left-hand corner
     // of the frame to the mouse pointer
     wxPoint frame_pos = pane.frame->GetPosition();
-    wxPoint action_offset(pt.x-frame_pos.x, pt.y-frame_pos.y);
+
+    DoMovePane(pane, pt, wxPoint(pt.x-frame_pos.x, pt.y-frame_pos.y));
+}
+
+// Common part of OnFloatingPaneMoving() and OnPaneDragMove(): update the hint
+// shown for the pane being dragged to the given position.
+void wxAuiManager::DoMovePane(wxAuiPaneInfo& pane,
+                              const wxPoint& pt,
+                              const wxPoint& action_offset)
+{
+    wxPoint client_pt = m_frame->ScreenToClient(pt);
 
     // no hint for toolbar floating windows
     if (pane.IsToolbar() && m_action == actionDragFloatingPane)
@@ -4311,7 +4319,7 @@ void wxAuiManager::OnFloatingPaneMoving(wxWindow* wnd, wxDirection dir)
     }
 
 
-    DrawHintRect(wnd, client_pt, action_offset);
+    DrawHintRect(pane.window, client_pt, action_offset);
 
 #ifdef __WXGTK__
     // this cleans up some screen artifacts that are caused on GTK because
@@ -4372,21 +4380,35 @@ void wxAuiManager::OnFloatingPaneMoved(wxWindow* wnd, wxDirection dir)
     wxUnusedVar(dir);
 #endif
 
-    wxPoint client_pt = m_frame->ScreenToClient(pt);
-
     // calculate the offset from the upper left-hand corner
     // of the frame to the mouse pointer
     wxPoint frame_pos = pane.frame->GetPosition();
     wxPoint action_offset(pt.x-frame_pos.x, pt.y-frame_pos.y);
+    DoDropPane(pane, pt, action_offset);
 
+    DoEndMovePane(pane);
+}
+
+// Common part of OnFloatingPaneMoved() and OnPaneDragDrop().
+void wxAuiManager::DoDropPane(wxAuiPaneInfo& pane,
+                              const wxPoint& pt,
+                              const wxPoint& action_offset)
+{
     // if a key modifier is pressed while dragging the frame,
     // don't dock the window
     if (CanDockPanel(pane))
     {
+        wxPoint client_pt = m_frame->ScreenToClient(pt);
+
         // do the drop calculation
         DoDrop(m_docks, m_panes, pane, client_pt, action_offset);
     }
+}
 
+// Common part of OnFloatingPaneMoved() and OnPaneDragCancel(): just update the
+// layout after moving a pane ended without a drop.
+void wxAuiManager::DoEndMovePane(wxAuiPaneInfo& pane)
+{
     // if the pane is still floating, update its floating
     // position (that we store)
     if (pane.IsFloating())
