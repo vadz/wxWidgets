@@ -732,6 +732,9 @@ private:
     // minimized, in which case we postpone updating it until it is restored.
     bool m_updateOnRestore = false;
 
+    // Number of (possibly nested) calls to DoFrameLayout() currently executing.
+    int m_frameLayoutDepth = 0;
+
     // Toolbars used to show minimized panes. Some, or all, of them can be null.
     //
     // This is indexed by wxAUI_DOCK_TOP, wxAUI_DOCK_BOTTOM, wxAUI_DOCK_RIGHT

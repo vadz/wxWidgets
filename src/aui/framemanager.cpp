@@ -3375,7 +3375,11 @@ void wxAuiManager::Update()
 
 void wxAuiManager::DoFrameLayout()
 {
+    // Keep track whether we're inside a layout in order to be able to ignore
+    // mouse motion events arriving while we're here, see OnMotion().
+    ++m_frameLayoutDepth;
     m_frame->Layout();
+    --m_frameLayoutDepth;
 
     for ( auto& part : m_uiParts )
     {
@@ -5154,6 +5158,14 @@ void wxAuiManager::OnLeftUp(wxMouseEvent& event)
 
 void wxAuiManager::OnMotion(wxMouseEvent& event)
 {
+    // At least with GTK4, this event can arrive while DoFrameLayout() is using
+    // the sizer and calling Update(), as we can do below, would be
+    // catastrophic in this case as it would destroy this sizer and cause a
+    // crash, so simply don't do anything in this case -- we'll get another
+    // motion event later anyway.
+    if ( m_frameLayoutDepth > 0 )
+        return;
+
     // sometimes when Update() is called from inside this method,
     // a spurious mouse move event is generated; this check will make
     // sure that only real mouse moves will get anywhere in this method;
