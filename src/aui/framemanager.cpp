@@ -92,14 +92,24 @@ public:
     {
     }
 
+    // Let the caller override our detection of drag start: this should be used
+    // when we already know that the user is dragging.
+    void SetDragStarted()
+    {
+        m_dragReallyStarted = true;
+    }
+
     void OnDragOver(wxWindow* win, const wxPoint& pt) override
     {
-        m_mgr->OnPaneDragMove(m_paneWindow, win, pt, m_offset);
+        if ( IsReallyDragging(pt) )
+            m_mgr->OnPaneDragMove(m_paneWindow, win, pt, m_offset);
     }
 
     void OnDragDrop(wxWindow* win, const wxPoint& pt) override
     {
-        m_mgr->OnPaneDragDrop(m_paneWindow, win, pt, m_offset);
+        // Don't do anything if the pane wasn't really dragged anywhere.
+        if ( IsReallyDragging(pt) )
+            m_mgr->OnPaneDragDrop(m_paneWindow, win, pt, m_offset);
 
         m_mgr->OnPaneDragEnd(m_paneWindow);
     }
@@ -110,9 +120,34 @@ public:
     }
 
 private:
+    // Return true if the pointer has moved far enough from the position where
+    // the drag had started for this to be a drag and not just a click.
+    bool IsReallyDragging(const wxPoint& pt)
+    {
+        if ( m_dragReallyStarted )
+            return true;
+
+        if ( m_startPos == wxDefaultPosition )
+        {
+            m_startPos = pt;
+            return false;
+        }
+
+        wxWindow* const win = m_mgr->GetManagedWindow();
+        if ( !wxSystemSettings::ExceedsDragThreshold(m_startPos, pt, win) )
+            return false;
+
+        m_dragReallyStarted = true;
+
+        return true;
+    }
+
     wxAuiManager* const m_mgr;
     wxWindow* const m_paneWindow;
     const wxPoint m_offset;
+
+    wxPoint m_startPos = wxDefaultPosition;
+    bool m_dragReallyStarted = false;
 
     wxDECLARE_NO_COPY_CLASS(wxAuiPaneDragHandler);
 };
@@ -4141,6 +4176,8 @@ void wxAuiManager::StartPaneDrag(wxWindow* pane_window,
         wxPoint client_pt = pane.frame->ClientToScreen(client_rect.GetTopLeft());
         wxPoint origin_pt = client_pt - window_rect.GetTopLeft();
         m_actionOffset += origin_pt;
+
+        StartDragSession(pane, pane.frame);
     }
 }
 
@@ -4505,7 +4542,7 @@ void wxAuiManager::SaveDockPositions(const wxAuiPaneInfo& pane)
 // Try to start dragging the floating frame of the given pane using the system
 // drag support: this currently only works under Wayland, where we can't move
 // the frame ourselves, and does nothing elsewhere.
-void wxAuiManager::StartDragSession(wxAuiPaneInfo& pane)
+void wxAuiManager::StartDragSession(wxAuiPaneInfo& pane, wxWindow* origin)
 {
 #ifdef wxHAS_TLW_DRAG_SESSION
     auto handler = std::make_unique<wxAuiPaneDragHandler>
@@ -4513,7 +4550,16 @@ void wxAuiManager::StartDragSession(wxAuiPaneInfo& pane)
                      this, pane.window, m_actionOffset
                    );
 
-    auto session = wxTLWDragSession::Create(m_frame, std::move(handler));
+    // When the drag starts in the managed window itself, we already know that
+    // the user is dragging the pane because the caller had already checked for
+    // it (but when it starts in the floating frame we still have to check
+    // whether the pointer really moves, so we don't do this then).
+    if ( origin == m_frame )
+    {
+        handler->SetDragStarted();
+    }
+
+    auto session = wxTLWDragSession::Create(origin, m_frame, std::move(handler));
     if (!session)
         return;
 
@@ -4531,6 +4577,7 @@ void wxAuiManager::StartDragSession(wxAuiPaneInfo& pane)
     m_actionWindow = nullptr;
 #else // !wxHAS_TLW_DRAG_SESSION
     wxUnusedVar(pane);
+    wxUnusedVar(origin);
 #endif // wxHAS_TLW_DRAG_SESSION/!wxHAS_TLW_DRAG_SESSION
 }
 
@@ -5631,6 +5678,16 @@ void wxAuiManager::OnPaneButton(wxAuiManagerEvent& evt)
 
     if (evt.button == wxAUI_BUTTON_CLOSE)
     {
+        // If we're the manager of a floating frame, close the frame itself
+        // instead of just closing the pane inside it: this ensures that the
+        // manager owning this pane is notified about it, just as it would be
+        // if the frame was closed using its own close button.
+        if (auto* const frame = wxDynamicCast(m_frame, wxAuiFloatingFrame))
+        {
+            frame->Close();
+            return;
+        }
+
         // fire pane close event
         wxAuiManagerEvent e(wxEVT_AUI_PANE_CLOSE);
         e.SetManager(this);

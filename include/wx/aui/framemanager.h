@@ -627,8 +627,15 @@ protected:
     // sequential positions after finishing dragging a toolbar pane.
     void SaveDockPositions(const wxAuiPaneInfo& pane);
 
-    // Try to start dragging the given pane using the system drag support.
-    void StartDragSession(wxAuiPaneInfo& pane);
+    // Try to start dragging the given pane using the system drag support,
+    // "origin" is the window in which the mouse is currently captured.
+    void StartDragSession(wxAuiPaneInfo& pane, wxWindow* origin);
+
+    // By default the origin window is the managed window itself.
+    void StartDragSession(wxAuiPaneInfo& pane)
+    {
+        StartDragSession(pane, m_frame);
+    }
 
     // Handlers for the drag session events, used under Wayland only, see
     // wxAuiPaneDragHandler. Here "win" is the TLW under the pointer or null.

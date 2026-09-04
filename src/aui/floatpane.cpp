@@ -27,6 +27,8 @@
 #ifndef WX_PRECOMP
 #endif
 
+#include "wx/private/tlwdrag.h"
+
 #ifdef __WXMSW__
 #include "wx/msw/private.h"
 #endif
@@ -36,17 +38,42 @@ wxIMPLEMENT_CLASS(wxAuiFloatingFrame, wxAuiFloatingFrameBaseClass);
 namespace
 {
 
+// Return true if the floating frames shouldn't use any decorations of their
+// own but show the caption of the pane inside them instead.
+bool UseOwnCaption()
+{
+    // Currently we must do it when using Wayland TLW drag protocol as when
+    // dragging the floating frame by our caption we get the notifications
+    // allowing to dock it, while dragging by the standard caption doesn't
+    // generate any events at all and hence the pane can't be docked.
+    //
+    // We might want to use this even in the other cases as our caption may be
+    // preferable to wxMiniFrame one, but for now be conservative and don't
+    // change the behaviour when using X11 or under the other platforms.
+    return wxTLWDragSession::IsAvailable();
+}
+
 // Return the style to use for the floating frame showing the given pane.
 long GetFloatingFrameStyle(long style, const wxAuiPaneInfo& pane)
 {
     if ( !pane.IsFixed() )
         style |= wxRESIZE_BORDER;
 
-    if ( pane.HasCloseButton() )
-        style |= wxCLOSE_BOX;
+    if ( UseOwnCaption() )
+    {
+        // The caption shown inside the frame provides the close button and
+        // allows dragging the frame, so we don't need any decorations.
+        style &= ~(wxCAPTION | wxSYSTEM_MENU);
+        style |= wxBORDER_NONE;
+    }
+    else
+    {
+        if ( pane.HasCloseButton() )
+            style |= wxCLOSE_BOX;
 
-    if ( pane.HasMaximizeButton() )
-        style |= wxMAXIMIZE_BOX;
+        if ( pane.HasMaximizeButton() )
+            style |= wxMAXIMIZE_BOX;
+    }
 
     return style;
 }
@@ -102,6 +129,17 @@ void wxAuiFloatingFrame::SetPaneWindow(const wxAuiPaneInfo& pane)
     contained_pane.Dock().Center().Show().
                     CaptionVisible(false).
                     PaneBorder(false);
+
+    if ( UseOwnCaption() )
+    {
+        // Show the caption to allow dragging and closing the pane, but not the
+        // other buttons: only "maximize" would make sense but it doesn't
+        // currently work and it's not really clear if it's useful.
+        contained_pane.CaptionVisible().
+                       MaximizeButton(false).
+                       MinimizeButton(false).
+                       PinButton(false);
+    }
 
     // Carry over the minimum size
     wxSize pane_min_size = pane.window->GetMinSize();
@@ -176,6 +214,13 @@ void wxAuiFloatingFrame::SetPaneWindow(const wxAuiPaneInfo& pane)
                 size.y += gripperSize;
             else
                 size.x += gripperSize;
+        }
+
+        // The caption shown inside the frame takes space too, so account for
+        // it to avoid making the pane window itself smaller than it should be.
+        if (m_ownerMgr && contained_pane.HasCaption())
+        {
+            size.y += m_ownerMgr->m_art->GetMetricForWindow(wxAUI_DOCKART_CAPTION_SIZE, m_paneWindow);
         }
 
         SetClientSize(size);
