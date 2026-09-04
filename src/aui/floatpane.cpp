@@ -33,6 +33,26 @@
 
 wxIMPLEMENT_CLASS(wxAuiFloatingFrame, wxAuiFloatingFrameBaseClass);
 
+namespace
+{
+
+// Return the style to use for the floating frame showing the given pane.
+long GetFloatingFrameStyle(long style, const wxAuiPaneInfo& pane)
+{
+    if ( !pane.IsFixed() )
+        style |= wxRESIZE_BORDER;
+
+    if ( pane.HasCloseButton() )
+        style |= wxCLOSE_BOX;
+
+    if ( pane.HasMaximizeButton() )
+        style |= wxMAXIMIZE_BOX;
+
+    return style;
+}
+
+} // anonymous namespace
+
 wxAuiFloatingFrame::wxAuiFloatingFrame(wxWindow* parent,
                 wxAuiManager* owner_mgr,
                 const wxAuiPaneInfo& pane,
@@ -43,11 +63,7 @@ wxAuiFloatingFrame::wxAuiFloatingFrame(wxWindow* parent,
                            */)
                 : wxAuiFloatingFrameBaseClass(parent, id, wxEmptyString,
                         pane.floating_pos, pane.floating_size,
-                        style |
-                        (pane.HasCloseButton()?wxCLOSE_BOX:0) |
-                        (pane.HasMaximizeButton()?wxMAXIMIZE_BOX:0) |
-                        (pane.IsFixed()?0:wxRESIZE_BORDER)
-                        )
+                        GetFloatingFrameStyle(style, pane))
     , m_ownerMgr(owner_mgr)
 {
     m_moving = false;
