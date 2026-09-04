@@ -502,9 +502,10 @@ if(wxUSE_GUI)
 
                         wx_generate_wayland_protocol(${wx_protocols_input_dir} pointer-warp-v1)
 
-                        # Check if we have GTK new enough to allow using XDG
-                        # session management protocol: 3.24.53 is the earliest one
-                        # with gdk_wayland_window_get_xdg_toplevel() that we need.
+                        # Check if we have GTK new enough to allow using the
+                        # XDG protocols requiring access to xdg_toplevel: we
+                        # need gdk_wayland_window_get_xdg_toplevel() which was
+                        # added in 3.24.53.
                         if(GTK3_VERSION VERSION_GREATER_EQUAL 3.24.53)
                             # We also need wayland-protocols as this protocol
                             # depends on xdg-shell one.
@@ -514,10 +515,12 @@ if(wxUSE_GUI)
 
                                 wx_generate_wayland_protocol(${wx_protocols_input_dir} xdg-session-management-v1)
                                 wx_generate_wayland_protocol(${WAYLAND_PROTOCOLS_DIR}/stable/xdg-shell xdg-shell)
+                                wx_generate_wayland_protocol(${WAYLAND_PROTOCOLS_DIR}/staging/xdg-toplevel-drag xdg-toplevel-drag-v1)
 
                                 set(wxHAVE_WAYLAND_SESSION_MANAGEMENT ON)
+                                set(wxHAVE_WAYLAND_TOPLEVEL_DRAG ON)
                             else()
-                                message(WARNING "wayland-protocols not found, xdg-session-management protocol won't be used")
+                                message(WARNING "wayland-protocols package not found, Wayland-specific functionality will be disabled")
                             endif()
                         endif()
 
