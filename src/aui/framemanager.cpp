@@ -4593,7 +4593,14 @@ void wxAuiManager::OnPaneDragEnd(wxWindow* paneWindow)
     // only to hide the hint which could be still shown.
     wxAuiPaneInfo& pane = GetPane(paneWindow);
     if (pane.IsOk() && pane.frame)
+    {
+        // Do the same thing as at the end of a mouse-driven toolbar drag in
+        // OnLeftUp() if the toolbar was dropped into a dock.
+        if (pane.IsToolbar() && !pane.IsFloating())
+            SaveDockPositions(pane);
+
         DoEndMovePane(pane);
+    }
 
     // We don't need the session any more, but don't delete it right now as
     // we're called from it, do it as soon as possible instead.
@@ -5538,6 +5545,9 @@ void wxAuiManager::OnMotion(wxMouseEvent& event)
             pane.state &= ~wxAuiPaneInfo::actionPane;
             m_action = actionDragFloatingPane;
             m_actionWindow = pane.frame;
+
+            // Allow dragging under Wayland, see comment in OnMotion().
+            StartDragSession(pane);
         }
     }
     else
