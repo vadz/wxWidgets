@@ -196,11 +196,11 @@ TEST_CASE_METHOD(RadioBoxTestCase, "RadioBox::SetString", "[radiobox]")
 
 TEST_CASE("RadioBox::NoItems", "[radiobox]")
 {
-    std::unique_ptr<wxRadioBox>
-        radio(new wxRadioBox(wxTheApp->GetTopWindow(), wxID_ANY, "Empty",
-                             wxDefaultPosition, wxDefaultSize,
-                             0, nullptr,
-                             1, wxRA_SPECIFY_COLS));
+    auto radio = make_unique<wxRadioBox>(wxTheApp->GetTopWindow(), wxID_ANY,
+                                         "Empty",
+                                         wxDefaultPosition, wxDefaultSize,
+                                         0, nullptr,
+                                         1, wxRA_SPECIFY_COLS);
 
     CHECK( radio->GetCount() == 0 );
     CHECK( radio->IsEmpty() );

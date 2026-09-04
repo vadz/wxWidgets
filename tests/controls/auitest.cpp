@@ -514,7 +514,7 @@ TEST_CASE_METHOD(AuiNotebookTestCase, "wxAuiNotebook::Layout", "[aui]")
 
 TEST_CASE("wxAuiToolBar::Items", "[aui][toolbar]")
 {
-    std::unique_ptr<wxAuiToolBar> tbar{new wxAuiToolBar(wxTheApp->GetTopWindow())};
+    auto tbar = make_unique<wxAuiToolBar>(wxTheApp->GetTopWindow());
 
     // Check that adding more toolbar elements doesn't invalidate the existing
     // pointers.

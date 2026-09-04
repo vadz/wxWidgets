@@ -245,9 +245,9 @@ TEST_CASE_METHOD(NumValidatorTestCase, "ValNum::ZeroAsBlank", "[valnum]")
     m_text->SetSize(100, 50);
     m_text->MarkDirty();
     m_text->SetFocus();
-    std::unique_ptr<wxTextCtrl>
-        text2(new wxTextCtrl(wxTheApp->GetTopWindow(), wxID_ANY, "Test",
-                             wxPoint(0, 100), wxSize(100, 50)));
+    auto text2 = make_unique<wxTextCtrl>(wxTheApp->GetTopWindow(), wxID_ANY,
+                                         "Test", wxPoint(0, 100),
+                                         wxSize(100, 50));
     text2->SetFocus();
     WaitFor("the other control to become focused", [&text2]() {
         return text2->HasFocus();

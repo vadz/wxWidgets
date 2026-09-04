@@ -364,7 +364,7 @@ TEST_CASE("wxFileSystem::ArchiveDuplicateNames", "[filesys][fs_arc][zip][find]")
     }
 
     const size_t zipLen = mos.GetSize();
-    std::unique_ptr<unsigned char[]> zipData(new unsigned char[zipLen]);
+    auto zipData = make_unique<unsigned char[]>(zipLen);
     mos.CopyTo(zipData.get(), zipLen);
     wxMemoryFSHandler::AddFile("dup.zip", zipData.get(), zipLen);
 

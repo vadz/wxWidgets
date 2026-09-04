@@ -24,8 +24,8 @@
 
 TEST_CASE("wxInfoBar::Buttons", "[wxInfoBar]")
 {
-    const std::unique_ptr<wxInfoBar>
-        info(new wxInfoBar(wxTheApp->GetTopWindow(), wxID_ANY, wxINFOBAR_CHECKBOX));
+    const auto info = make_unique<wxInfoBar>(wxTheApp->GetTopWindow(), wxID_ANY,
+                                             wxINFOBAR_CHECKBOX);
 
     CHECK(info->GetButtonCount() == 0);
 

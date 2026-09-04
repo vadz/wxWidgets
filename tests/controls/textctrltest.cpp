@@ -1420,10 +1420,10 @@ TEST_CASE("wxTextCtrl::GetBestSize", "[wxTextCtrl][best-size]")
     {
         wxSize operator()(const wxString& text) const
         {
-            std::unique_ptr<wxTextCtrl>
-                t(new wxTextCtrl(wxTheApp->GetTopWindow(), wxID_ANY, text,
-                                 wxDefaultPosition, wxDefaultSize,
-                                 wxTE_MULTILINE));
+            auto t = make_unique<wxTextCtrl>(wxTheApp->GetTopWindow(),
+                                             wxID_ANY, text,
+                                             wxDefaultPosition, wxDefaultSize,
+                                             wxTE_MULTILINE);
             return t->GetBestSize();
         }
     } getBestSizeFor;
@@ -1489,9 +1489,9 @@ TEST_CASE("wxTextCtrl::LongPaste", "[wxTextCtrl][clipboard][paste]")
         return;
     }
 
-    std::unique_ptr<wxTextCtrl>
-        text(new wxTextCtrl(wxTheApp->GetTopWindow(), wxID_ANY, wxString(),
-                            wxDefaultPosition, wxDefaultSize, style));
+    auto text = make_unique<wxTextCtrl>(wxTheApp->GetTopWindow(), wxID_ANY,
+                                        wxString(), wxDefaultPosition,
+                                        wxDefaultSize, style);
 
     // This could actually be much higher, but it makes the test proportionally
     // slower, so use a relatively small (but still requiring more space than
@@ -1543,7 +1543,7 @@ TEST_CASE("wxTextCtrl::EventsOnCreate", "[wxTextCtrl][event]")
 
     EventCounter updated(parent, wxEVT_TEXT);
 
-    std::unique_ptr<wxTextCtrl> text(new wxTextCtrl(parent, wxID_ANY, "Hello"));
+    auto text = make_unique<wxTextCtrl>(parent, wxID_ANY, "Hello");
 
     // Creating the control shouldn't result in any wxEVT_TEXT events.
     CHECK( updated.GetCount() == 0 );
@@ -1560,7 +1560,7 @@ TEST_CASE("wxTextCtrl::GTKSetPangoMarkup", "[wxTextCtrl][pango]")
 {
     wxWindow* const parent = wxTheApp->GetTopWindow();
 
-    std::unique_ptr<wxTextCtrl> text(new wxTextCtrl(parent, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxTE_MULTILINE));
+    auto text = make_unique<wxTextCtrl>(parent, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxTE_MULTILINE);
     text->SetValue("Bogus content to be replaced");
     text->GTKSetPangoMarkup(R"(Welcome to <span background="#D3D3D3" strikethrough="true">wxWidgets</span> 3.3!)");
 
@@ -1573,7 +1573,7 @@ TEST_CASE("wxTextCtrl::Get/SetRTFValue", "[wxTextCtrl][rtf]")
 {
     wxWindow* const parent = wxTheApp->GetTopWindow();
 
-    std::unique_ptr<wxTextCtrl> text(new wxTextCtrl(parent, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxTE_RICH2 | wxTE_MULTILINE));
+    auto text = make_unique<wxTextCtrl>(parent, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxTE_RICH2 | wxTE_MULTILINE);
 
     text->SetRTFValue(R"({\rtf1\ansi\ansicpg1252\deff0\nouicompat\deflang1033{\fonttbl{\f0\fnil\fcharset0 Calibri;}}
 {\colortbl ;\red192\green80\blue77;}
@@ -1598,7 +1598,7 @@ TEST_CASE("wxTextCtrl::SearchText", "[wxTextCtrl][search]")
 {
     wxWindow* const parent = wxTheApp->GetTopWindow();
 
-    std::unique_ptr<wxTextCtrl> text(new wxTextCtrl(parent, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxTE_RICH2 | wxTE_MULTILINE));
+    auto text = make_unique<wxTextCtrl>(parent, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxTE_RICH2 | wxTE_MULTILINE);
 
     text->SetValue(R"(Allows more than 30Kb of text
 (on all Windows versions)
@@ -1731,10 +1731,10 @@ TEST_CASE("wxTextCtrl::InitialCanUndo", "[wxTextCtrl][undo]")
     INFO("wxTextCtrl with style " << style);
 
     wxWindow* const parent = wxTheApp->GetTopWindow();
-    std::unique_ptr<wxTextCtrl> text(new wxTextCtrl(parent, wxID_ANY, "",
-                                                wxDefaultPosition,
-                                                wxDefaultSize,
-                                                style));
+    auto text = make_unique<wxTextCtrl>(parent, wxID_ANY, "",
+                                        wxDefaultPosition,
+                                        wxDefaultSize,
+                                        style);
 
     CHECK( !text->CanUndo() );
 }
@@ -1754,11 +1754,11 @@ TEST_CASE("wxTextCtrl::EmptyUndoBuffer", "[wxTextCtrl][undo]")
         return;
     }
 
-    std::unique_ptr<wxTextCtrl> text(new wxTextCtrl(wxTheApp->GetTopWindow(),
-                                                wxID_ANY, "",
-                                                wxDefaultPosition,
-                                                wxDefaultSize,
-                                                wxTE_MULTILINE | wxTE_RICH2));
+    auto text = make_unique<wxTextCtrl>(wxTheApp->GetTopWindow(),
+                                        wxID_ANY, "",
+                                        wxDefaultPosition,
+                                        wxDefaultSize,
+                                        wxTE_MULTILINE | wxTE_RICH2);
 
     text->AppendText("foo");
 

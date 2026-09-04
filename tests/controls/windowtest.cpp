@@ -197,8 +197,7 @@ static void DoTestShowHideEvent(wxWindow* window)
 TEST_CASE_METHOD(WindowTestCase, "Window::ScrolledWindowPhysicalScrolling",
                  "[window][scroll]")
 {
-    std::unique_ptr<ScrollCountingWindow>
-        win(new ScrollCountingWindow(wxTheApp->GetTopWindow()));
+    auto win = make_unique<ScrollCountingWindow>(wxTheApp->GetTopWindow());
 
     win->EnableScrolling(false, false);
     win->Scroll(1, 2);
@@ -623,8 +622,8 @@ TEST_CASE_METHOD(WindowTestCase, "Window::FindWindowBy", "[window]")
 TEST_CASE_METHOD(WindowTestCase, "Window::SizerErrors", "[window][sizer][error]")
 {
     wxWindow* const child = new wxWindow(m_window, wxID_ANY);
-    std::unique_ptr<wxSizer> const sizer1(new wxBoxSizer(wxHORIZONTAL));
-    std::unique_ptr<wxSizer> const sizer2(new wxBoxSizer(wxHORIZONTAL));
+    auto const sizer1 = make_unique<wxBoxSizer>(wxHORIZONTAL);
+    auto const sizer2 = make_unique<wxBoxSizer>(wxHORIZONTAL);
 
     REQUIRE_NOTHROW( sizer1->Add(child) );
 #ifdef __WXDEBUG__

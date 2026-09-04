@@ -251,7 +251,7 @@ TEST_CASE("MiscThread::Semaphore", "[thread]")
 
     for ( int i = 0; i < 3*SEM_LIMIT; i++ )
     {
-        std::unique_ptr<MySemaphoreThread> t{new MySemaphoreThread(i, &sem)};
+        auto t = make_unique<MySemaphoreThread>(i, &sem);
         CHECK( t->Run() == wxTHREAD_NO_ERROR );
 
         threads.push_back(std::move(t));

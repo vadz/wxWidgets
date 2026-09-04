@@ -692,7 +692,7 @@ TEST_CASE_METHOD(RequestFixture,
         return;
 
     Create("put");
-    std::unique_ptr<wxInputStream> is(new wxFileInputStream("horse.png"));
+    auto is = make_unique<wxFileInputStream>("horse.png");
     REQUIRE( is->IsOk() );
 
     request.SetData(is.release(), "image/png");
@@ -1210,7 +1210,7 @@ TEST_CASE_METHOD(SyncRequestFixture,
         return;
 
     Create("put");
-    std::unique_ptr<wxInputStream> is(new wxFileInputStream("horse.png"));
+    auto is = make_unique<wxFileInputStream>("horse.png");
     REQUIRE( is->IsOk() );
 
     request.SetData(is.release(), "image/png");

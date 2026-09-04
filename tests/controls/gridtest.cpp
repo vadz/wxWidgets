@@ -2783,7 +2783,7 @@ TEST_CASE("GridBlockCoords::SymDifference", "[grid]")
 
 TEST_CASE("wxGrid::Events", "[grid][event]")
 {
-    const std::unique_ptr<wxGrid> grid(new wxGrid());
+    const auto grid = make_unique<wxGrid>();
 
     EventCounter selectEvents(grid.get(), wxEVT_GRID_SELECT_CELL);
 

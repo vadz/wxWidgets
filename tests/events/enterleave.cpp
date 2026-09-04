@@ -41,8 +41,7 @@ TEST_CASE("EnterLeaveEvents", "[wxEvent][enter-leave]")
         return;
     }
 
-    std::unique_ptr<wxPanel>
-        panel(new wxPanel(wxTheApp->GetTopWindow(), wxID_ANY));
+    auto panel = make_unique<wxPanel>(wxTheApp->GetTopWindow(), wxID_ANY);
     auto button = new wxButton(panel.get(), wxID_ANY, "button", {50, 50});
     auto textctrl = new wxTextCtrl(panel.get(), wxID_ANY, "", {160, 50});
 

@@ -263,7 +263,7 @@ TEST_CASE("wxHtmlCell::Detach", "[html][cell]")
 {
     wxMemoryDC dc;
 
-    std::unique_ptr<wxHtmlContainerCell> const top(new wxHtmlContainerCell(nullptr));
+    auto const top = make_unique<wxHtmlContainerCell>(nullptr);
     wxHtmlContainerCell* const cont = new wxHtmlContainerCell(nullptr);
     wxHtmlCell* const cell1 = new wxHtmlWordCell("Hello", dc);
     wxHtmlCell* const cell2 = new wxHtmlColourCell(*wxRED);

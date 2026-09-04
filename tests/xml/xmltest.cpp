@@ -66,7 +66,7 @@ void CheckXml(const wxXmlNode *n, ...)
 
 TEST_CASE("Xml::InsertChild", "[xml]")
 {
-    std::unique_ptr<wxXmlNode> root(new wxXmlNode(wxXML_ELEMENT_NODE, "root"));
+    auto root = make_unique<wxXmlNode>(wxXML_ELEMENT_NODE, "root");
     root->AddChild(new wxXmlNode(wxXML_ELEMENT_NODE, "1"));
     wxXmlNode *two = new wxXmlNode(wxXML_ELEMENT_NODE, "2");
     root->AddChild(two);
@@ -86,7 +86,7 @@ TEST_CASE("Xml::InsertChild", "[xml]")
 
 TEST_CASE("Xml::InsertChildAfter", "[xml]")
 {
-    std::unique_ptr<wxXmlNode> root(new wxXmlNode(wxXML_ELEMENT_NODE, "root"));
+    auto root = make_unique<wxXmlNode>(wxXML_ELEMENT_NODE, "root");
 
     root->InsertChildAfter(new wxXmlNode(wxXML_ELEMENT_NODE, "1"), nullptr);
     CheckXml(root.get(), "1", nullptr);

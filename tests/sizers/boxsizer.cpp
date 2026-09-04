@@ -363,7 +363,7 @@ TEST_CASE_METHOD(BoxSizerTestCase, "BoxSizer::IncompatibleFlags", "[sizer]")
 #define ASSERT_SIZER_INVALID_FLAGS(f, msg) \
     WX_ASSERT_FAILS_WITH_ASSERT_MESSAGE( \
             "Expected assertion not generated for " msg, \
-            std::unique_ptr<wxSizerItem> item(new wxSizerItem(10, 10, 0, f)); \
+            auto item = make_unique<wxSizerItem>(10, 10, 0, f); \
             sizer->Add(item.get()); \
             item.release() \
         )

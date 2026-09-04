@@ -52,7 +52,7 @@ TEST_CASE("SpinCtrlDouble::NoEventsInCtor", "[spinctrl][spinctrldouble]")
 {
     // Verify that creating the control does not generate any events. This is
     // unexpected and shouldn't happen.
-    std::unique_ptr<wxSpinCtrlDouble> spin(new wxSpinCtrlDouble);
+    auto spin = make_unique<wxSpinCtrlDouble>();
 
     EventCounter updatedSpin(spin.get(), wxEVT_SPINCTRLDOUBLE);
     EventCounter updatedText(spin.get(), wxEVT_TEXT);
@@ -258,17 +258,14 @@ TEST_CASE_METHOD(SpinCtrlDoubleTestCase,
 
 static inline unsigned int GetInitialDigits(double inc)
 {
-    std::unique_ptr<wxSpinCtrlDouble> sc(new wxSpinCtrlDouble
-        (
-            wxTheApp->GetTopWindow(),
-            wxID_ANY,
-            wxEmptyString,
-            wxDefaultPosition,
-            wxDefaultSize,
-            wxSP_ARROW_KEYS,
-            0, 50, 0,
-            inc
-        ));
+    auto sc = make_unique<wxSpinCtrlDouble>(wxTheApp->GetTopWindow(),
+                                            wxID_ANY,
+                                            wxEmptyString,
+                                            wxDefaultPosition,
+                                            wxDefaultSize,
+                                            wxSP_ARROW_KEYS,
+                                            0, 50, 0,
+                                            inc);
     return sc->GetDigits();
 }
 

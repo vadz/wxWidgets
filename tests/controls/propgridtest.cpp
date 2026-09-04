@@ -489,7 +489,7 @@ TEST_CASE("PropertyGridTestCase", "[propgrid]")
 #if defined(__WXGTK__)
     // Under wxGTK we need to have two children (at least) because if there
     // is one child its paint area is set to fill the whole parent frame.
-    std::unique_ptr<wxWindow> win0(new wxWindow(wxTheApp->GetTopWindow(), wxID_ANY));
+    auto win0 = make_unique<wxWindow>(wxTheApp->GetTopWindow(), wxID_ANY);
 #endif // wxGTK
     std::unique_ptr<wxPropertyGridManager> pgManager(CreateGrid(-1, -1));
 
