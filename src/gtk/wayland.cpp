@@ -942,8 +942,7 @@ wxTLWDragSession::Create(wxWindow* origin,
 #ifdef wxHAS_WAYLAND_TLW_DRAG
     using namespace wxWayland;
 
-    // Check that the compositor supports the protocol we need.
-    if ( !WLGlobals.toplevel_drag_manager )
+    if ( !IsAvailable() )
         return nullptr;
 
     wxWindow* const tlw = wxGetTopLevelParent(origin);
@@ -974,6 +973,16 @@ wxTLWDragSession::Create(wxWindow* origin,
 
     return nullptr;
 #endif // wxHAS_WAYLAND_TLW_DRAG/!wxHAS_WAYLAND_TLW_DRAG
+}
+
+/* static */
+bool wxTLWDragSession::IsAvailable()
+{
+#ifdef wxHAS_WAYLAND_TLW_DRAG
+    return wxWayland::WLGlobals.toplevel_drag_manager != nullptr;
+#else
+    return false;
+#endif
 }
 
 #endif // wxHAS_TLW_DRAG_SESSION

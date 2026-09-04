@@ -75,6 +75,13 @@ public:
 class WXDLLIMPEXP_CORE wxTLWDragSession
 {
 public:
+    // Return true if drag sessions can be used at all, i.e. if we're running
+    // under a system supporting them.
+    //
+    // IOW, if this returns true, Create() may still fail, but if this returns
+    // false, Create() will never succeed.
+    static bool IsAvailable();
+
     // Creating a drag session starts a drag originating from the given window,
     // which must be shown and must be the window currently having the pointer
     // grab, i.e. this can only be called while handling a mouse event for it.
@@ -101,6 +108,8 @@ public:
 // for wxHAS_TLW_DRAG_SESSION first.
 class wxTLWDragSession
 {
+public:
+    static bool IsAvailable() { return false; }
 };
 
 #endif // wxHAS_TLW_DRAG_SESSION/!wxHAS_TLW_DRAG_SESSION
