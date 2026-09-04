@@ -4482,6 +4482,26 @@ void wxAuiManager::DoEndMovePane(wxAuiPaneInfo& pane)
     HideHint();
 }
 
+// Save the positions of all the panes in the dock containing the given pane:
+// this is done at the end of dragging a toolbar pane to ensure that the panes
+// of the dock it ended up in have sequential positions.
+void wxAuiManager::SaveDockPositions(const wxAuiPaneInfo& pane)
+{
+    for ( auto dockInfo : FindDocks(m_docks, pane.dock_direction,
+                                    pane.dock_layer, pane.dock_row,
+                                    FindDocksFlags::OnlyFirst) )
+    {
+        wxAuiDockInfo& dock = *dockInfo;
+
+        wxArrayInt pane_positions, pane_sizes;
+        GetPanePositionsAndSizes(dock, pane_positions, pane_sizes);
+
+        int i, dock_pane_count = dock.panes.GetCount();
+        for (i = 0; i < dock_pane_count; ++i)
+            dock.panes.Item(i)->dock_pos = pane_positions[i];
+    }
+}
+
 // Try to start dragging the floating frame of the given pane using the system
 // drag support: this currently only works under Wayland, where we can't move
 // the frame ourselves, and does nothing elsewhere.
@@ -5302,20 +5322,7 @@ void wxAuiManager::OnLeftUp(wxMouseEvent& event)
         wxAuiPaneInfo& pane = GetPane(m_actionWindow);
         wxASSERT_MSG(pane.IsOk(), wxT("Pane window not found"));
 
-        // save the new positions
-        for ( auto dockInfo : FindDocks(m_docks, pane.dock_direction,
-                                        pane.dock_layer, pane.dock_row,
-                                        FindDocksFlags::OnlyFirst) )
-        {
-            wxAuiDockInfo& dock = *dockInfo;
-
-            wxArrayInt pane_positions, pane_sizes;
-            GetPanePositionsAndSizes(dock, pane_positions, pane_sizes);
-
-            int i, dock_pane_count = dock.panes.GetCount();
-            for (i = 0; i < dock_pane_count; ++i)
-                dock.panes.Item(i)->dock_pos = pane_positions[i];
-        }
+        SaveDockPositions(pane);
 
         pane.state &= ~wxAuiPaneInfo::actionPane;
         Update();

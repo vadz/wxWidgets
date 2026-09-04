@@ -623,6 +623,10 @@ protected:
     void DoDropPane(wxAuiPaneInfo& pane, const wxPoint& pt, const wxPoint& offset);
     void DoEndMovePane(wxAuiPaneInfo& pane);
 
+    // Ensure that the panes of the dock containing the given pane use
+    // sequential positions after finishing dragging a toolbar pane.
+    void SaveDockPositions(const wxAuiPaneInfo& pane);
+
     // Try to start dragging the given pane using the system drag support.
     void StartDragSession(wxAuiPaneInfo& pane);
 
