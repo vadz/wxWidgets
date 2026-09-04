@@ -454,7 +454,10 @@ public:
 
     // Actually start the drag from the given window, which must be inside the
     // given TLW.
-    bool Start(Seat& seat, wxWindow* origin, wxWindow* tlw);
+    bool Start(Seat& seat,
+               wxWindow* originTLW,
+               wxWindow* target,
+               wxWindow* targetTLW);
 
     bool AttachWindow(wxWindow* tlw, const wxPoint& offset) override;
 
@@ -482,10 +485,9 @@ private:
     wl_unique_ptr<wl_data_source> m_source;
     wl_unique_ptr<xdg_toplevel_drag_v1> m_drag;
 
-    // The window the drag originates from, which is also the only window we
-    // report the drag position for, and the TLW containing it, whose
-    // coordinates are used for the conversions.
-    wxWindow* m_origin = nullptr;
+    // The only window we report the drag position for and the TLW containing
+    // it, whose coordinates are used for the conversions.
+    wxWindow* m_target = nullptr;
     wxWindow* m_tlw = nullptr;
 
     // The widget which is temporarily made a drop target for the duration of
@@ -731,13 +733,18 @@ const wl_data_source_listener data_source_listener = {
 // TLWDragSession implementation
 // ----------------------------------------------------------------------------
 
-bool TLWDragSession::Start(Seat& seat, wxWindow* origin, wxWindow* tlw)
+bool TLWDragSession::Start(Seat& seat,
+                           wxWindow* originTLW,
+                           wxWindow* target,
+                           wxWindow* targetTLW)
 {
     wl_data_device* const device = seat.GetDataDevice();
     if ( !device )
         return false;
 
-    GdkWindow* const gdkWindow = gtk_widget_get_window(tlw->GetHandle());
+    // Note that the drag must originate from the surface having the implicit
+    // grab, which is not necessarily the one we're going to drag over.
+    GdkWindow* const gdkWindow = gtk_widget_get_window(originTLW->GetHandle());
     wl_surface* const surface = gdk_wayland_window_get_wl_surface(gdkWindow);
     if ( !surface )
         return false;
@@ -769,8 +776,8 @@ bool TLWDragSession::Start(Seat& seat, wxWindow* origin, wxWindow* tlw)
         seat.lastButtonSerial
     );
 
-    m_origin = origin;
-    m_tlw = tlw;
+    m_target = target;
+    m_tlw = targetTLW;
 
     // Make the TLW a drop target accepting our own private format for the
     // duration of the drag: this is the only way to be notified about the
@@ -781,7 +788,7 @@ bool TLWDragSession::Start(Seat& seat, wxWindow* origin, wxWindow* tlw)
     // drop targets set by the application, if any, so we don't conflict with
     // them: GTK looks for a suitable drop target up the widget hierarchy, so
     // this one is still found if none of the children accepts our format.
-    m_targetWidget = tlw->GetHandle();
+    m_targetWidget = targetTLW->GetHandle();
     g_object_ref(m_targetWidget);
 
     GtkTargetEntry entry = { const_cast<gchar*>(TLW_DRAG_MIME_TYPE), 0, 0 };
@@ -799,7 +806,8 @@ bool TLWDragSession::Start(Seat& seat, wxWindow* origin, wxWindow* tlw)
     g_signal_connect(m_targetWidget, "drag-drop",
                      G_CALLBACK(wx_tlw_drag_drop), this);
 
-    wxLogTrace(TRACE_WAYLAND, "Started TLW drag from %s", wxDumpWindow(origin));
+    wxLogTrace(TRACE_WAYLAND, "Started TLW drag from %s over %s",
+               wxDumpWindow(originTLW), wxDumpWindow(target));
 
     return true;
 }
@@ -837,7 +845,7 @@ void TLWDragSession::OnDragOver(int x, int y)
 
     if ( !m_win )
     {
-        m_win = m_origin;
+        m_win = m_target;
 
         wxLogTrace(TRACE_WAYLAND, "TLW drag entered %s", wxDumpWindow(m_win));
     }
@@ -937,6 +945,7 @@ wl_data_device* Seat::GetDataDevice()
 /* static */
 std::unique_ptr<wxTLWDragSession>
 wxTLWDragSession::Create(wxWindow* origin,
+                         wxWindow* target,
                          std::unique_ptr<wxTLWDragHandler> handler)
 {
 #ifdef wxHAS_WAYLAND_TLW_DRAG
@@ -945,12 +954,20 @@ wxTLWDragSession::Create(wxWindow* origin,
     if ( !IsAvailable() )
         return nullptr;
 
-    wxWindow* const tlw = wxGetTopLevelParent(origin);
-    wxCHECK_MSG( tlw, nullptr, "drag origin must be inside a TLW" );
+    wxWindow* const originTLW = wxGetTopLevelParent(origin);
+    wxCHECK_MSG( originTLW, nullptr, "drag origin must be inside a TLW" );
 
-    GtkWidget* const widget = tlw->GetHandle();
-    if ( !widget || !gtk_widget_get_window(widget) )
-        return nullptr;
+    wxWindow* const targetTLW = wxGetTopLevelParent(target);
+    wxCHECK_MSG( targetTLW, nullptr, "drag target must be inside a TLW" );
+
+    auto const checkRealized = [](wxWindow* win) {
+        GtkWidget* const widget = win->GetHandle();
+        return widget && gtk_widget_get_window(widget);
+    };
+    wxCHECK_MSG( checkRealized(originTLW), nullptr,
+                 "drag origin TLW must be realized" );
+    wxCHECK_MSG( checkRealized(targetTLW), nullptr,
+                 "drag target TLW must be realized" );
 
     // We need a seat with a pending implicit grab, i.e. one for which we had
     // seen a button press event, to be able to start the drag.
@@ -960,7 +977,7 @@ wxTLWDragSession::Create(wxWindow* origin,
             continue;
 
         auto session = std::make_unique<TLWDragSession>(std::move(handler));
-        if ( !session->Start(seat, origin, tlw) )
+        if ( !session->Start(seat, originTLW, target, targetTLW) )
             return nullptr;
 
         return session;
@@ -969,6 +986,7 @@ wxTLWDragSession::Create(wxWindow* origin,
     return nullptr;
 #else // !wxHAS_WAYLAND_TLW_DRAG
     wxUnusedVar(origin);
+    wxUnusedVar(target);
     wxUnusedVar(handler);
 
     return nullptr;

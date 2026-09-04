@@ -36,11 +36,12 @@ public:
 
     // Called whenever the pointer moves during the drag.
     //
-    // "win" is the window the drag originated from if the pointer is currently
-    // over it or null if it is not, and "pt" is the pointer position in screen
-    // coordinates. Note that we can only detect being over the origin window
-    // itself, drags over the other windows of this application, or of the
-    // other applications, are indistinguishable from being outside of them.
+    // "win" is the target window passed to wxTLWDragSession::Create() if the
+    // pointer is currently over it or null if it is not, and "pt" is the
+    // pointer position in screen coordinates. Note that we can only detect
+    // being over the target window itself, drags over the other windows of
+    // this application, or of the other applications, are indistinguishable
+    // from being outside of them.
     //
     // Note that under Wayland the screen coordinates are not really global,
     // but they are still consistent with the coordinates used by the windows
@@ -86,10 +87,17 @@ public:
     // which must be shown and must be the window currently having the pointer
     // grab, i.e. this can only be called while handling a mouse event for it.
     //
+    // The drag position is reported to the handler in terms of "target", which
+    // is often, but not necessarily, the same as "origin": e.g. when dragging
+    // a floating window over the main one, the drag originates from the former
+    // but we're interested in the position over the latter.
+    //
     // Returns null if starting the drag is not supported, in which case the
     // caller has to fall back to moving the window on its own.
     static std::unique_ptr<wxTLWDragSession>
-    Create(wxWindow* origin, std::unique_ptr<wxTLWDragHandler> handler);
+    Create(wxWindow* origin,
+           wxWindow* target,
+           std::unique_ptr<wxTLWDragHandler> handler);
 
     // Ask the system to move the given TLW with the pointer for the rest of
     // the drag. The window must be already shown and "offset" is the position
